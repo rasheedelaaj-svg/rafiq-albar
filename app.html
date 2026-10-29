@@ -136,6 +136,9 @@ button.link{background:none;color:var(--tint);font-size:1.05rem;padding-inline:4
 #map.far .lbl{display:none}
 .lbl{font-family:var(--body);font-size:12px;padding:1px 6px;background:#fffd;color:#2a2118;border:0;box-shadow:none}
 .lbl::before{display:none}
+figure.photo{margin:8px 0;display:flex;flex-direction:column;gap:6px}
+figure.photo img{width:100%;max-height:300px;object-fit:cover;border-radius:14px;background:var(--seg)}
+figure.photo figcaption{display:flex;justify-content:space-between;gap:8px;font-size:.8rem}
 svg.sky{display:block;width:100%;max-width:360px;margin:8px auto;background:#0b1d33;border-radius:14px}
 @media (prefers-reduced-motion:no-preference){.rot{transition:transform .25s linear}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -868,12 +871,25 @@ function skySvg(s){const P=s.d;let g=s.l.map(([a,b])=>`<line x1="${P[a][0]}" y1=
   g+=P.filter(p=>p[2]).map(([x,y,r,n])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${r>=6?'#fff6d6':'#fff'}"/>${n?`<text x="${x}" y="${y-r-4}" fill="#cfe3f3" font-size="10" text-anchor="middle">${n}</text>`:''}`).join('');
   return `<svg class="sky" viewBox="0 0 200 120" role="img" aria-label="رسمة ${s.n}">${g}</svg>`}
 let infoCat=store.get('info','نباتات');
-const imgLink=n=>`<a class="btn" target="_blank" rel="noopener" href="https://www.google.com/search?tbm=isch&q=${encodeURIComponent(n)}">صور حقيقية</a>`;
+const imgLink=n=>`<a class="btn" target="_blank" rel="noopener" href="https://www.google.com/search?tbm=isch&q=${encodeURIComponent(n)}">صور أكثر</a>`;
+// photo per item = lead image of its English Wikipedia article (Commons, free licence), fetched on first open and cached by sw.js
+const WIKI={'الفقع (الكمأ)':'Desert truffle','الجراد':'Desert locust','أبو جعل (الجُعَل)':'Dung beetle','الخنفساء السودا':'Darkling beetle','النمل':'Ant','القراد':'Tick','البعوض والذباب':'Mosquito',
+  'الجدي (نجم القطب)':'Polaris','بنات نعش':'Big Dipper','الكف الخضيب':'Cassiopeia (constellation)','سهيل':'Canopus','الثريا':'Pleiades','الجوزاء':'Orion (constellation)','المرزم':'Sirius','الدبران':'Aldebaran','العقرب':'Scorpius','الزهرة':'Venus'};
+const wikiImg=store.get('wikiimg',{});
+async function loadPhoto(fig){const t=fig.dataset.w;let u=wikiImg[t];
+  try{if(!u){const j=await(await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(t.replace(/ /g,'_')))).json();
+      u=j.thumbnail&&j.thumbnail.source.replace(/\/\d+px-/,'/640px-');if(!u)throw 0;wikiImg[t]=u;store.set('wikiimg',wikiImg)}
+    const img=fig.querySelector('img');img.onerror=()=>{if(img.src!==j0(u))img.src=j0(u);else fail()};img.src=u;img.hidden=false;fig.querySelector('.ph-wait').hidden=true}
+  catch{fail()}
+  function fail(){fig.querySelector('.ph-wait').textContent='ما قدرت أجيب الصورة. تحتاج نت أول مرة، وبعدها تنحفظ.';fig.nextElementSibling?.removeAttribute('hidden')}}
+const j0=u=>u.replace(/\/thumb(\/.+?)\/\d+px-[^/]+$/,'$1'); // full-size file if the 640px thumb is missing
 function renderInfo(){$('in-cats').innerHTML=['نباتات','نجوم','حشرات'].map(c=>`<button class="chip" data-i="${c}" aria-pressed="${c===infoCat}">${c}</button>`).join('');
-  $('in-note').textContent=infoCat==='نجوم'?'الرسمة تقريبية للشكل. الخط الأصفر المتقطع يوريك وين تمد عينك.':'الصور الحقيقية تفتح بحث جوجل (يبيلها نت).';
-  const L=infoCat==='نباتات'?PLANTS:infoCat==='حشرات'?BUGS:STARS;
-  $('info').innerHTML=L.map(x=>{const st=infoCat==='نجوم';return `<details class="riddle"><summary>${x[0]} <span class="muted">· ${x[1]}</span></summary>
-    ${st?skySvg({...x[3],n:x[0]}):''}<p class="sp">${st?x[2]:x[3]}</p>${imgLink(st?x[0]+' نجم '+x[1]:x[0]+' '+x[1])}</details>`}).join('')}
+  $('in-note').textContent='الصور حقيقية من ويكيبيديا. تحتاج نت أول مرة تفتح العنصر، وبعدها تشتغل بدون نت.';
+  const st=infoCat==='نجوم',L=infoCat==='نباتات'?PLANTS:infoCat==='حشرات'?BUGS:STARS;
+  $('info').innerHTML=L.map(x=>{const w=WIKI[x[0]]||x[1];return `<details class="riddle"><summary>${x[0]} <span class="muted">· ${x[1]}</span></summary>
+    <figure class="photo" data-w="${w}"><img alt="صورة ${x[0]}" hidden><figcaption><span class="ph-wait muted">جاري تحميل الصورة…</span> <a class="muted" target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/${encodeURIComponent(w.replace(/ /g,'_'))}">المصدر: ويكيبيديا</a></figcaption></figure>
+    ${st?`<div hidden>${skySvg({...x[3],n:x[0]})}</div>`:''}<p class="sp">${st?x[2]:x[3]}</p>${imgLink(st?x[0]+' نجم '+x[1]:x[0]+' '+x[1])}</details>`}).join('');
+  $('info').querySelectorAll('details').forEach(d=>d.addEventListener('toggle',()=>{const f=d.querySelector('figure');if(d.open&&!f.dataset.done){f.dataset.done=1;loadPhoto(f)}}))}
 $('in-cats').onclick=e=>{if(e.target.dataset.i){infoCat=e.target.dataset.i;store.set('info',infoCat);renderInfo()}};renderInfo();
 
 /* ---------- recipes ---------- */
