@@ -17,6 +17,7 @@
   color-scheme:light;
 }
 html,body{height:100%}
+[hidden]{display:none!important}
 body{background:var(--bg);color:var(--fg);font:15px/1.6 var(--body);direction:rtl;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px calc(110px + env(safe-area-inset-bottom,0px))}
 h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;font-weight:700}
@@ -300,9 +301,21 @@ details.riddle p.verse{margin:6px 0 12px;text-align:center;font-family:var(--dis
 </section>
 
 <section id="v-food" hidden>
-  <h1>طبخات البر</h1>
-  <span class="muted">المقادير لأربعة أشخاص تقريباً.</span>
+  <h1>طبخ وصحة</h1>
+  <div class="row" id="fd-cats"></div>
+  <span class="muted" id="fd-note"></span>
   <div id="recipes" style="display:flex;flex-direction:column;gap:14px"></div>
+  <div id="workout" hidden style="display:flex;flex-direction:column;gap:14px">
+    <div class="card"><h2>تمرين دائري بالصوت</h2>
+      <div class="row"><label>تمرين <select id="wk-work"><option value="30">30 ث</option><option value="40" selected>40 ث</option><option value="45">45 ث</option><option value="60">60 ث</option></select></label>
+      <label>راحة <select id="wk-rest"><option value="15">15 ث</option><option value="20" selected>20 ث</option><option value="30">30 ث</option></select></label>
+      <label>جولات <select id="wk-rounds"><option>1</option><option selected>2</option><option>3</option></select></label></div>
+      <div style="text-align:center"><div id="wk-round" class="muted"></div><div id="wk-now" style="font-size:1.4rem;font-weight:700;color:var(--ink)"></div><div id="wk-left" class="num" style="font-size:3rem;font-weight:700"></div></div>
+      <button class="primary" id="wk-go" style="min-height:48px">ابدأ</button>
+      <span class="muted">يقول لك اسم كل تمرين بالصوت ويعد الوقت. اشرب ماي قبل وبعد، ووقف إذا حسيت بدوخة.</span></div>
+    <div class="card"><h2>البرنامج الأسبوعي</h2><ul class="list" id="wk-plan"></ul></div>
+    <div class="card"><h2>شرح التمارين</h2><div id="wk-ex"></div></div>
+  </div>
 </section>
 
 <nav class="tabs" id="tabs"></nav>
@@ -384,7 +397,7 @@ const ICONS={
   stories:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h7M8 11h7"/>',
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/>',
   food:'<path d="M4 11h16a8 8 0 0 1-16 0zM8 7c0-1 1-1 1-2M12 7c0-1 1-1 1-2M16 7c0-1 1-1 1-2"/>'};
-const TABS=[['prayer','الصلاة'],['nav','الملاحة'],['compass','البوصلة'],['media','الصوتيات'],['fun','الألعاب'],['stories','القصص'],['info','معلومات'],['food','الطبخ']];
+const TABS=[['prayer','الصلاة'],['nav','الملاحة'],['compass','البوصلة'],['media','الصوتيات'],['fun','الألعاب'],['stories','القصص'],['info','معلومات'],['food','الصحة']];
 function show(t){TABS.forEach(([k])=>{$('v-'+k).hidden=k!==t;$('t-'+k).setAttribute('aria-selected',k===t)});store.set('tab',t);if(t==='nav'){wake();initMap();map?.invalidateSize()}}
 $('tabs').innerHTML=TABS.map(([k,l])=>`<button id="t-${k}" role="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>${l}</button>`).join('');
 TABS.forEach(([k])=>$('t-'+k).onclick=()=>show(k));
@@ -818,8 +831,52 @@ const RECIPES=[
   s:['حمّس البصل بالزيت في القدر.','أضف الدجاج والبهارات وقلبه 5 دقايق.','أضف الماي والملح وخله يغلي 25 دقيقة.','أضف الرز، وأول ما ينشف الماي غط القدر.','حط القدر على جمر هادي (بعيد عن اللهب) 20 دقيقة.']},
  {n:'بطاطس وبصل بالقصدير',i:'🥔',t:'40 دقيقة',g:['بطاطس: 4 حبات','بصل: حبتين','زبدة: 4 ملاعق كبيرة','ملح وفلفل أسود: حسب الرغبة','ورق قصدير'],
   s:['قطّع البطاطس والبصل حلقات.','حط كل حصة على ورقة قصدير مع زبدة وملح وفلفل.','لفها زين طبقتين.','ادفنها في الجمر 30 إلى 40 دقيقة، وقلبها مرة بالنص.']}];
-$('recipes').innerHTML=RECIPES.map(r=>`<article class="card recipe"><div class="row"><div class="plate" aria-hidden="true">${r.i}</div><div><h3>${r.n}</h3><span class="muted">${r.t}</span></div></div>
+const HEALTHY=[
+ {n:'سلطة تونة وحمص',i:'🥗',t:'10 دقايق',g:['تونة بالماي: علبتين مصفاة','حمص مسلوق: علبة مصفاة','خيار: 2 حبة','طماط: 2 حبة','بصل أحمر: نص حبة','زيت زيتون: 2 ملعقة كبيرة','ليمون: حبة','ملح وكمون: رشة'],
+  s:['قطّع الخضار مكعبات صغيرة.','اخلط التونة والحمص مع الخضار.','أضف زيت الزيتون والليمون والملح والكمون وقلّب.','بروتين عالي ويشبع بدون طبخ، وما يحتاج غير ثلاجة صغيرة.']},
+ {n:'دجاج مشوي على الفحم بالليمون',i:'🍗',t:'40 دقيقة + تتبيلة',g:['صدور دجاج: 1 كيلو','زبادي قليل الدسم: كوب','ثوم: 4 فصوص مهروسة','ليمون: 2 حبة','بابريكا وكمون وفلفل أسود: ملعقة صغيرة من كل وحدة','ملح: ملعقة صغيرة'],
+  s:['اخلط الزبادي مع الثوم والليمون والبهارات.','تبّل الدجاج فيه من الليل وحطه في الثلاجة.','اشويه على جمر متوسط (مو لهب) 8 دقايق لكل جهة.','قدّمه مع خيار وطماط بدال الرز.']},
+ {n:'شوربة عدس',i:'🥣',t:'30 دقيقة',g:['عدس أحمر: كوب ونص مغسول','بصل: حبة','جزر: 2 حبة مقطعة','ثوم: 2 فص','كمون وكركم: ملعقة صغيرة من كل وحدة','ماي: 6 أكواب','ملح وليمون'],
+  s:['حمّس البصل والثوم بملعقة زيت وحدة بس.','أضف الجزر والعدس والبهارات والماي.','خله يغلي على نار هادية 20 دقيقة لين يذوب العدس.','اهرسه بالملعقة، وعصّر ليمون عند التقديم. تدفي في ليالي الشتاء وتشبع.']},
+ {n:'بيض بالخضار على الصاج',i:'🍳',t:'15 دقيقة',g:['بيض: 6 حبات','فلفل رومي: حبة','طماط: 2 حبة','بصل: حبة صغيرة','سبانخ أو بقدونس: حفنة','زيت زيتون: ملعقة كبيرة','ملح وفلفل'],
+  s:['حمّس البصل والفلفل بزيت الزيتون.','أضف الطماط لين يذبل.','اكسر البيض فوق الخضار وغطه 5 دقايق.','رش السبانخ أو البقدونس آخر شي. فطور بروتين قبل طلعة المشي.']},
+ {n:'سمك بالقصدير على الجمر',i:'🐟',t:'30 دقيقة',g:['سمك هامور أو شعري: 4 قطع فيليه','ليمون: 2 حبة شرائح','ثوم: 3 فصوص','طماط وبصل: شرائح','زيت زيتون: 2 ملعقة كبيرة','ملح وكمون وفلفل','ورق قصدير'],
+  s:['حط كل قطعة على قصدير مع شرائح الطماط والبصل والليمون.','رش الثوم والبهارات وشوية زيت زيتون.','لفها زين طبقتين.','حطها على الجمر 15 إلى 20 دقيقة. صحي وخفيف وما يحتاج قدر.']},
+ {n:'شوفان بالتمر والحليب',i:'🥛',t:'10 دقايق',g:['شوفان: كوب','حليب قليل الدسم: كوبين','تمر: 5 حبات مقطعة','قرفة: رشة','مكسرات نيّة: حفنة صغيرة'],
+  s:['اغلي الحليب على نار هادية.','أضف الشوفان وحرّك 5 دقايق.','أضف التمر والقرفة، والتمر يغنيك عن السكر.','رش المكسرات فوقه. طاقة تدوم لطلعة الصبح.']},
+ {n:'خضار مشوية على السيخ',i:'🍢',t:'25 دقيقة',g:['كوسة: 2 حبة','فلفل ملون: 2 حبة','بصل: حبتين','فطر: علبة','طماط كرزي: كوب','زيت زيتون: 2 ملعقة كبيرة','زعتر وملح'],
+  s:['قطّع الخضار قطع كبيرة.','اخلطها بزيت الزيتون والزعتر والملح.','دخّلها في الأسياخ.','اشويها على الجمر 10 إلى 12 دقيقة وقلّبها. تنفع مع الدجاج أو اللحم بدال الخبز.']},
+ {n:'وجبة خفيفة للطريق',i:'🥜',t:'5 دقايق',g:['لوز وكاجو نيّ: كوب','تمر: 10 حبات','زبيب: نص كوب','بذور يقطين أو دوار الشمس: ربع كوب'],
+  s:['اخلطها كلها.','قسّمها في أكياس صغيرة.','حفنة وحدة تكفي، لأن السعرات فيها عالية.','ما تخرب في الحر، وتنفع بين التمارين أو في الطلعات الطويلة.']}];
+const EX=[['🦵','قرفصاء (سكوات)','قف ورجولك بعرض كتوفك، انزل كأنك تقعد على كرسي لين تصير فخوذك موازية للأرض، وارجع. ظهرك مستقيم وركبك ما تتعدى أصابعك.'],
+ ['💪','ضغط','يدينك على الأرض بعرض الكتوف، جسمك خط واحد من الراس للكعب. انزل لين صدرك يقرب من الأرض واطلع. إذا صعب، حط ركبك على الأرض.'],
+ ['🚶','طعنات (لانجز)','خطوة كبيرة لقدام، وانزل لين ركبة الرجل اللي ورا تقرب من الأرض، وارجع. بدّل الرجول.'],
+ ['🧱','بلانك','على الكوعين وأطراف أصابع الرجول، جسمك مستقيم وبطنك مشدود. اثبت بدون حركة.'],
+ ['⛰️','متسلق الجبل','وضعية الضغط، وجيب ركبتك لصدرك بالتناوب بسرعة.'],
+ ['🤸','قفز الجاك','اقفز وافتح رجولك ويدينك فوق راسك، وارجع. على الرمل يصير أصعب وأخف على الركب.'],
+ ['🪑','غطس على الطاولة أو الصندوق','ظهرك للصندوق ويدينك على طرفه، انزل بثني الكوعين واطلع. يقوّي الذراع من ورا.'],
+ ['🏖️','صعود الطعس','اطلع الكثيب الرملي بخطوات قصيرة وانزل مشي. من أقوى تمارين الرجول والنفس.']];
+const PLAN=[['السبت','دائرة تمارين (اضغط ابدأ تحت)'],['الأحد','مشي سريع على الرمل 30 إلى 40 دقيقة'],['الاثنين','دائرة تمارين'],['الثلاثاء','راحة أو مشي خفيف'],['الأربعاء','دائرة تمارين + صعود الطعس 5 مرات'],['الخميس','مشي طويل مع الشباب 45 دقيقة'],['الجمعة','راحة']];
+let healthCat=store.get('health','طبخات البر');
+const recipeCards=L=>L.map(r=>`<article class="card recipe"><div class="row"><div class="plate" aria-hidden="true">${r.i}</div><div><h3>${r.n}</h3><span class="muted">${r.t}</span></div></div>
   <b>المقادير</b><ul>${r.g.map(x=>`<li>${x}</li>`).join('')}</ul><b>الطريقة</b><ol>${r.s.map(x=>`<li>${x}</li>`).join('')}</ol></article>`).join('');
+function renderHealth(){$('fd-cats').innerHTML=['طبخات البر','أكلات صحية','تمارين'].map(c=>`<button class="chip" data-h="${c}" aria-pressed="${c===healthCat}">${c}</button>`).join('');
+  const ex=healthCat==='تمارين';$('workout').hidden=!ex;$('recipes').hidden=ex;
+  $('fd-note').textContent=ex?'بدون أدوات، تنسوى عند المخيم. أحسن وقت الفجر أو بعد المغرب، مو وقت الحر.':'المقادير لأربعة أشخاص تقريباً.';
+  if(!ex)$('recipes').innerHTML=recipeCards(healthCat==='أكلات صحية'?HEALTHY:RECIPES)}
+$('fd-cats').onclick=e=>{if(e.target.dataset.h){healthCat=e.target.dataset.h;store.set('health',healthCat);renderHealth()}};
+$('wk-plan').innerHTML=PLAN.map(([d,t])=>`<li><b style="min-width:70px">${d}</b><span class="grow">${t}</span></li>`).join('');
+$('wk-ex').innerHTML=EX.map(([i,n,t])=>`<details class="riddle"><summary>${i} ${n}</summary><p class="sp">${t}</p></details>`).join('');
+// circuit: first 7 exercises, work/rest seconds, rounds
+const wk={on:false,t:null};
+function speak(t){try{const u=new SpeechSynthesisUtterance(t);u.lang='ar-SA';speechSynthesis.cancel();speechSynthesis.speak(u)}catch{}}
+function wkStop(msg){clearInterval(wk.t);wk.on=false;$('wk-go').textContent='ابدأ';$('wk-now').textContent=msg||'';$('wk-left').textContent=''}
+$('wk-go').onclick=()=>{if(wk.on)return wkStop('وقفت.');const work=+$('wk-work').value,rest=+$('wk-rest').value,rounds=+$('wk-rounds').value,list=EX.slice(0,7);
+  const steps=[];for(let r=0;r<rounds;r++)list.forEach((e,k)=>{steps.push([e[1],work,`الجولة ${r+1} من ${rounds}`]);if(k<list.length-1||r<rounds-1)steps.push([k<list.length-1?'راحة، بعدها '+list[k+1][1]:'راحة بين الجولات، بعدها '+list[0][1],k<list.length-1?rest:rest*3,'']) });
+  let i=-1,left=0;wk.on=true;$('wk-go').textContent='إيقاف';
+  const next=()=>{if(++i>=steps.length){speak('خلصت التمرين، عافاك الله');return wkStop('خلصت التمرين 💪')}left=steps[i][1];$('wk-now').textContent=steps[i][0];$('wk-round').textContent=steps[i][2];speak(steps[i][0])};
+  next();wk.t=setInterval(()=>{left--;$('wk-left').textContent=left;if(left===3)speak('ثلاثة');if(left<=0)next()},1000);$('wk-left').textContent=left};
+renderHealth();
 
 /* ---------- boot ---------- */
 show(store.get('tab','prayer'));
