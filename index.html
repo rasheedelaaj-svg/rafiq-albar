@@ -172,7 +172,7 @@ details.riddle p.verse{margin:6px 0 12px;text-align:center;font-family:var(--dis
     </div>
     <span class="muted" id="c-hint">العلامة الخضراء على القرص هي القبلة. لف الجوال حتى تصير تحت السهم البرتقالي.</span>
     <button id="c-start" class="primary">تشغيل البوصلة</button>
-    <label class="row">تصحيح البوصلة <input type="number" id="c-offset" step="1" value="0" style="width:80px"> درجة</label>
+    <label class="row">تصحيح البوصلة <input type="number" id="c-offset" step="1" min="-30" max="30" value="0" style="width:80px"> درجة</label>
     <span class="muted">أبعد الجوال عن الحديد والسيارة، وحرك الجوال على شكل رقم 8 للمعايرة.</span>
   </div>
   <div class="card">
@@ -395,8 +395,9 @@ $('adhan-file').onchange=async e=>{const f=e.target.files[0];if(!f)return;await 
 async function showAdhanName(){const r=await dbGet('adhan');if(r)$('adhan-name').textContent='الصوت الحالي: '+r.name}
 
 /* ---------- compass ---------- */
-let heading=null,offset=store.get('offset',0);$('c-offset').value=offset;
-$('c-offset').oninput=e=>{offset=+e.target.value||0;store.set('offset',offset)};
+let heading=null,offset=+store.get('offset',0)||0;if(Math.abs(offset)>30)offset=0; // older builds allowed any value; a big one just rotates the dial$('c-offset').value=offset;
+$('c-offset').oninput=e=>{offset=Math.max(-30,Math.min(30,+e.target.value||0));store.set('offset',offset)};
+$('c-offset').onchange=e=>{e.target.value=offset};
 const ROSE_AR=['ش','ق','ج','غ'];
 (function drawRose(){let h='<circle r="96" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/>';
   for(let d=0;d<360;d+=5){const L=d%30?4:9;h+=`<line x1="0" y1="-96" x2="0" y2="${-96+L}" stroke="var(--muted)" stroke-width="${d%90?1:2}" transform="rotate(${d})"/>`}
@@ -408,11 +409,13 @@ const ROSE_AR=['ش','ق','ج','غ'];
   let r='';for(const[d,l]of[[0,'ش'],[90,'ق'],[180,'ج'],[270,'غ']])r+=`<text transform="rotate(${d}) translate(0,-86) rotate(${-d})" text-anchor="middle" dominant-baseline="middle" font-size="12" fill="${d?'var(--muted)':'var(--ink)'}">${l}</text>`;
   $('nav-ring').innerHTML=r})();
 let smooth=null;
-function onOri(e){let h=e.webkitCompassHeading!=null?e.webkitCompassHeading:(e.absolute||e.type==='deviceorientationabsolute')&&e.alpha!=null?360-e.alpha:null;
+function onOri(e){if(nativeOn&&e.type)return;let h=e.webkitCompassHeading!=null?e.webkitCompassHeading:(e.absolute||e.type==='deviceorientationabsolute')&&e.alpha!=null?360-e.alpha:null;
   if(h==null)return;h=fix(h+(screen.orientation?.angle||0)+offset,360);
   smooth=smooth==null?h:fix(smooth+((h-smooth+540)%360-180)*.25,360);heading=smooth;$('c-hint').hidden=false;renderCompass();renderNav();renderMap()}
 let oriOn=false;
-async function startCompass(){if(oriOn)return;try{if(typeof DeviceOrientationEvent!=='undefined'&&DeviceOrientationEvent.requestPermission){if(await DeviceOrientationEvent.requestPermission()!=='granted')throw 0}}catch{$('c-head').textContent='مرفوض';return}
+let nativeOn=false;
+window.nativeHeading=h=>{nativeOn=true;oriOn=true;$('c-start').hidden=true;onOri({webkitCompassHeading:h})};
+async function startCompass(){if(oriOn)return;try{if(typeof DeviceOrientationEvent!=='undefined'&&DeviceOrientationEvent.requestPermission){if(await DeviceOrientationEvent.requestPermission()!=='granted')throw 0}}catch{$('c-head').textContent='—';$('c-name').textContent='';$('c-hint').textContent='الجوال رفض إذن الحركة. إذا كنت فاتح من سفاري أو من أيقونة الشاشة: الإعدادات ← سفاري ← مسح السجل وبيانات المواقع، وبعدين افتح التطبيق واضغط «تشغيل البوصلة» واختر «سماح». وإذا كان التطبيق المثبّت من Xcode، حدّثه.';return}
   oriOn=true;$('c-start').hidden=true;addEventListener('deviceorientationabsolute',onOri);addEventListener('deviceorientation',onOri);
   setTimeout(()=>{if(heading==null){$('c-start').hidden=false;$('c-start').textContent='ما وصلت قراءة. حاول مرة ثانية';oriOn=false}},3000)}
 $('c-start').onclick=startCompass;

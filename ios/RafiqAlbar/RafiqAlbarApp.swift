@@ -2,6 +2,7 @@ import SwiftUI
 import WebKit
 import UserNotifications
 import AVFoundation
+import CoreLocation
 
 // The app is the same web app hosted on GitHub Pages, so every push to main updates it.
 // App-bound domain lets the page keep its offline cache (service worker) inside the app.
@@ -30,7 +31,9 @@ struct WebView: UIViewRepresentable {
         config.mediaTypesRequiringUserActionForPlayback = []
         config.userContentController.add(context.coordinator, name: "adhan")
         let webView = WKWebView(frame: .zero, configuration: config)
+        webView.uiDelegate = context.coordinator
         webView.scrollView.contentInsetAdjustmentBehavior = .never
+        context.coordinator.startHeading(for: webView)
         webView.load(URLRequest(url: appURL))
         return webView
     }
@@ -40,7 +43,7 @@ struct WebView: UIViewRepresentable {
 
 // The page posts [{t: epoch ms, n: prayer name}]; each becomes a system notification,
 // so the adhan alert fires even when the app is closed.
-final class AdhanScheduler: NSObject, WKScriptMessageHandler {
+final class AdhanScheduler: NSObject, WKScriptMessageHandler, WKUIDelegate, CLLocationManagerDelegate {
     func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
         guard let list = message.body as? [[String: Any]] else { return }
         let center = UNUserNotificationCenter.current()
@@ -59,5 +62,28 @@ final class AdhanScheduler: NSObject, WKScriptMessageHandler {
             let trigger = UNCalendarNotificationTrigger(dateMatching: parts, repeats: false)
             center.add(UNNotificationRequest(identifier: "adhan-\(Int(ms))", content: content, trigger: trigger))
         }
+    }
+
+    // Without this WebKit silently denies the page's motion permission inside the app.
+    func webView(_ webView: WKWebView, requestDeviceOrientationAndMotionPermissionFor origin: WKSecurityOrigin,
+                 initiatedByFrame frame: WKFrameInfo, decisionHandler: @escaping (WKPermissionDecision) -> Void) {
+        decisionHandler(.grant)
+    }
+
+    // True-north heading straight from iOS, pushed to the page's window.nativeHeading.
+    private let location = CLLocationManager()
+    private weak var webView: WKWebView?
+
+    func startHeading(for webView: WKWebView) {
+        self.webView = webView
+        location.delegate = self
+        location.headingFilter = 1
+        location.requestWhenInUseAuthorization()
+        if CLLocationManager.headingAvailable() { location.startUpdatingHeading() }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateHeading heading: CLHeading) {
+        let h = heading.trueHeading >= 0 ? heading.trueHeading : heading.magneticHeading
+        webView?.evaluateJavaScript("window.nativeHeading&&window.nativeHeading(\(h))")
     }
 }
