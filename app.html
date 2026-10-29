@@ -479,6 +479,58 @@ const DIRS=['شمال','شمال شمال شرق','شمال شرق','شرق شم
 const dirName=deg=>DIRS[Math.round(fix(deg,360)/22.5)%16];
 // where a place sits relative to the direction you face
 function side(bear,course){const r=fix(bear-course,360);return r<=30||r>=330?'قدامك':r>=150&&r<=210?'وراك':r<180?'يمينك':'يسارك'}
+// strict parse for user-entered coordinates: also rejects minutes/seconds ≥ 60 and a hemisphere letter that contradicts a sign
+function parseCoordStrict(s){const c=parseCoord(s);if(!c)return null;
+  const t=String(s).replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/٫/g,'.');
+  if(/[°'"’″′]/.test(t)){const parts=t.split(/[NSEWشجقغ,،]/i).filter(x=>/\d/.test(x));
+    for(const p of parts){const n=(p.match(/\d+(?:\.\d+)?/g)||[]).map(Number);if(n.slice(1).some(v=>v>=60))return null}}
+  if(/-\s*\d[^NSEW]*[SW]|-\s*\d[^NSEW]*[NE]/i.test(t)&&/[NSEW]/i.test(t))return null;
+  return c}
+// metres east/north of a reference point; fine for the few-km spans one track step covers
+function local(o,p){const k=111320;return[(p[1]-o[1])*k*Math.cos(o[0]*R),(p[0]-o[0])*k]}
+// closest point on segment a→b to p: {t 0..1, d metres}
+function projSeg(p,a,b){const[bx,by]=local(a,b),[px,py]=local(a,p),L=bx*bx+by*by,t=L?Math.max(0,Math.min(1,(px*bx+py*by)/L)):0;
+  return{t,d:Math.hypot(px-t*bx,py-t*by)}}
+// a fix is a gap start when the device was silent or jumped too far to have driven it
+const GAP_S=60;
+function isGap(prev,cur){if(!prev)return false;const dt=(cur.t-prev.t)/1000,d=distance(prev.c,cur.c);return dt>GAP_S||d>Math.max(500,dt*70)}
+// segs: [[{c,t,s?,a?}...]...]; moving = steps faster than 0.8 m/s
+function trackStats(segs,now){let dist=0,moving=0,max=0,t0=null,t1=null;
+  for(const g of segs){for(let i=0;i<g.length;i++){const p=g[i];t0??=p.t;t1=p.t;if(p.s!=null&&p.s>max&&p.s<90)max=p.s;
+    if(i){const q=g[i-1],d=distance(q.c,p.c),dt=(p.t-q.t)/1000;dist+=d;if(dt>0&&d/dt>.8){moving+=dt;if(p.s==null&&d/dt>max&&d/dt<90)max=d/dt}}}}
+  const total=t0==null?0:((now??t1)-t0)/1000;return{dist,moving,total,avg:moving?dist/moving:0,max}}
+// backtrack route: the recorded segments reversed (last point first); gaps stay gaps
+function reverseRoute(segs){const pts=[];let cum=0;
+  segs.slice().reverse().forEach(g=>{g.slice().reverse().forEach((p,i)=>{const prev=pts[pts.length-1];if(prev)cum+=distance(prev.c,p.c);pts.push({c:p.c,cum,gap:!i&&pts.length>0})})});
+  return pts}
+// where you are along the route. k = index of the last matched edge; edges are searched forward from it first,
+// so a path that crosses itself matches the leg you are on, not the later one that passes the same spot
+function routeProgress(route,p,k=0,ahead=80){let best=null;
+  const look=(from,to)=>{for(let i=Math.max(0,from);i<Math.min(route.length-1,to);i++){if(route[i+1].gap)continue;
+    const r=projSeg(p,route[i].c,route[i+1].c);if(!best||r.d<best.d-1)best={i,t:r.t,d:r.d}}};
+  look(k-3,k+60);if(!best||best.d>150){const near=best;best=null;look(k-3,route.length);if(near&&best&&best.d>=near.d)best=near}
+  if(!best)return null;const a=route[best.i],b=route[best.i+1],along=a.cum+(b.cum-a.cum)*best.t,total=route[route.length-1].cum;
+  let j=best.i+1;while(j<route.length-1&&route[j].cum<along+ahead&&!route[j+1].gap)j++;
+  return{k:best.i,along,remain:total-along,xt:best.d,next:route[j].c,done:total?along/total:1}}
+// GPX 1.1 out and in
+const xmlEsc=s=>String(s??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c]));
+function toGPX(points,trips){const iso=t=>new Date(t).toISOString();let x='<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="رفيق البر" xmlns="http://www.topografix.com/GPX/1/1">\n';
+  for(const w of points)x+=`<wpt lat="${w.c[0].toFixed(7)}" lon="${w.c[1].toFixed(7)}"><name>${xmlEsc(w.n)}</name>${w.note?`<desc>${xmlEsc(w.note)}</desc>`:''}<type>${xmlEsc(w.cat||'other')}</type>${w.t?`<time>${iso(w.t)}</time>`:''}</wpt>\n`;
+  for(const tr of trips){x+=`<trk><name>${xmlEsc(tr.name)}</name>`;for(const g of tr.segs){x+='<trkseg>';for(const p of g)x+=`<trkpt lat="${p.c[0].toFixed(7)}" lon="${p.c[1].toFixed(7)}">${p.a!=null?`<ele>${p.a.toFixed(1)}</ele>`:''}<time>${iso(p.t)}</time></trkpt>`;x+='</trkseg>'}x+='</trk>\n'}
+  return x+'</gpx>\n'}
+// parser is passed in (DOMParser in the page) so this stays testable
+function fromGPX(text,parse){const doc=parse(text);if(!doc||doc.getElementsByTagName('parsererror').length||!doc.getElementsByTagName('gpx').length)throw new Error('notgpx');
+  const num=v=>{const n=parseFloat(v);return isFinite(n)?n:null},kid=(e,n)=>e.getElementsByTagName(n)[0]?.textContent.trim()||'';
+  const okC=(la,lo)=>la!=null&&lo!=null&&Math.abs(la)<=90&&Math.abs(lo)<=180;const CATS=['camp','car','poi','other'];
+  const points=[],trips=[];let bad=0;
+  for(const w of doc.getElementsByTagName('wpt')){const la=num(w.getAttribute('lat')),lo=num(w.getAttribute('lon'));if(!okC(la,lo)){bad++;continue}
+    const ty=kid(w,'type');points.push({n:kid(w,'name')||'نقطة',c:[la,lo],note:kid(w,'desc')||kid(w,'cmt'),cat:CATS.includes(ty)?ty:'other'})}
+  const pts=(els)=>{const out=[];for(const e of els){const la=num(e.getAttribute('lat')),lo=num(e.getAttribute('lon'));if(!okC(la,lo)){bad++;continue}
+    const tm=Date.parse(kid(e,'time'));out.push({c:[la,lo],t:isFinite(tm)?tm:0,a:num(kid(e,'ele'))??undefined})}return out};
+  for(const tk of doc.getElementsByTagName('trk')){const segs=[];for(const sg of tk.getElementsByTagName('trkseg')){const g=pts(sg.getElementsByTagName('trkpt'));if(g.length)segs.push(g)}
+    if(segs.length)trips.push({name:kid(tk,'name')||'مسار مستورد',segs})}
+  for(const rt of doc.getElementsByTagName('rte')){const g=pts(rt.getElementsByTagName('rtept'));if(g.length)trips.push({name:kid(rt,'name')||'طريق مستورد',segs:[g]})}
+  return{points,trips,bad}}
 // CORE-END
 
 const $=id=>document.getElementById(id);
