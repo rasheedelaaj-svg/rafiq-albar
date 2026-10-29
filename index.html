@@ -214,7 +214,7 @@ video,audio{width:100%;border-radius:10px}
       <div class="big" id="ch-title">؟</div>
       <div class="num" style="font-size:2rem" id="ch-time">60</div>
     </div>
-    <div class="row" style="justify-content:center"><button class="primary" id="ch-start">ابدأ</button><button id="ch-ok" class="primary" hidden>عرفوه</button><button id="ch-skip" hidden>تخطي</button></div>
+    <div class="row" style="justify-content:center"><button class="primary" id="ch-start">اعرض الاسم</button><button class="primary" id="ch-go" hidden>ابدأ الوقت</button><button id="ch-ok" class="primary" hidden>عرفوه</button><button id="ch-skip" hidden>تخطي</button></div>
     <label class="row">وقت الدور <select id="ch-sec"><option>45</option><option selected>60</option><option>90</option></select> ثانية</label>
   </div>
 
@@ -539,15 +539,20 @@ const TITLES={'فيلم':['تايتنك','الأسد الملك','هاري بو�
  'مسلسل':['درب الزلق','طاش ما طاش','باب الحارة','شباب البومب','العاصوف','سيلفي','خيوط المعازيب','الهيبة','الزير سالم','التغريبة الفلسطينية','صراع العروش','بريكنج باد','لعبة الحبار','قيامة أرطغرل','أشياء غريبة','فريج','شعبية الكرتون','حريم السلطان','الفصول الأربعة','بيت بيوت'],
  'كرتون':['كابتن ماجد','جريندايزر','المحقق كونان','سبونج بوب','النمر المقنع','عدنان ولينا','توم وجيري','سالي','ريمي','بوكيمون','ون بيس','الكابتن رابح','السنافر','بباي','افتح يا سمسم']};
 const deck=()=>shuffle(Object.entries(TITLES).flatMap(([k,v])=>v.map(t=>[k,t])));
-let ch={deck:deck(),score:[0,0],team:0,left:0,timer:null,cur:null};
+// round: show name (timer idle) → start → pause/resume as needed → time up or new name
+let ch={deck:deck(),score:[0,0],team:0,left:0,timer:null,round:false};
 function chRender(){$('ch-s0').textContent=ch.score[0];$('ch-s1').textContent=ch.score[1];$('ch-turn').textContent='الدور على: '+(ch.team?'الفريق الثاني':'الفريق الأول');
-  const on=!!ch.timer;$('ch-start').hidden=on;$('ch-ok').hidden=$('ch-skip').hidden=!on;$('ch-time').textContent=ch.left||$('ch-sec').value}
-function chNext(){if(!ch.deck.length)ch.deck=deck();ch.cur=ch.deck.pop();$('ch-kind').textContent=ch.cur[0];$('ch-title').textContent=ch.cur[1]}
-function chEnd(){clearInterval(ch.timer);ch.timer=null;ch.left=0;$('ch-kind').textContent='خلص الوقت';$('ch-title').textContent='؟';ch.team=1-ch.team;
+  $('ch-start').hidden=ch.round;$('ch-go').hidden=$('ch-ok').hidden=$('ch-skip').hidden=!ch.round;
+  $('ch-go').textContent=ch.timer?'إيقاف مؤقت':ch.left<+$('ch-sec').value?'كمّل':'ابدأ الوقت';$('ch-time').textContent=ch.round?ch.left:$('ch-sec').value}
+function chNext(){if(!ch.deck.length)ch.deck=deck();const[k,t]=ch.deck.pop();$('ch-kind').textContent=k;$('ch-title').textContent=t}
+function chStop(){clearInterval(ch.timer);ch.timer=null}
+function chEnd(){chStop();ch.round=false;$('ch-kind').textContent='خلص الوقت';$('ch-title').textContent='؟';ch.team=1-ch.team;
   try{const a=new AudioContext(),o=a.createOscillator();o.frequency.value=440;o.connect(a.destination);o.start();o.stop(a.currentTime+.6)}catch{}chRender()}
-$('ch-start').onclick=()=>{ch.left=+$('ch-sec').value;chNext();ch.timer=setInterval(()=>{ch.left--;if(ch.left<=0)chEnd();else chRender()},1000);chRender()};
+$('ch-start').onclick=()=>{ch.round=true;ch.left=+$('ch-sec').value;chNext();chRender()};
+$('ch-go').onclick=()=>{if(ch.timer)chStop();else ch.timer=setInterval(()=>{ch.left--;if(ch.left<=0)chEnd();else chRender()},1000);chRender()};
 $('ch-ok').onclick=()=>{ch.score[ch.team]++;chNext();chRender()};
-$('ch-skip').onclick=()=>{chNext()};
+$('ch-skip').onclick=()=>chNext();
+$('ch-sec').onchange=chRender;
 chRender();
 
 // سين جيم: 6 فئات × 3 مستويات، كل خانة تسحب سؤال عشوائي من مجموعتها
