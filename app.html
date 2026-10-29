@@ -197,6 +197,11 @@ video,audio{width:100%;border-radius:10px}
     <span class="muted" id="m-status">الملفات تنحفظ داخل التطبيق وتشتغل بدون نت.</span>
   </div>
   <div class="card" id="player-card" hidden><b id="now-title"></b><div id="player"></div></div>
+  <div class="card" id="mushaf" hidden>
+    <div class="row" style="justify-content:space-between"><h2>القرآن كامل · سعد الغامدي</h2><button id="gmd-all" class="primary">نزّل الكل</button></div>
+    <span class="muted" id="gmd-status">يشتغل بالنت، وإذا نزلت السورة تشتغل بدون نت. القرآن كامل حوالي 1 جيجا.</span>
+    <ul class="list" id="gmd-list"></ul>
+  </div>
   <div class="card"><ul class="list" id="m-list"></ul></div>
 </section>
 
@@ -505,7 +510,30 @@ $('m-dl').onclick=async()=>{const u=$('m-url').value.trim();if(!u)return;$('m-st
   try{const r=await fetch(u);if(!r.ok)throw 0;const b=await r.blob();await addBlob(decodeURIComponent(u.split('/').pop().split('?')[0]).replace(/\.[^.]+$/,'')||'ملف',b);$('m-status').textContent='تم التحميل.';$('m-url').value='';renderMedia()}
   catch{$('m-status').textContent='ما قدرت أنزل من هالرابط. الموقع يمنع التحميل المباشر، نزّل الملف على جوالك وأضفه من زر الملفات.'}};
 let curUrl=null;
-async function renderMedia(){document.querySelectorAll('#cats .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.c===cat));
+/* ---------- full Quran, Saad Al-Ghamdi: stream, or download into IndexedDB for offline ---------- */
+const SURAHS='الفاتحة البقرة آل_عمران النساء المائدة الأنعام الأعراف الأنفال التوبة يونس هود يوسف الرعد إبراهيم الحجر النحل الإسراء الكهف مريم طه الأنبياء الحج المؤمنون النور الفرقان الشعراء النمل القصص العنكبوت الروم لقمان السجدة الأحزاب سبأ فاطر يس الصافات ص الزمر غافر فصلت الشورى الزخرف الدخان الجاثية الأحقاف محمد الفتح الحجرات ق الذاريات الطور النجم القمر الرحمن الواقعة الحديد المجادلة الحشر الممتحنة الصف الجمعة المنافقون التغابن الطلاق التحريم الملك القلم الحاقة المعارج نوح الجن المزمل المدثر القيامة الإنسان المرسلات النبأ النازعات عبس التكوير الانفطار المطففين الانشقاق البروج الطارق الأعلى الغاشية الفجر البلد الشمس الليل الضحى الشرح التين العلق القدر البينة الزلزلة العاديات القارعة التكاثر العصر الهمزة الفيل قريش الماعون الكوثر الكافرون النصر المسد الإخلاص الفلق الناس'.split(' ').map(n=>n.replace(/_/g,' '));
+// ponytail: two public mirrors, second used if the first fails; swap here if a host changes
+const gmdUrls=n=>{const f=String(n).padStart(3,'0');return[`https://server7.mp3quran.net/s_gmd/${f}.mp3`,`https://download.quranicaudio.com/quran/sa3d_al-ghaamidi/complete/${f}.mp3`]};
+const gmdItems=()=>SURAHS.map((n,i)=>({id:'gmd-'+(i+1),name:'سورة '+n,type:'audio/mpeg',urls:gmdUrls(i+1)}));
+let gmdHave=new Set();
+async function gmdFetch(it){for(const u of it.urls){try{const r=await fetch(u);if(r.ok){const b=await r.blob();await dbPut({id:it.id,cat:'gmd',name:it.name,type:'audio/mpeg',blob:b,added:Date.now()});gmdHave.add(it.id);return true}}catch{}}return false}
+async function renderMushaf(){$('mushaf').hidden=cat!=='quran';if(cat!=='quran')return;
+  gmdHave=new Set((await dbAll()).filter(r=>r.cat==='gmd').map(r=>r.id));const items=gmdItems();$('gmd-list').innerHTML='';
+  items.forEach((it,i)=>{const li=document.createElement('li'),has=gmdHave.has(it.id);
+    li.innerHTML=`<span class="grow"><span class="num muted">${i+1}</span> <b></b>${has?' <span class="muted">· محفوظة</span>':''}</span><button class="primary">تشغيل</button><button>${has?'حذف':'نزّل'}</button>`;
+    li.querySelector('b').textContent=it.name;const[pl,dl]=li.querySelectorAll('button');
+    pl.onclick=()=>playGmd(items,i);
+    dl.onclick=async()=>{if(has){await dbDel(it.id);return renderMushaf()}dl.disabled=true;dl.textContent='جاري…';if(!await gmdFetch(it)){dl.textContent='فشل';dl.disabled=false;return}renderMushaf()};
+    $('gmd-list').append(li)})}
+async function playGmd(items,i){const it=items[i],rec=gmdHave.has(it.id)?await dbGet(it.id):null;if(curUrl)URL.revokeObjectURL(curUrl);curUrl=null;
+  const el=document.createElement('audio');el.controls=true;el.autoplay=true;let k=0;
+  if(rec){curUrl=URL.createObjectURL(rec.blob);el.src=curUrl}else{el.src=it.urls[0];el.onerror=()=>{if(++k<it.urls.length)el.src=it.urls[k];else $('now-title').textContent='ما قدرت أشغل '+it.name+'. تأكد من النت.'}}
+  el.onended=()=>{if(items[i+1])playGmd(items,i+1)};$('player').replaceChildren(el);$('now-title').textContent=it.name+' · سعد الغامدي';$('player-card').hidden=false}
+$('gmd-all').onclick=async()=>{const b=$('gmd-all');if(b.dataset.busy){b.dataset.stop=1;return}b.dataset.busy=1;b.textContent='إيقاف';delete b.dataset.stop;
+  const todo=gmdItems().filter(it=>!gmdHave.has(it.id));let done=0,fail=0;
+  for(const it of todo){if(b.dataset.stop)break;$('gmd-status').textContent=`جاري التنزيل: ${it.name} (${done+1} من ${todo.length})`;if(await gmdFetch(it))done++;else fail++}
+  delete b.dataset.busy;b.textContent='نزّل الكل';$('gmd-status').textContent=`انتهى: نزلت ${done} سورة${fail?`، وفشلت ${fail} (جرب مرة ثانية)`:''}.`;renderMushaf()};
+async function renderMedia(){renderMushaf();document.querySelectorAll('#cats .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.c===cat));
   const items=(await dbAll()).filter(i=>i.cat===cat).sort((a,b)=>a.added-b.added);
   $('m-list').innerHTML=items.length?'':'<li class="muted">القسم فاضي. أضف ملفات من زر الإضافة.</li>';
   items.forEach((it,i)=>{const li=document.createElement('li');li.innerHTML='<span class="grow"></span><button class="primary">تشغيل</button><button>حذف</button>';li.firstChild.textContent=it.name;
