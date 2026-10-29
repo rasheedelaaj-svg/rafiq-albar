@@ -64,6 +64,13 @@ final class AdhanScheduler: NSObject, WKScriptMessageHandler, WKUIDelegate, CLLo
         }
     }
 
+    // Links to other sites (OsmAnd, YouTube, Google) open in their own app or Safari, not inside this web view.
+    func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
+                 for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+        if let url = navigationAction.request.url { UIApplication.shared.open(url) }
+        return nil
+    }
+
     // Without this WebKit silently denies the page's motion permission inside the app.
     func webView(_ webView: WKWebView, requestDeviceOrientationAndMotionPermissionFor origin: WKSecurityOrigin,
                  initiatedByFrame frame: WKFrameInfo, decisionHandler: @escaping (WKPermissionDecision) -> Void) {

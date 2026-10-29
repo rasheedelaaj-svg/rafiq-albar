@@ -211,6 +211,7 @@ svg.sky{display:block;width:100%;max-width:360px;margin:8px auto;background:#0b1
       <div class="num" id="sh-coord" style="font-size:.95rem"></div><span class="muted" id="sh-info"></span>
       <div id="sh-edit" class="row" hidden><input type="text" id="sh-ename"><button class="primary" id="sh-save">حفظ</button><button id="sh-del">حذف</button></div>
       <div class="acts"><button id="sh-fav"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg><span id="sh-favt"></span></button><button id="sh-share"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5M5 13v7h14v-7"/></svg><span>مشاركة</span></button><button id="sh-go"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l16-7-7 16-2-7z"/></svg><span id="sh-dist"></span></button><button id="sh-more"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg><span>إجراءات</span></button></div>
+      <a class="btn" id="sh-osm" target="_blank" rel="noopener">افتح في OsmAnd وتوجّه</a>
       <div class="fmt" id="sh-fmts" hidden></div>
       <div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding-top:10px"><button id="sh-details" class="link">تفاصيل</button><button id="sh-nav" class="link" style="font-weight:700">الملاحة ↩</button></div>
     </div>
@@ -400,7 +401,7 @@ svg.sky{display:block;width:100%;max-width:360px;margin:8px auto;background:#0b1
 <nav class="tabs" id="tabs"></nav>
 
 <script>
-const APP_VER='23'; // keep in step with V in sw.js
+const APP_VER='24'; // keep in step with V in sw.js
 // CORE-START (pure functions, tested in check.js)
 const R=Math.PI/180,KAABA=[21.4225,39.8262];
 const sin=d=>Math.sin(d*R),cos=d=>Math.cos(d*R),tan=d=>Math.tan(d*R),asin=x=>Math.asin(x)/R,acos=x=>Math.acos(Math.max(-1,Math.min(1,x)))/R,atan2=(y,x)=>Math.atan2(y,x)/R;
@@ -647,7 +648,8 @@ function drawWps(){if(!wpLayer)return;wpLayer.clearLayers();wps.forEach((w,i)=>l
 
 /* bottom sheet for a tapped place, like OsmAnd's context menu */
 let sheet=null;
-function openSheet(it){sheet=it;$('searchp').hidden=true;$('sheet').hidden=false;$('sh-edit').hidden=true;$('sh-fmts').hidden=true;
+const osmLink=c=>`https://osmand.net/go?lat=${c[0].toFixed(6)}&lon=${c[1].toFixed(6)}&z=15`;
+function openSheet(it){sheet=it;$('sh-osm').href=osmLink(it.c);$('searchp').hidden=true;$('sheet').hidden=false;$('sh-edit').hidden=true;$('sh-fmts').hidden=true;
   $('sh-name').textContent=it.n||'بدون اسم';$('sh-folder').textContent=it.kind==='wp'?'★ المفضلة':it.kind==='place'?'أماكن مستوردة':'';
   const f=formats(it.c);$('sh-coord').textContent=f[1][1];
   $('sh-info').textContent=pos?`${dirName(bearing(pos,it.c))} · ${Math.round(bearing(pos,it.c))}°`:'';$('sh-dist').textContent=pos?fmtDist(distance(pos,it.c)):'توجه';
