@@ -1,0 +1,433 @@
+<title>رفيق البر</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1d1a16">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* layout: one-screen app, content above a fixed bottom tab bar; night-desert first */
+:root{
+  --bg:#f3ece0;--surface:#fffaf2;--fg:#2a2118;--muted:#7a6a58;--line:#e2d6c3;
+  --accent:#b8561f;--accent-fg:#fff;--good:#2f7d4f;--qibla:#1e6b5c;
+  --display:"Reem Kufi","IBM Plex Sans Arabic",system-ui,sans-serif;
+  --body:"IBM Plex Sans Arabic",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#17140f;--surface:#221d17;--fg:#efe5d4;--muted:#a8977f;--line:#3a3128;
+  --accent:#e0823f;--accent-fg:#1a120a;--good:#5fbf86;--qibla:#4fc2a8;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#17140f;--surface:#221d17;--fg:#efe5d4;--muted:#a8977f;--line:#3a3128;
+  --accent:#e0823f;--accent-fg:#1a120a;--good:#5fbf86;--qibla:#4fc2a8;color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font:15px/1.6 var(--body);direction:rtl;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 96px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;font-weight:700}
+h1{font-size:1.5rem}h2{font-size:1.15rem}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
+.muted{color:var(--muted);font-size:.85rem}
+section{display:flex;flex-direction:column;gap:14px;max-width:560px;margin-inline:auto}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+button,.btn{font:inherit;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:10px;padding:8px 12px;cursor:pointer}
+button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input,select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+input[type=text]{flex:1}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(6,1fr);background:var(--surface);border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);z-index:5}
+nav.tabs button{border:0;border-radius:0;background:none;padding:8px 2px 10px;font-size:.75rem;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted)}
+nav.tabs button svg{width:22px;height:22px}
+nav.tabs button[aria-selected=true]{color:var(--accent)}
+.big{font-family:var(--display);font-size:2.4rem;line-height:1.1}
+.times{display:grid;grid-template-columns:1fr auto;gap:0}
+.times div{padding:9px 4px;border-bottom:1px solid var(--line)}
+.times .now{color:var(--accent);font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{display:flex;flex-direction:column}
+.stat b{font-family:var(--mono);font-size:1.5rem;font-variant-numeric:tabular-nums;direction:ltr;text-align:right}
+.dial{position:relative;width:min(78vw,300px);aspect-ratio:1;max-width:100%;margin-inline:auto}
+.dial svg{width:100%;height:100%;display:block}
+.fmt{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center}
+.fmt span:nth-child(3n+2){overflow-wrap:anywhere}
+ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+ul.list li{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+ul.list li .grow{flex:1;min-width:0;overflow-wrap:anywhere}
+.chip[aria-pressed=true]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+details.riddle{border-bottom:1px solid var(--line);padding:10px 0}
+details.riddle summary{cursor:pointer;font-weight:600}
+details.riddle p{margin:6px 0 0;color:var(--accent);font-family:var(--display);font-size:1.1rem}
+.recipe .plate{font-size:2.6rem;width:72px;height:72px;border-radius:50%;background:var(--bg);display:grid;place-items:center;flex:none}
+.recipe ol,.recipe ul{margin:0;padding-inline-start:20px}
+.recipe h3{font-size:1.05rem}
+video,audio{width:100%;border-radius:10px}
+.warn{color:var(--accent);font-size:.85rem}
+@media (prefers-reduced-motion:no-preference){.rot{transition:transform .25s linear}}
+</style>
+
+<section id="v-prayer">
+  <div class="row" style="justify-content:space-between">
+    <h1>مواقيت الصلاة</h1><span class="muted" id="hijri"></span>
+  </div>
+  <div class="card">
+    <span class="muted" id="next-label">الصلاة القادمة</span>
+    <div class="big" id="next-name">—</div>
+    <div class="num" style="font-size:1.4rem" id="next-count">--:--:--</div>
+    <span class="muted" id="loc-line">جاري تحديد الموقع…</span>
+  </div>
+  <div class="card"><div class="times" id="times"></div></div>
+  <div class="card">
+    <h2>الإعدادات</h2>
+    <label class="row">طريقة الحساب
+      <select id="method">
+        <option value="umm">أم القرى (السعودية)</option>
+        <option value="uae">الإمارات</option>
+        <option value="kuwait">الكويت</option>
+        <option value="mwl">رابطة العالم الإسلامي</option>
+        <option value="egypt">الهيئة المصرية</option>
+      </select></label>
+    <label class="row">العصر
+      <select id="asr"><option value="1">الجمهور (الشافعي)</option><option value="2">الحنفي</option></select></label>
+    <label class="row"><input type="checkbox" id="adhan-on"> تشغيل الأذان وقت الصلاة</label>
+    <div class="row">
+      <label class="btn">اختر صوت الأذان<input type="file" id="adhan-file" accept="audio/*" hidden></label>
+      <button id="adhan-test">تجربة</button><button id="adhan-stop">إيقاف</button>
+    </div>
+    <span class="muted" id="adhan-name">الصوت الحالي: نغمة تنبيه (أضف ملف أذان من جوالك)</span>
+    <span class="muted">الأذان يشتغل والتطبيق مفتوح. خل الشاشة شغالة أو التطبيق ظاهر وقت الصلاة.</span>
+  </div>
+  <div class="card">
+    <h2>موقع يدوي</h2>
+    <span class="muted">إذا ما اشتغل الـ GPS، الصق إحداثيات أو رابط قوقل ماب.</span>
+    <div class="row"><input type="text" id="manual-loc" placeholder="24.4539, 54.3773"><button id="manual-set">اعتمد</button><button id="gps-back">رجوع للـ GPS</button></div>
+  </div>
+</section>
+
+<section id="v-nav" hidden>
+  <h1>الملاحة</h1>
+  <div class="card">
+    <div class="row" style="justify-content:space-between"><span>الهدف: <b id="target-name">لم تختر هدف</b></span><span class="muted" id="gps-acc"></span></div>
+    <div class="dial">
+      <svg viewBox="-100 -100 200 200" aria-label="سهم الاتجاه للهدف">
+        <circle r="96" fill="none" stroke="var(--line)" stroke-width="2"/>
+        <g id="nav-ring" class="rot"></g>
+        <g id="nav-arrow" class="rot"><path d="M0,-78 L22,20 L0,6 L-22,20 Z" fill="var(--accent)"/></g>
+      </svg>
+    </div>
+    <div class="grid2">
+      <div class="stat"><span class="muted">المسافة</span><b id="n-dist">—</b></div>
+      <div class="stat"><span class="muted">السرعة كم/س</span><b id="n-speed">—</b></div>
+      <div class="stat"><span class="muted">اتجاه الهدف</span><b id="n-bear">—</b></div>
+      <div class="stat"><span class="muted">اتجاه سيرك</span><b id="n-head">—</b></div>
+      <div class="stat"><span class="muted">الوقت المتوقع</span><b id="n-eta">—</b></div>
+      <div class="stat"><span class="muted">الارتفاع م</span><b id="n-alt">—</b></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>موقعي الحالي</h2>
+    <div class="fmt" id="fmts"></div>
+    <button id="save-here" class="primary">احفظ موقعي كنقطة</button>
+  </div>
+  <div class="card">
+    <h2>إضافة نقطة</h2>
+    <span class="muted">يقبل: عشري، درجات ودقائق وثواني، درجات ودقائق، UTM، أو رابط قوقل ماب.</span>
+    <input type="text" id="wp-name" placeholder="اسم النقطة (مثلاً: المخيم)">
+    <div class="row"><input type="text" id="wp-coord" placeholder="24°28'12&quot;N 54°22'30&quot;E"><button id="wp-add" class="primary">أضف</button></div>
+    <span class="warn" id="wp-err" hidden></span>
+  </div>
+  <div class="card"><h2>النقاط المحفوظة</h2><ul class="list" id="wps"></ul></div>
+</section>
+
+<section id="v-compass" hidden>
+  <h1>البوصلة والقبلة</h1>
+  <div class="card">
+    <div class="dial">
+      <svg viewBox="-100 -100 200 200" aria-label="البوصلة">
+        <g id="rose" class="rot"></g>
+        <path d="M0,-99 L7,-84 L-7,-84 Z" fill="var(--accent)"/>
+      </svg>
+    </div>
+    <div class="row" style="justify-content:space-between">
+      <div class="stat"><span class="muted">الاتجاه</span><b id="c-head">—</b></div>
+      <div class="big" id="c-name" style="font-size:1.6rem">—</div>
+    </div>
+    <div class="row" style="justify-content:space-between">
+      <span>القبلة: <b class="num" id="c-qibla">—</b></span><span class="muted" id="c-mecca"></span>
+    </div>
+    <span class="muted" id="c-hint">العلامة الخضراء على القرص هي القبلة. لف الجوال حتى تصير تحت السهم البرتقالي.</span>
+    <button id="c-start" class="primary">تشغيل البوصلة</button>
+    <label class="row">تصحيح البوصلة <input type="number" id="c-offset" step="1" value="0" style="width:80px"> درجة</label>
+    <span class="muted">أبعد الجوال عن الحديد والسيارة، وحرك الجوال على شكل رقم 8 للمعايرة.</span>
+  </div>
+</section>
+
+<section id="v-media" hidden>
+  <h1>الصوتيات والفيديو</h1>
+  <div class="row" id="cats"></div>
+  <div class="card">
+    <div class="row">
+      <label class="btn" style="background:var(--accent);color:var(--accent-fg);border-color:var(--accent)">أضف ملفات من الجوال<input type="file" id="m-files" accept="audio/*,video/*" multiple hidden></label>
+    </div>
+    <div class="row"><input type="text" id="m-url" placeholder="أو الصق رابط ملف للتحميل"><button id="m-dl">نزّل</button></div>
+    <span class="muted" id="m-status">الملفات تنحفظ داخل التطبيق وتشتغل بدون نت.</span>
+  </div>
+  <div class="card" id="player-card" hidden><b id="now-title"></b><div id="player"></div></div>
+  <div class="card"><ul class="list" id="m-list"></ul></div>
+</section>
+
+<section id="v-fun" hidden>
+  <h1>ألغاز البر</h1>
+  <button id="r-random" class="primary">لغز عشوائي</button>
+  <div class="card" id="r-one" hidden></div>
+  <div class="card" id="riddles"></div>
+</section>
+
+<section id="v-food" hidden>
+  <h1>طبخات البر</h1>
+  <span class="muted">المقادير لأربعة أشخاص تقريباً.</span>
+  <div id="recipes" style="display:flex;flex-direction:column;gap:14px"></div>
+</section>
+
+<nav class="tabs" id="tabs"></nav>
+
+<script>
+// CORE-START (pure functions, tested in check.js)
+const R=Math.PI/180,KAABA=[21.4225,39.8262];
+const sin=d=>Math.sin(d*R),cos=d=>Math.cos(d*R),tan=d=>Math.tan(d*R),asin=x=>Math.asin(x)/R,acos=x=>Math.acos(Math.max(-1,Math.min(1,x)))/R,atan2=(y,x)=>Math.atan2(y,x)/R;
+const fix=(a,b)=>((a%b)+b)%b;
+function julian(y,m,d){if(m<=2){y--;m+=12}const A=Math.floor(y/100),B=2-A+Math.floor(A/4);return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+B-1524.5}
+function sunPos(jd){const D=jd-2451545,g=fix(357.529+.98560028*D,360),q=fix(280.459+.98564736*D,360),L=fix(q+1.915*sin(g)+.02*sin(2*g),360),e=23.439-3.6e-7*D,RA=fix(atan2(cos(e)*sin(L),cos(L))/15,24);let eqt=q/15-RA;if(eqt>12)eqt-=24;if(eqt<-12)eqt+=24;return{decl:asin(sin(e)*sin(L)),eqt}}
+const METHODS={umm:{fajr:18.5,ishaMin:90},uae:{fajr:18.2,isha:18.2},kuwait:{fajr:18,isha:17.5},mwl:{fajr:18,isha:17},egypt:{fajr:19.5,isha:17.5}};
+// returns local-clock hours for the given date; tz = hours east of UTC
+function prayerTimes(y,m,d,lat,lng,tz,method='umm',asrFactor=1){
+  const M=METHODS[method],s=sunPos(julian(y,m,d)+.5-lng/360),noon=12+tz-lng/15-s.eqt;
+  const T=(a,before)=>{const t=acos((-sin(a)-sin(s.decl)*sin(lat))/(cos(s.decl)*cos(lat)))/15;return noon+(before?-t:t)};
+  const sunset=T(.833);
+  return{fajr:T(M.fajr,1),sunrise:T(.833,1),dhuhr:noon+1/60,asr:T(-Math.atan(1/(asrFactor+tan(Math.abs(lat-s.decl))))/R),maghrib:sunset,isha:M.ishaMin?sunset+M.ishaMin/60:T(M.isha)}
+}
+function bearing(a,b){const[l1,o1]=a,[l2,o2]=b,dl=o2-o1;return fix(atan2(sin(dl)*cos(l2),cos(l1)*sin(l2)-sin(l1)*cos(l2)*cos(dl)),360)}
+function distance(a,b){const[l1,o1]=a,[l2,o2]=b,h=sin((l2-l1)/2)**2+cos(l1)*cos(l2)*sin((o2-o1)/2)**2;return 2*6371008.8*Math.asin(Math.sqrt(h))}
+const WGS={a:6378137,f:1/298.257223563,k0:.9996};
+function toUTM(lat,lon){const{a,f,k0}=WGS,e2=f*(2-f),ep=e2/(1-e2),zone=Math.floor((lon+180)/6)+1,lon0=(zone-1)*6-177,p=lat*R,N=a/Math.sqrt(1-e2*Math.sin(p)**2),T=Math.tan(p)**2,C=ep*Math.cos(p)**2,A=Math.cos(p)*(lon-lon0)*R,
+  Mm=a*((1-e2/4-3*e2**2/64-5*e2**3/256)*p-(3*e2/8+3*e2**2/32+45*e2**3/1024)*Math.sin(2*p)+(15*e2**2/256+45*e2**3/1024)*Math.sin(4*p)-35*e2**3/3072*Math.sin(6*p));
+  const x=k0*N*(A+(1-T+C)*A**3/6+(5-18*T+T*T+72*C-58*ep)*A**5/120)+5e5;
+  let y=k0*(Mm+N*Math.tan(p)*(A*A/2+(5-T+9*C+4*C*C)*A**4/24+(61-58*T+T*T+600*C-330*ep)*A**6/720));if(lat<0)y+=1e7;
+  return{zone,band:"CDEFGHJKLMNPQRSTUVWXX"[Math.max(0,Math.min(20,Math.floor((lat+80)/8)))],x,y}}
+function fromUTM(zone,south,x,y){const{a,f,k0}=WGS,e2=f*(2-f),ep=e2/(1-e2),e1=(1-Math.sqrt(1-e2))/(1+Math.sqrt(1-e2));x-=5e5;if(south)y-=1e7;
+  const mu=y/k0/(a*(1-e2/4-3*e2**2/64-5*e2**3/256)),p=mu+(3*e1/2-27*e1**3/32)*Math.sin(2*mu)+(21*e1**2/16-55*e1**4/32)*Math.sin(4*mu)+151*e1**3/96*Math.sin(6*mu)+1097*e1**4/512*Math.sin(8*mu),
+  N=a/Math.sqrt(1-e2*Math.sin(p)**2),T=Math.tan(p)**2,C=ep*Math.cos(p)**2,Rr=a*(1-e2)/(1-e2*Math.sin(p)**2)**1.5,D=x/(N*k0);
+  const lat=p-(N*Math.tan(p)/Rr)*(D*D/2-(5+3*T+10*C-4*C*C-9*ep)*D**4/24+(61+90*T+298*C+45*T*T-252*ep-3*C*C)*D**6/720),
+  lon=(D-(1+2*T+C)*D**3/6+(5-2*C+28*T-3*C*C+8*ep+24*T*T)*D**5/120)/Math.cos(p);
+  return[lat/R,(zone-1)*6-177+lon/R]}
+// accepts decimal, DMS, DDM, UTM, Google Maps links; Arabic digits and ش/ج/ق/غ hemispheres
+function parseCoord(s){
+  s=String(s).trim().replace(/[٠-٩]/g,c=>'٠١٢٣٤٥٦٧٨٩'.indexOf(c)).replace(/٫/g,'.').replace(/،/g,',').replace(/ش/g,'N').replace(/ج/g,'S').replace(/ق/g,'E').replace(/غ/g,'W');
+  const ok=c=>c&&isFinite(c[0])&&isFinite(c[1])&&Math.abs(c[0])<=90&&Math.abs(c[1])<=180?c:null;
+  let m=s.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/)||s.match(/[?&](?:q|ll|query|destination|daddr)=(-?\d+\.?\d*)\s*(?:,|%2C)\s*(-?\d+\.?\d*)/i);
+  if(m)return ok([+m[1],+m[2]]);
+  m=s.match(/^(\d{1,2})\s*([C-HJ-NP-X])\s+(\d+(?:\.\d+)?)\s*m?\s*E?\s*[, ]\s*(\d+(?:\.\d+)?)\s*m?\s*N?$/i);
+  if(m)return ok(fromUTM(+m[1],m[2].toUpperCase()<'N',+m[3],+m[4]));
+  const nums=(s.match(/-?\d+(?:\.\d+)?/g)||[]).map(Number),hs=s.toUpperCase().match(/(?<![A-Z])[NSEW](?![A-Z])/g)||[],k=nums.length/2;
+  if(![1,2,3].includes(k))return null;
+  const dm=a=>(String(a[0]).startsWith('-')?-1:1)*(Math.abs(a[0])+(a[1]||0)/60+(a[2]||0)/3600);
+  const c=[dm(nums.slice(0,k)),dm(nums.slice(k))];
+  if(hs[0]==='E'||hs[0]==='W'){c.reverse();hs.reverse()}
+  hs.slice(0,2).forEach((h,i)=>{if(h==='S'||h==='W')c[i]=-Math.abs(c[i])});
+  return ok(c)}
+function fmtDMS(v,pos,neg){const h=v<0?neg:pos;v=Math.abs(v);const d=Math.floor(v),mf=(v-d)*60,mi=Math.floor(mf),s=(mf-mi)*60;return`${d}°${String(mi).padStart(2,'0')}'${s.toFixed(1).padStart(4,'0')}"${h}`}
+function fmtDDM(v,pos,neg){const h=v<0?neg:pos;v=Math.abs(v);const d=Math.floor(v);return`${d}°${((v-d)*60).toFixed(3).padStart(6,'0')}'${h}`}
+function formats([lat,lng]){const u=toUTM(lat,lng);return[
+  ['عشري',`${lat.toFixed(6)}, ${lng.toFixed(6)}`],
+  ['درجات دقائق ثواني',`${fmtDMS(lat,'N','S')} ${fmtDMS(lng,'E','W')}`],
+  ['درجات ودقائق',`${fmtDDM(lat,'N','S')} ${fmtDDM(lng,'E','W')}`],
+  ['UTM',`${u.zone}${u.band} ${Math.round(u.x)} ${Math.round(u.y)}`],
+  ['قوقل ماب',`https://maps.google.com/?q=${lat.toFixed(6)},${lng.toFixed(6)}`]]}
+const DIRS=['شمال','شمال شمال شرق','شمال شرق','شرق شمال شرق','شرق','شرق جنوب شرق','جنوب شرق','جنوب جنوب شرق','جنوب','جنوب جنوب غرب','جنوب غرب','غرب جنوب غرب','غرب','غرب شمال غرب','شمال غرب','شمال شمال غرب'];
+const dirName=deg=>DIRS[Math.round(fix(deg,360)/22.5)%16];
+// CORE-END
+
+const $=id=>document.getElementById(id);
+const store={get(k,d){try{const v=localStorage.getItem('barr.'+k);return v==null?d:JSON.parse(v)}catch{return d}},set(k,v){try{localStorage.setItem('barr.'+k,JSON.stringify(v))}catch{}}};
+const fmtDist=m=>m<1000?`${Math.round(m)} م`:`${(m/1000).toFixed(m<10000?2:1)} كم`;
+const copy=(t,btn)=>{const done=()=>{btn.textContent='تم';setTimeout(()=>btn.textContent='نسخ',1200)};try{navigator.clipboard.writeText(t).then(done,()=>{})}catch{}};
+
+/* ---------- tabs ---------- */
+const ICONS={
+  prayer:'<path d="M12 3c-3 2-5 4-5 7v9h10v-9c0-3-2-5-5-7zM5 21h14M12 3V1"/>',
+  nav:'<path d="M12 2l7 19-7-4-7 4z"/>',
+  compass:'<circle cx="12" cy="12" r="9"/><path d="M15 9l-2 5-4 1 2-5z"/>',
+  media:'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
+  fun:'<path d="M9 9a3 3 0 1 1 4 2.8c-.7.3-1 1-1 1.7V15M12 19h.01"/>',
+  food:'<path d="M4 11h16a8 8 0 0 1-16 0zM8 7c0-1 1-1 1-2M12 7c0-1 1-1 1-2M16 7c0-1 1-1 1-2"/>'};
+const TABS=[['prayer','الصلاة'],['nav','الملاحة'],['compass','البوصلة'],['media','الصوتيات'],['fun','الألغاز'],['food','الطبخ']];
+function show(t){TABS.forEach(([k])=>{$('v-'+k).hidden=k!==t;$('t-'+k).setAttribute('aria-selected',k===t)});store.set('tab',t);if(t==='nav')wake()}
+$('tabs').innerHTML=TABS.map(([k,l])=>`<button id="t-${k}" role="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>${l}</button>`).join('');
+TABS.forEach(([k])=>$('t-'+k).onclick=()=>show(k));
+let lock=null;async function wake(){try{lock=await navigator.wakeLock?.request('screen')}catch{}}
+
+/* ---------- location ---------- */
+let pos=store.get('manual',null),gps=null,manual=!!pos;
+function onPos(p){gps=p.coords;if(!manual)pos=[gps.latitude,gps.longitude];store.set('last',pos);refresh()}
+function startGPS(){if(!navigator.geolocation){$('loc-line').textContent='الجهاز ما يدعم تحديد الموقع';return}
+  navigator.geolocation.watchPosition(onPos,e=>{$('loc-line').textContent='ما قدرت آخذ الموقع من الـ GPS. استخدم الموقع اليدوي تحت.';if(!pos){pos=store.get('last',null);refresh()}},{enableHighAccuracy:true,maximumAge:2000,timeout:20000})}
+$('manual-set').onclick=()=>{const c=parseCoord($('manual-loc').value);if(!c){$('manual-loc').setCustomValidity('صيغة غير مفهومة');$('manual-loc').reportValidity();return}$('manual-loc').setCustomValidity('');manual=true;pos=c;store.set('manual',c);refresh()};
+$('gps-back').onclick=()=>{manual=false;store.set('manual',null);if(gps)pos=[gps.latitude,gps.longitude];refresh()};
+
+/* ---------- prayer ---------- */
+const PN={fajr:'الفجر',sunrise:'الشروق',dhuhr:'الظهر',asr:'العصر',maghrib:'المغرب',isha:'العشاء'};
+const settings={method:store.get('method','umm'),asr:store.get('asr','1'),adhan:store.get('adhan',true)};
+$('method').value=settings.method;$('asr').value=settings.asr;$('adhan-on').checked=settings.adhan;
+$('method').onchange=e=>{store.set('method',e.target.value);settings.method=e.target.value;refresh()};
+$('asr').onchange=e=>{store.set('asr',e.target.value);settings.asr=e.target.value;refresh()};
+$('adhan-on').onchange=e=>{store.set('adhan',e.target.checked);settings.adhan=e.target.checked;try{Notification.requestPermission()}catch{}};
+function dayTimes(date){if(!pos)return null;const t=prayerTimes(date.getFullYear(),date.getMonth()+1,date.getDate(),pos[0],pos[1],-date.getTimezoneOffset()/60,settings.method,+settings.asr);
+  const o={};for(const k in t){const d=new Date(date);d.setHours(0,0,0,0);d.setTime(d.getTime()+Math.round(t[k]*60)*60000);o[k]=d}return o}
+const clock=d=>d.toLocaleTimeString('ar',{hour:'numeric',minute:'2-digit',numberingSystem:'latn'});
+let today=null,lastFired=store.get('fired','');
+function nextPrayer(now){const t=dayTimes(now),tm=dayTimes(new Date(now.getTime()+864e5));for(const k of['fajr','dhuhr','asr','maghrib','isha'])if(t[k]>now)return[k,t[k]];return['fajr',tm.fajr]}
+function renderPrayer(){
+  try{$('hijri').textContent=new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric'}).format(new Date())}catch{}
+  if(!pos)return;const now=new Date();today=dayTimes(now);const[nk,nt]=nextPrayer(now);
+  $('times').innerHTML=Object.keys(PN).map(k=>`<div class="${k===nk?'now':''}">${PN[k]}</div><div class="num ${k===nk?'now':''}">${clock(today[k])}</div>`).join('');
+  $('next-name').textContent=PN[nk];
+  $('loc-line').textContent=(manual?'موقع يدوي: ':'حسب موقعك: ')+pos.map(v=>v.toFixed(4)).join(', ');
+}
+function tick(){if(!pos)return;const now=new Date(),[nk,nt]=nextPrayer(now),s=Math.max(0,Math.round((nt-now)/1000));
+  $('next-count').textContent=[s/3600|0,(s/60|0)%60,s%60].map(n=>String(n).padStart(2,'0')).join(':');
+  if(today&&settings.adhan)for(const k of['fajr','dhuhr','asr','maghrib','isha']){const t=today[k],key=k+t.toDateString();
+    if(now>=t&&now-t<60000&&lastFired!==key){lastFired=key;store.set('fired',key);playAdhan(PN[k]);}}
+  if(today&&now.getDate()!==today.fajr.getDate())renderPrayer();}
+setInterval(tick,1000);
+
+/* adhan sound: user file in IndexedDB, else a tone */
+let adhanEl=null,toneCtx=null;
+async function playAdhan(name){stopAdhan();
+  try{new Notification('حان وقت '+(name||'الصلاة'))}catch{}
+  const rec=await dbGet('adhan');
+  if(rec){adhanEl=new Audio(URL.createObjectURL(rec.blob));adhanEl.play().catch(()=>{});return}
+  try{toneCtx=new AudioContext();[0,.6,1.2].forEach(t=>{const o=toneCtx.createOscillator(),g=toneCtx.createGain();o.frequency.value=660;g.gain.setValueAtTime(.3,toneCtx.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,toneCtx.currentTime+t+.5);o.connect(g).connect(toneCtx.destination);o.start(toneCtx.currentTime+t);o.stop(toneCtx.currentTime+t+.5)})}catch{}}
+function stopAdhan(){adhanEl?.pause();adhanEl=null;try{toneCtx?.close()}catch{}toneCtx=null}
+$('adhan-test').onclick=()=>playAdhan();$('adhan-stop').onclick=stopAdhan;
+$('adhan-file').onchange=async e=>{const f=e.target.files[0];if(!f)return;await dbPut({id:'adhan',cat:'_',name:f.name,type:f.type,blob:f});showAdhanName()};
+async function showAdhanName(){const r=await dbGet('adhan');if(r)$('adhan-name').textContent='الصوت الحالي: '+r.name}
+
+/* ---------- compass ---------- */
+let heading=null,offset=store.get('offset',0);$('c-offset').value=offset;
+$('c-offset').oninput=e=>{offset=+e.target.value||0;store.set('offset',offset)};
+const ROSE_AR=['ش','ق','ج','غ'];
+(function drawRose(){let h='<circle r="96" fill="var(--surface)" stroke="var(--line)" stroke-width="2"/>';
+  for(let d=0;d<360;d+=5){const L=d%30?4:9;h+=`<line x1="0" y1="-96" x2="0" y2="${-96+L}" stroke="var(--muted)" stroke-width="${d%90?1:2}" transform="rotate(${d})"/>`}
+  for(let i=0;i<8;i++){const d=i*45,main=i%2===0,lab=main?ROSE_AR[i/2]:['شق','جق','جغ','شغ'][(i-1)/2];
+    h+=`<text transform="rotate(${d}) translate(0,-72) rotate(${-d})" text-anchor="middle" dominant-baseline="middle" font-size="${main?16:10}" fill="${i===0?'var(--accent)':'var(--fg)'}" font-family="var(--display)">${lab}</text>`}
+  for(let d=30;d<360;d+=30)if(d%90)h+=`<text transform="rotate(${d}) translate(0,-84) rotate(${-d})" text-anchor="middle" dominant-baseline="middle" font-size="7" fill="var(--muted)">${d}</text>`;
+  h+='<g id="qibla-mark"><path d="M0,-58 L6,-44 L-6,-44 Z" fill="var(--qibla)"/><rect x="-5" y="-40" width="10" height="10" fill="var(--qibla)"/><line x1="0" y1="-30" x2="0" y2="0" stroke="var(--qibla)" stroke-width="2" stroke-dasharray="3 3"/></g><circle r="3" fill="var(--fg)"/>';
+  $('rose').innerHTML=h;
+  let r='';for(const[d,l]of[[0,'ش'],[90,'ق'],[180,'ج'],[270,'غ']])r+=`<text transform="rotate(${d}) translate(0,-86) rotate(${-d})" text-anchor="middle" dominant-baseline="middle" font-size="12" fill="${d?'var(--muted)':'var(--accent)'}">${l}</text>`;
+  $('nav-ring').innerHTML=r})();
+let smooth=null;
+function onOri(e){let h=e.webkitCompassHeading!=null?e.webkitCompassHeading:(e.absolute||e.type==='deviceorientationabsolute')&&e.alpha!=null?360-e.alpha:null;
+  if(h==null)return;h=fix(h+(screen.orientation?.angle||0)+offset,360);
+  smooth=smooth==null?h:fix(smooth+((h-smooth+540)%360-180)*.25,360);heading=smooth;$('c-hint').hidden=false;renderCompass();renderNav()}
+let oriOn=false;
+async function startCompass(){if(oriOn)return;try{if(typeof DeviceOrientationEvent!=='undefined'&&DeviceOrientationEvent.requestPermission){if(await DeviceOrientationEvent.requestPermission()!=='granted')throw 0}}catch{$('c-head').textContent='مرفوض';return}
+  oriOn=true;$('c-start').hidden=true;addEventListener('deviceorientationabsolute',onOri);addEventListener('deviceorientation',onOri);
+  setTimeout(()=>{if(heading==null){$('c-start').hidden=false;$('c-start').textContent='ما وصلت قراءة. حاول مرة ثانية';oriOn=false}},3000)}
+$('c-start').onclick=startCompass;
+// Android grants without a prompt; iOS needs the button
+if(!(typeof DeviceOrientationEvent!=='undefined'&&DeviceOrientationEvent.requestPermission))startCompass();
+function renderCompass(){
+  if(pos){const q=bearing(pos,KAABA);$('c-qibla').textContent=q.toFixed(1)+'°';$('c-mecca').textContent='مكة على بعد '+fmtDist(distance(pos,KAABA));$('qibla-mark').setAttribute('transform',`rotate(${q})`)}
+  if(heading==null)return;$('rose').setAttribute('transform',`rotate(${-heading})`);$('c-head').textContent=Math.round(heading)+'°';$('c-name').textContent=dirName(heading)}
+
+/* ---------- navigator ---------- */
+let wps=store.get('wps',[]),target=store.get('target',null);
+function renderWps(){$('wps').innerHTML=wps.length?'':'<li class="muted">ما فيه نقاط. أضف نقطة أو احفظ موقعك.</li>';
+  wps.forEach((w,i)=>{const li=document.createElement('li');li.innerHTML=`<span class="grow"><b></b><br><span class="num muted">${w.c[0].toFixed(5)}, ${w.c[1].toFixed(5)}</span>${pos?` <span class="muted">· ${fmtDist(distance(pos,w.c))}</span>`:''}</span><button>${target===i?'الهدف':'توجه'}</button><button aria-label="حذف">حذف</button>`;
+    li.querySelector('b').textContent=w.n;const[go,del]=li.querySelectorAll('button');if(target===i)go.className='primary';
+    go.onclick=()=>{target=i;store.set('target',i);renderNav();renderWps()};
+    del.onclick=()=>{if(del.dataset.sure){wps.splice(i,1);if(target===i)target=null;else if(target>i)target--;store.set('wps',wps);store.set('target',target);renderWps();renderNav()}else{del.dataset.sure=1;del.textContent='متأكد؟'}};
+    $('wps').append(li)})}
+$('wp-add').onclick=()=>{const c=parseCoord($('wp-coord').value),err=$('wp-err');
+  if(!c){err.hidden=false;err.textContent='ما فهمت الإحداثيات. جرب مثلاً: 24.4539, 54.3773 أو 40R 234567 2712345';return}
+  err.hidden=true;wps.push({n:$('wp-name').value.trim()||'نقطة '+(wps.length+1),c});target=wps.length-1;store.set('wps',wps);store.set('target',target);$('wp-coord').value=$('wp-name').value='';renderWps();renderNav()};
+$('save-here').onclick=()=>{if(!pos)return;wps.push({n:'موقعي '+new Date().toLocaleString('ar',{numberingSystem:'latn',dateStyle:'short',timeStyle:'short'}),c:[...pos]});store.set('wps',wps);renderWps()};
+function renderNav(){
+  const sp=gps?.speed,moving=sp!=null&&sp>1.5,course=moving&&gps.heading!=null&&!isNaN(gps.heading)?gps.heading:heading;
+  $('n-speed').textContent=sp!=null?(sp*3.6).toFixed(1):'—';
+  $('n-head').textContent=course!=null?Math.round(course)+'° '+dirName(course):'—';
+  $('n-alt').textContent=gps?.altitude!=null?Math.round(gps.altitude):'—';
+  $('gps-acc').textContent=gps?'دقة ±'+Math.round(gps.accuracy)+' م':(manual?'موقع يدوي':'');
+  const w=wps[target];$('target-name').textContent=w?w.n:'لم تختر هدف';
+  if(course!=null)$('nav-ring').setAttribute('transform',`rotate(${-course})`);
+  if(!w||!pos){['n-dist','n-bear','n-eta'].forEach(i=>$(i).textContent='—');return}
+  const d=distance(pos,w.c),b=bearing(pos,w.c);
+  $('n-dist').textContent=fmtDist(d);$('n-bear').textContent=Math.round(b)+'°';
+  $('n-eta').textContent=moving?(()=>{const m=Math.round(d/sp/60);return m<60?m+' د':(m/60|0)+' س '+m%60+' د'})():'—';
+  $('nav-arrow').setAttribute('transform',`rotate(${course!=null?b-course:b})`)}
+function renderFormats(){if(!pos)return;$('fmts').innerHTML='';for(const[l,v]of formats(pos)){const a=document.createElement('span'),b=document.createElement('span'),c=document.createElement('button');
+  a.className='muted';a.textContent=l;b.className='num';b.textContent=v;c.textContent='نسخ';c.onclick=()=>copy(v,c);$('fmts').append(a,b,c)}}
+
+function refresh(){renderPrayer();renderCompass();renderNav();renderFormats();renderWps()}
+
+/* ---------- media (IndexedDB) ---------- */
+let idb;const dbOpen=()=>idb||(idb=new Promise((ok,no)=>{try{const r=indexedDB.open('barr',1);r.onupgradeneeded=()=>r.result.createObjectStore('media',{keyPath:'id'});r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}catch(e){no(e)}}));
+const tx=async(mode,fn)=>{const d=await dbOpen();return new Promise((ok,no)=>{const t=d.transaction('media',mode),r=fn(t.objectStore('media'));t.oncomplete=()=>ok(r.result);t.onerror=()=>no(t.error)})};
+const dbPut=v=>tx('readwrite',s=>s.put(v)).catch(e=>{$('m-status').textContent='ما انحفظ الملف: '+(e?.name==='QuotaExceededError'?'المساحة ممتلئة':'خطأ في التخزين')});
+const dbGet=k=>tx('readonly',s=>s.get(k)).catch(()=>null);
+const dbAll=()=>tx('readonly',s=>s.getAll()).catch(()=>[]);
+const dbDel=k=>tx('readwrite',s=>s.delete(k));
+const CATS=[['quran','قرآن'],['songs','أغاني وشيلات'],['stories','قصص صوتية'],['video','فيديو']];
+let cat=store.get('cat','quran');
+$('cats').innerHTML=CATS.map(([k,l])=>`<button class="chip" data-c="${k}">${l}</button>`).join('');
+$('cats').onclick=e=>{const c=e.target.dataset.c;if(c){cat=c;store.set('cat',c);renderMedia()}};
+async function addBlob(name,blob){const c=blob.type.startsWith('video')?'video':cat;await dbPut({id:Date.now()+Math.random().toString(36).slice(2),cat:c,name,type:blob.type,blob,added:Date.now()})}
+$('m-files').onchange=async e=>{const fs=[...e.target.files];$('m-status').textContent='جاري الحفظ…';for(const f of fs)await addBlob(f.name.replace(/\.[^.]+$/,''),f);$('m-status').textContent=`انحفظ ${fs.length} ملف.`;e.target.value='';renderMedia()};
+$('m-dl').onclick=async()=>{const u=$('m-url').value.trim();if(!u)return;$('m-status').textContent='جاري التحميل…';
+  try{const r=await fetch(u);if(!r.ok)throw 0;const b=await r.blob();await addBlob(decodeURIComponent(u.split('/').pop().split('?')[0]).replace(/\.[^.]+$/,'')||'ملف',b);$('m-status').textContent='تم التحميل.';$('m-url').value='';renderMedia()}
+  catch{$('m-status').textContent='ما قدرت أنزل من هالرابط. الموقع يمنع التحميل المباشر، نزّل الملف على جوالك وأضفه من زر الملفات.'}};
+let curUrl=null;
+async function renderMedia(){document.querySelectorAll('#cats .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.c===cat));
+  const items=(await dbAll()).filter(i=>i.cat===cat).sort((a,b)=>a.added-b.added);
+  $('m-list').innerHTML=items.length?'':'<li class="muted">القسم فاضي. أضف ملفات من زر الإضافة.</li>';
+  items.forEach((it,i)=>{const li=document.createElement('li');li.innerHTML='<span class="grow"></span><button class="primary">تشغيل</button><button>حذف</button>';li.firstChild.textContent=it.name;
+    const[p,d]=li.querySelectorAll('button');p.onclick=()=>play(items,i);
+    d.onclick=async()=>{if(!d.dataset.sure){d.dataset.sure=1;d.textContent='متأكد؟';return}await dbDel(it.id);renderMedia()};$('m-list').append(li)})}
+function play(items,i){const it=items[i];if(curUrl)URL.revokeObjectURL(curUrl);curUrl=URL.createObjectURL(it.blob);
+  const el=document.createElement(it.type.startsWith('video')?'video':'audio');el.controls=true;el.src=curUrl;el.autoplay=true;el.setAttribute('playsinline','');
+  el.onended=()=>{if(items[i+1])play(items,i+1)};$('player').replaceChildren(el);$('now-title').textContent=it.name;$('player-card').hidden=false}
+
+/* ---------- riddles ---------- */
+const RIDDLES=[['شي كل ما زاد نقص؟','العمر'],['له أسنان وما يعض؟','المشط'],['يمشي بلا رجلين ويبكي بلا عيون؟','السحاب'],['بيت ما له أبواب ولا شبابيك؟','البيضة'],
+['شي تقطعه وتبكي عليه؟','البصل'],['يسمع بلا أذن ويتكلم بلا لسان؟','الجوال'],['يكتب طول عمره وما يقرأ؟','القلم'],['له رقبة وما له راس؟','القارورة'],
+['أخضر في الأرض، أسود في السوق، أحمر في البيت؟','الشاي'],['شي كل ما أخذت منه كبر؟','الحفرة'],['ولد أمك وولد أبوك وما هو أخوك؟','أنت'],['له عين وما يشوف؟','الإبرة'],
+['يجري وما يمشي، له فم وما يتكلم، له مجرى وما ينام؟','الوادي'],['شي في السما، إذا زدت عليه حرف صار في الأرض؟','نجم ← منجم'],['شي إذا لمسته صاح؟','الجرس'],
+['يدخل الماي وما يتبلل؟','الظل'],['يطلع كل يوم من الشرق، والماي ما يطفيه؟','الشمس'],['شي تشيله ويشيلك؟','النعال'],['شي ينام وعيونه مفتوحة؟','السمكة'],
+['شي حار لو تحطه في الثلاجة؟','الفلفل الحار'],['شي يمشي قدامك وما تشوفه؟','المستقبل'],['شي يوقف بدون رجول؟','الساعة'],['يشيل الحمل ويصبر على العطش، وهو سفينة البر؟','الجمل'],
+['أبيض من برّا وأصفر من داخل، والمخيم ما يستغني عنه الصبح؟','البيضة'],['كل ما قربت منه بعد؟','السراب']];
+$('riddles').innerHTML=RIDDLES.map(([q,a])=>`<details class="riddle"><summary>${q}</summary><p>${a}</p></details>`).join('');
+$('r-random').onclick=()=>{const[q,a]=RIDDLES[Math.random()*RIDDLES.length|0];const c=$('r-one');c.hidden=false;c.innerHTML=`<h2>${q}</h2><details class="riddle"><summary>اكشف الجواب</summary><p>${a}</p></details>`};
+
+/* ---------- recipes ---------- */
+const RECIPES=[
+ {n:'القهوة العربية',i:'☕',t:'20 دقيقة',g:['ماي: 1 لتر','قهوة شقراء محمصة مطحونة: 4 ملاعق كبيرة','هيل مطحون: 1 ملعقة كبيرة','زعفران: رشة','قرنفل: 3 حبات (اختياري)'],
+  s:['اغلي الماي في الدلة على الجمر.','أضف القهوة وخلها تفور، نزّلها عن النار شوي وارجعها، كررها مرتين.','خلها على نار هادية 10 دقايق.','حط الهيل والزعفران والقرنفل في المزلة وصب عليها القهوة.','خلها ترتاح 3 دقايق وصب.']},
+ {n:'كرك على الجمر',i:'🫖',t:'15 دقيقة',g:['ماي: 3 أكواب','شاي أحمر ناعم: 3 ملاعق كبيرة','حليب مبخر: علبة 170 مل','سكر: 4 ملاعق كبيرة','هيل مدقوق: 4 حبات','زعفران: رشة'],
+  s:['اغلي الماي مع الهيل.','أضف الشاي والسكر وخله يغلي 4 دقايق.','أضف الحليب والزعفران وخله يفور مرتين.','صفيه وقدمه حار.']},
+ {n:'خبز الملّة (خبز الجمر)',i:'🫓',t:'50 دقيقة',g:['طحين: 3 أكواب','ملح: 1 ملعقة صغيرة','خميرة فورية: 1 ملعقة صغيرة','ماي دافي: كوب وربع'],
+  s:['اخلط الطحين والملح والخميرة، وأضف الماي شوي شوي واعجن 5 دقايق.','غطّ العجينة وخلها 30 دقيقة.','افردها قرص سماكته 2 سم.','أبعد الجمر، حط القرص على الرمل الحار، وغطه برمل حار وجمر.','بعد 10 دقايق اقلبه وخله 10 دقايق ثانية.','طلعه وانفضه واضربه بعود عشان يطيح الرمل.']},
+ {n:'شكشوكة على الصاج',i:'🍳',t:'15 دقيقة',g:['بيض: 6 حبات','طماط: 3 حبات مقطعة','بصل: حبة','فلفل أخضر: حبة','زيت: 3 ملاعق كبيرة','ملح وكمون: نص ملعقة صغيرة لكل واحد'],
+  s:['حمّس البصل بالزيت لين يذبل.','أضف الفلفل والطماط والبهارات وخلها 5 دقايق.','اكسر البيض فوقها وغطها لين يستوي.']},
+ {n:'كبدة غنم على الصاج',i:'🥘',t:'15 دقيقة',g:['كبدة غنم: 500 غرام مقطعة مكعبات','بصل: حبة شرائح','فلفل حار: حبتين','ثوم: 3 فصوص','زيت: 3 ملاعق كبيرة','ملح، فلفل أسود، كمون: نص ملعقة صغيرة لكل واحد','ليمون: حبة'],
+  s:['سخّن الصاج زين وحط الزيت.','حمّس البصل والثوم والفلفل دقيقتين.','أضف الكبدة وقلبها على نار قوية 5 دقايق.','أضف البهارات آخر شي، وعصّر عليها ليمون.']},
+ {n:'رز ودجاج بالقدر على الجمر',i:'🍗',t:'60 دقيقة',g:['دجاجة مقطعة: 1.2 كيلو','رز بسمتي: 3 أكواب منقوع نص ساعة','بصل: حبتين','بهارات مندي أو كبسة: 2 ملعقة كبيرة','ماي: 4 أكواب ونص','ملح: 1 ملعقة كبيرة','زيت: 4 ملاعق كبيرة'],
+  s:['حمّس البصل بالزيت في القدر.','أضف الدجاج والبهارات وقلبه 5 دقايق.','أضف الماي والملح وخله يغلي 25 دقيقة.','أضف الرز، وأول ما ينشف الماي غط القدر.','حط القدر على جمر هادي (بعيد عن اللهب) 20 دقيقة.']},
+ {n:'بطاطس وبصل بالقصدير',i:'🥔',t:'40 دقيقة',g:['بطاطس: 4 حبات','بصل: حبتين','زبدة: 4 ملاعق كبيرة','ملح وفلفل أسود: حسب الرغبة','ورق قصدير'],
+  s:['قطّع البطاطس والبصل حلقات.','حط كل حصة على ورقة قصدير مع زبدة وملح وفلفل.','لفها زين طبقتين.','ادفنها في الجمر 30 إلى 40 دقيقة، وقلبها مرة بالنص.']}];
+$('recipes').innerHTML=RECIPES.map(r=>`<article class="card recipe"><div class="row"><div class="plate" aria-hidden="true">${r.i}</div><div><h3>${r.n}</h3><span class="muted">${r.t}</span></div></div>
+  <b>المقادير</b><ul>${r.g.map(x=>`<li>${x}</li>`).join('')}</ul><b>الطريقة</b><ol>${r.s.map(x=>`<li>${x}</li>`).join('')}</ol></article>`).join('');
+
+/* ---------- boot ---------- */
+show(store.get('tab','prayer'));
+if(!pos)pos=store.get('last',null);
+refresh();showAdhanName();renderMedia();startGPS();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
