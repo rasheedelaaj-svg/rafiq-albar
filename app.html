@@ -25,7 +25,7 @@ h1{font-size:1.5rem}h2{font-size:1.15rem}
 section{display:flex;flex-direction:column;gap:14px;max-width:560px;margin-inline:auto}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-button,.btn{font:inherit;border:1px solid var(--btn-line);background:var(--btn);color:var(--fg);border-radius:10px;padding:8px 12px;cursor:pointer}
+button,.btn{text-decoration:none;font:inherit;border:1px solid var(--btn-line);background:var(--btn);color:var(--fg);border-radius:10px;padding:8px 12px;cursor:pointer}
 button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 input,select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
@@ -191,6 +191,7 @@ video,audio{width:100%;border-radius:10px}
   <div class="row" id="cats"></div>
   <div class="card">
     <div class="row" id="artists" hidden></div>
+    <div class="row" id="artist-links" hidden></div>
     <div class="row">
       <label class="btn" style="background:var(--accent);color:var(--accent-fg);border-color:var(--accent)">أضف ملفات من الجوال<input type="file" id="m-files" accept="audio/*,video/*" multiple hidden></label>
     </div>
@@ -539,6 +540,8 @@ $('gmd-all').onclick=async()=>{const b=$('gmd-all');if(b.dataset.busy){b.dataset
 async function renderMedia(){renderMushaf();document.querySelectorAll('#cats .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.c===cat));
   const songs=cat==='songs';$('artists').hidden=!songs;
   if(songs)$('artists').innerHTML=ARTISTS.map(a=>`<button class="chip" data-a="${a}" aria-pressed="${a===artist}">${a}</button>`).join('');
+  $('artist-links').hidden=!songs||artist==='غيرهم';if(songs&&artist!=='غيرهم'){const q=encodeURIComponent(artist);
+    $('artist-links').innerHTML=`<span class="muted">اسمع ${artist} من:</span><a class="btn" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${q}">يوتيوب</a><a class="btn" target="_blank" rel="noopener" href="https://play.anghami.com/search/${q}">أنغامي</a><a class="btn" target="_blank" rel="noopener" href="https://open.spotify.com/search/${q}">سبوتيفاي</a>`}
   const items=(await dbAll()).filter(i=>i.cat===cat&&(!songs||(i.artist||'غيرهم')===artist)).sort((a,b)=>a.added-b.added);
   $('m-list').innerHTML=items.length?'':`<li class="muted">${songs?'ما فيه شي لـ'+artist+'. اختر الفنان فوق وبعدين أضف ملفاته.':'القسم فاضي. أضف ملفات من زر الإضافة.'}</li>`;
   items.forEach((it,i)=>{const li=document.createElement('li');li.innerHTML='<span class="grow"></span><button class="primary">تشغيل</button><button>حذف</button>';li.firstChild.textContent=it.name;
