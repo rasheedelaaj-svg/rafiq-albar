@@ -14,7 +14,7 @@
   --bg:#ffffff;--group:#f2f6f9;--elev:#ffffff;--fg:#0f1b26;--muted:#5f6e7b;--line:rgba(15,27,38,.1);
   --tint:#0877b8;--accent:#5cc8f5;--accent-fg:#052234;--tint-soft:rgba(8,119,184,.09);--seg:rgba(118,128,140,.14);
   --sand:#d9822b;--good:#1e8a5a;--qibla:#1e8a6e;--danger:#c4321f;--danger-soft:rgba(196,50,31,.09);
-  --hero:linear-gradient(165deg,#5cc8f5 0%,#a9e4fb 100%);--hero-fg:#052234;
+  --hero:linear-gradient(180deg,#3fb6ee 0%,#8fdafa 70%,#c9eefc 100%);--hero-fg:#052234;--dune2:#f3dcb8;
   --shadow:0 1px 2px rgba(15,27,38,.06),0 4px 14px rgba(15,27,38,.08);
   /* old names still used inline and in JS-built SVG */
   --ink:var(--tint);--surface:var(--group);--btn:var(--tint-soft);
@@ -27,7 +27,7 @@
   --bg:#0b0f13;--group:#161b21;--elev:#1e242b;--fg:#eef3f7;--muted:#97a4b0;--line:rgba(255,255,255,.1);
   --tint:#6dd0f8;--tint-soft:rgba(109,208,248,.13);--seg:rgba(118,128,140,.24);
   --sand:#f0a35a;--good:#4cc38a;--qibla:#3fc7a0;--danger:#ff7b6b;--danger-soft:rgba(255,123,107,.13);
-  --hero:linear-gradient(165deg,#0f5576 0%,#13344a 100%);--hero-fg:#eaf7ff;
+  --hero:linear-gradient(180deg,#071a2b 0%,#0f3550 75%,#16496a 100%);--hero-fg:#eaf7ff;--dune2:#5a4630;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.35)}}
 /* Dynamic Type: WebKit maps -apple-system-body to the user's text size; other browsers keep 16px */
 html{font-size:16px;font:-apple-system-body}
@@ -60,19 +60,23 @@ label.row{justify-content:space-between}
 .seg .chip{flex:1 0 auto;background:none;color:var(--fg);min-height:36px;padding:6px 12px;border-radius:9px;font-size:.9rem;white-space:nowrap}
 .seg .chip[aria-pressed=true]{background:var(--elev);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.14)}
 .chip[aria-pressed=true]{background:var(--accent);color:var(--accent-fg)}
-nav.tabs{position:fixed;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(8,1fr);z-index:5;
+nav.tabs{position:fixed;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(5,1fr);z-index:5;
   background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:saturate(1.8) blur(20px);backdrop-filter:saturate(1.8) blur(20px);
   border-top:.5px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
-nav.tabs button{border-radius:0;background:none;padding:7px 0 6px;min-height:50px;font-size:.66rem;font-weight:500;flex-direction:column;gap:3px;color:var(--muted);white-space:nowrap}
+nav.tabs button{border-radius:0;background:none;padding:7px 0 6px;min-height:50px;font-size:.7rem;font-weight:500;flex-direction:column;gap:3px;color:var(--muted);white-space:nowrap}
 nav.tabs button:active{transform:none}
 nav.tabs button svg{width:24px;height:24px}
 nav.tabs button[aria-selected=true]{color:var(--tint)}
 nav.tabs button[aria-selected=true] svg{stroke-width:2.2}
 .big{font-family:var(--display);font-size:2.6rem;line-height:1.1}
 /* prayer: the one hero surface in the app */
-.hero{background:var(--hero);color:var(--hero-fg);border-radius:20px;padding:20px;gap:4px}
+.hero{position:relative;display:flex;flex-direction:column;gap:2px;background:var(--hero);color:var(--hero-fg);
+  margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-top:calc(-1 * max(12px,env(safe-area-inset-top,0px)));
+  padding:calc(14px + env(safe-area-inset-top,0px)) 20px 64px;overflow:hidden}
+.hero-k{font-family:var(--display);font-size:1.05rem;letter-spacing:.02em}
+.hero .big{font-size:3.4rem}
+.dunes{position:absolute;left:0;right:0;bottom:-1px;width:100%;height:60px}
 .hero .muted{color:inherit;opacity:.75}
-.hero .big{font-size:3rem}
 .hero .num{align-self:flex-start;font-size:1.6rem;font-weight:500}
 /* scrolling pill row when there are too many options for a segmented control */
 .pills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}
@@ -140,21 +144,26 @@ button.link{background:none;color:var(--tint);font-size:1.05rem;padding-inline:4
 figure.photo{margin:8px 0;display:flex;flex-direction:column;gap:6px}
 figure.photo img{width:100%;max-height:300px;object-fit:cover;border-radius:14px;background:var(--seg)}
 figure.photo figcaption{display:flex;justify-content:space-between;gap:8px;font-size:.8rem}
+/* «المزيد» hub */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{flex-direction:column;align-items:flex-start;justify-content:flex-start;text-align:start;gap:6px;padding:16px;min-height:150px;border-radius:20px;background:var(--group);color:var(--fg);font-weight:400}
+.tile b{font-family:var(--display);font-size:1.15rem;font-weight:700}
+.tile-i{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:var(--c);color:#fff;margin-bottom:8px}
+button.back{align-self:flex-start;background:none;padding:0 2px;min-height:36px;margin-bottom:-14px;font-weight:500}
 svg.sky{display:block;width:100%;max-width:360px;margin:8px auto;background:#0b1d33;border-radius:14px}
 @media (prefers-reduced-motion:no-preference){.rot{transition:transform .25s linear}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
 <section id="v-prayer">
-  <div class="row" style="justify-content:space-between">
-    <h1>مواقيت الصلاة</h1><span class="muted" id="hijri"></span>
-  </div>
-  <div class="card hero">
-    <span class="muted" id="next-label">الصلاة القادمة</span>
+  <header class="hero">
+    <div class="row" style="justify-content:space-between"><span class="hero-k">رفيق البر</span><span class="muted" id="hijri"></span></div>
+    <span class="muted" id="next-label" style="margin-top:18px">الصلاة القادمة</span>
     <div class="big" id="next-name">—</div>
     <div class="num" id="next-count">--:--:--</div>
     <span class="muted" id="loc-line">جاري تحديد الموقع…</span>
-  </div>
+  <svg class="dunes" viewBox="0 0 390 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60V38c40-14 80-22 130-10s90 18 140 2 90-20 120-14v44z" fill="var(--dune2)"/><path d="M0 60V48c60-10 110-14 170-4s120 10 220-6v22z" fill="var(--bg)"/></svg>
+  </header>
   <div class="card"><div class="times" id="times"></div></div>
   <div class="card">
     <h2>الإعدادات</h2>
@@ -181,6 +190,7 @@ svg.sky{display:block;width:100%;max-width:360px;margin:8px auto;background:#0b1
     <span class="muted">إذا ما اشتغل الـ GPS، الصق إحداثيات أو رابط قوقل ماب.</span>
     <div class="row"><input type="text" id="manual-loc" placeholder="24.4539, 54.3773"><button id="manual-set">اعتمد</button><button id="gps-back">رجوع للـ GPS</button></div>
   </div>
+  <span class="muted" id="app-ver" style="text-align:center"></span>
 </section>
 
 <section id="v-nav" hidden>
@@ -341,6 +351,11 @@ svg.sky{display:block;width:100%;max-width:360px;margin:8px auto;background:#0b1
   </div>
 </section>
 
+<section id="v-more" hidden>
+  <h1>المزيد</h1>
+  <div class="tiles" id="more-tiles"></div>
+</section>
+
 <section id="v-stories" hidden>
   <h1>قصص البر</h1>
   <span class="muted">قصص قصيرة تنقرا على السمرة. اضغط على أي قصة تفتحها.</span>
@@ -385,6 +400,7 @@ svg.sky{display:block;width:100%;max-width:360px;margin:8px auto;background:#0b1
 <nav class="tabs" id="tabs"></nav>
 
 <script>
+const APP_VER='23'; // keep in step with V in sw.js
 // CORE-START (pure functions, tested in check.js)
 const R=Math.PI/180,KAABA=[21.4225,39.8262];
 const sin=d=>Math.sin(d*R),cos=d=>Math.cos(d*R),tan=d=>Math.tan(d*R),asin=x=>Math.asin(x)/R,acos=x=>Math.acos(Math.max(-1,Math.min(1,x)))/R,atan2=(y,x)=>Math.atan2(y,x)/R;
@@ -460,11 +476,21 @@ const ICONS={
   fun:'<path d="M9 9a3 3 0 1 1 4 2.8c-.7.3-1 1-1 1.7V15M12 19h.01"/>',
   stories:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h7M8 11h7"/>',
   info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/>',
+  more:'<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>',
   food:'<path d="M4 11h16a8 8 0 0 1-16 0zM8 7c0-1 1-1 1-2M12 7c0-1 1-1 1-2M16 7c0-1 1-1 1-2"/>'};
 const TABS=[['prayer','الصلاة'],['nav','الملاحة'],['compass','البوصلة'],['media','الصوتيات'],['fun','الألعاب'],['stories','القصص'],['info','معلومات'],['food','الصحة']];
-function show(t){TABS.forEach(([k])=>{$('v-'+k).hidden=k!==t;$('t-'+k).setAttribute('aria-selected',k===t)});store.set('tab',t);if(t==='nav'){wake();initMap();map?.invalidateSize()}}
-$('tabs').innerHTML=TABS.map(([k,l])=>`<button id="t-${k}" role="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>${l}</button>`).join('');
-TABS.forEach(([k])=>$('t-'+k).onclick=()=>show(k));
+// five tabs in the bar (iOS limit); the rest live on the «المزيد» hub
+const BAR=['prayer','nav','compass','media','more'],MORE=[['fun','ألعاب البر','بدون كلام، سين جيم، ألغاز','#e8833a'],['stories','قصص البر','بادية، حكم، طرائف، بطولات','#b07a3c'],
+  ['info','معلومات البر','نباتات، نجوم، حشرات','#2f9e6a'],['food','طبخ وصحة','طبخات، أكلات صحية، تمارين، مقاضي','#d9534f']];
+const ico=(k,w=24)=>`<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
+function show(t){[...BAR,...TABS.map(x=>x[0])].forEach(k=>{const v=$('v-'+k);if(v)v.hidden=k!==t});
+  const sel=MORE.some(m=>m[0]===t)?'more':t;BAR.forEach(k=>$('t-'+k).setAttribute('aria-selected',k===sel));
+  store.set('tab',t);scrollTo(0,0);if(t==='nav'){wake();initMap();map?.invalidateSize()}}
+$('tabs').innerHTML=BAR.map(k=>`<button id="t-${k}" role="tab">${ico(k)}${k==='more'?'المزيد':TABS.find(x=>x[0]===k)[1]}</button>`).join('');
+BAR.forEach(k=>$('t-'+k).onclick=()=>show(k));
+$('more-tiles').innerHTML=MORE.map(([k,t,d,c])=>`<button class="tile" data-k="${k}" style="--c:${c}"><span class="tile-i">${ico(k,26)}</span><b>${t}</b><span class="muted">${d}</span></button>`).join('');
+$('more-tiles').onclick=e=>{const b=e.target.closest('.tile');if(b)show(b.dataset.k)};
+MORE.forEach(([k])=>{const h=$('v-'+k).querySelector('h1');const b=document.createElement('button');b.className='back';b.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>المزيد';b.onclick=()=>show('more');h.before(b)});
 let lock=null;async function wake(){try{lock=await navigator.wakeLock?.request('screen')}catch{}}
 
 /* ---------- location ---------- */
@@ -982,7 +1008,11 @@ show(store.get('tab','prayer'));
 if(!pos)pos=store.get('last',null);
 refresh();showAdhanName();renderMedia();startGPS();
 dbGet('places').then(r=>{if(r){places=r.places;mapAt=0;renderMap()}});
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+// updates: skip the HTTP cache for sw.js, re-check whenever the app comes back to the front, reload once when a new version takes over
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)reg.update().catch(()=>{})})}).catch(()=>{});
+  let reloaded=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!reloaded&&navigator.serviceWorker.controller){reloaded=true;location.reload()}})}
+$('app-ver').textContent='الإصدار '+APP_VER;
 </script>
 
 </body></html>

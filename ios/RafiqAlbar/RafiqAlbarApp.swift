@@ -34,7 +34,7 @@ struct WebView: UIViewRepresentable {
         webView.uiDelegate = context.coordinator
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         context.coordinator.startHeading(for: webView)
-        webView.load(URLRequest(url: appURL))
+        webView.load(URLRequest(url: appURL, cachePolicy: .reloadIgnoringLocalCacheData))
         return webView
     }
 
