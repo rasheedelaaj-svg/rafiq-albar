@@ -3,6 +3,8 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#1d1a16">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 /* layout: one-screen app, content above a fixed bottom tab bar; night-desert first */
 :root{
@@ -61,6 +63,10 @@ details.riddle p{margin:6px 0 0;color:var(--accent);font-family:var(--display);f
 .recipe h3{font-size:1.05rem}
 video,audio{width:100%;border-radius:10px}
 .warn{color:var(--accent);font-size:.85rem}
+#map{height:62vh;min-height:320px;border-radius:12px;border:1px solid var(--line);z-index:0}
+#map.far .lbl{display:none}
+.lbl{font-family:var(--body);font-size:12px;padding:1px 6px;background:#fffd;color:#2a2118;border:0;box-shadow:none}
+.lbl::before{display:none}
 @media (prefers-reduced-motion:no-preference){.rot{transition:transform .25s linear}}
 </style>
 
@@ -123,6 +129,19 @@ video,audio{width:100%;border-radius:10px}
     </div>
   </div>
   <div class="card">
+    <div class="row" style="justify-content:space-between"><h2>خريطة البر</h2>
+      <div class="row"><button id="map-follow" class="primary">تتبعني</button><button id="trail-clear">مسح المسار</button></div></div>
+    <div id="map" aria-label="خريطة البر"></div>
+    <span class="muted">المناطق اللي تتصفحها وفيه نت تنحفظ وتشتغل بعدين بدون نت. تصفح منطقة الطلعة قبل لا تطلع. الخط المتقطع هو مسارك، ترجع عليه لو ضعت.</span>
+    <h2>الأماكن القريبة</h2>
+    <ul class="list" id="near"></ul>
+    <div class="row">
+      <label class="btn">استيراد أماكن (GPX / KML / GeoJSON / OSM)<input type="file" id="pl-file" accept=".gpx,.kml,.geojson,.json,.osm,.xml" multiple hidden></label>
+      <button id="pl-clear">مسح الأماكن</button>
+    </div>
+    <span class="muted" id="pl-status">صدّر المفضلة من OsmAnd بصيغة GPX، أو الخريطة من قوقل ماي ماب بصيغة KML، وأضفها هنا.</span>
+  </div>
+  <div class="card">
     <h2>موقعي الحالي</h2>
     <div class="fmt" id="fmts"></div>
     <button id="save-here" class="primary">احفظ موقعي كنقطة</button>
@@ -157,6 +176,18 @@ video,audio{width:100%;border-radius:10px}
     <button id="c-start" class="primary">تشغيل البوصلة</button>
     <label class="row">تصحيح البوصلة <input type="number" id="c-offset" step="1" value="0" style="width:80px"> درجة</label>
     <span class="muted">أبعد الجوال عن الحديد والسيارة، وحرك الجوال على شكل رقم 8 للمعايرة.</span>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between"><h2>إحداثياتي</h2>
+      <select id="fmt" aria-label="صيغة الإحداثيات"><option value="0">عشري</option><option value="1">درجات دقائق ثواني</option><option value="2">درجات ودقائق</option><option value="3">UTM</option><option value="4">MGRS</option></select></div>
+    <div class="num" id="c-coord" style="white-space:pre-line;font-size:1.35rem;line-height:1.4;overflow-wrap:anywhere">—</div>
+    <div class="grid2">
+      <div class="stat"><span class="muted">الارتفاع م</span><b id="c-alt">—</b></div>
+      <div class="stat"><span class="muted">الدقة م</span><b id="c-acc">—</b></div>
+      <div class="stat"><span class="muted">السرعة كم/س</span><b id="c-speed">—</b></div>
+      <div class="stat"><span class="muted">آخر تحديث</span><b id="c-time">—</b></div>
+    </div>
+    <button id="c-copy">نسخ</button>
   </div>
 </section>
 
@@ -235,14 +266,20 @@ function parseCoord(s){
   return ok(c)}
 function fmtDMS(v,pos,neg){const h=v<0?neg:pos;v=Math.abs(v);const d=Math.floor(v),mf=(v-d)*60,mi=Math.floor(mf),s=(mf-mi)*60;return`${d}°${String(mi).padStart(2,'0')}'${s.toFixed(1).padStart(4,'0')}"${h}`}
 function fmtDDM(v,pos,neg){const h=v<0?neg:pos;v=Math.abs(v);const d=Math.floor(v);return`${d}°${((v-d)*60).toFixed(3).padStart(6,'0')}'${h}`}
+function toMGRS(lat,lng){const u=toUTM(lat,lng),col='ABCDEFGH JKLMNPQR STUVWXYZ'.split(' ')[(u.zone-1)%3][Math.floor(u.x/1e5)-1],
+  row='ABCDEFGHJKLMNPQRSTUV'[(Math.floor(u.y/1e5)+(u.zone%2?0:5))%20],p=v=>String(Math.floor(v%1e5)).padStart(5,'0');
+  return`${u.zone}${u.band} ${col}${row} ${p(u.x)} ${p(u.y)}`}
 function formats([lat,lng]){const u=toUTM(lat,lng);return[
   ['عشري',`${lat.toFixed(6)}, ${lng.toFixed(6)}`],
   ['درجات دقائق ثواني',`${fmtDMS(lat,'N','S')} ${fmtDMS(lng,'E','W')}`],
   ['درجات ودقائق',`${fmtDDM(lat,'N','S')} ${fmtDDM(lng,'E','W')}`],
   ['UTM',`${u.zone}${u.band} ${Math.round(u.x)} ${Math.round(u.y)}`],
+  ['MGRS',toMGRS(lat,lng)],
   ['قوقل ماب',`https://maps.google.com/?q=${lat.toFixed(6)},${lng.toFixed(6)}`]]}
 const DIRS=['شمال','شمال شمال شرق','شمال شرق','شرق شمال شرق','شرق','شرق جنوب شرق','جنوب شرق','جنوب جنوب شرق','جنوب','جنوب جنوب غرب','جنوب غرب','غرب جنوب غرب','غرب','غرب شمال غرب','شمال غرب','شمال شمال غرب'];
 const dirName=deg=>DIRS[Math.round(fix(deg,360)/22.5)%16];
+// where a place sits relative to the direction you face
+function side(bear,course){const r=fix(bear-course,360);return r<=30||r>=330?'قدامك':r>=150&&r<=210?'وراك':r<180?'يمينك':'يسارك'}
 // CORE-END
 
 const $=id=>document.getElementById(id);
@@ -259,7 +296,7 @@ const ICONS={
   fun:'<path d="M9 9a3 3 0 1 1 4 2.8c-.7.3-1 1-1 1.7V15M12 19h.01"/>',
   food:'<path d="M4 11h16a8 8 0 0 1-16 0zM8 7c0-1 1-1 1-2M12 7c0-1 1-1 1-2M16 7c0-1 1-1 1-2"/>'};
 const TABS=[['prayer','الصلاة'],['nav','الملاحة'],['compass','البوصلة'],['media','الصوتيات'],['fun','الألغاز'],['food','الطبخ']];
-function show(t){TABS.forEach(([k])=>{$('v-'+k).hidden=k!==t;$('t-'+k).setAttribute('aria-selected',k===t)});store.set('tab',t);if(t==='nav')wake()}
+function show(t){TABS.forEach(([k])=>{$('v-'+k).hidden=k!==t;$('t-'+k).setAttribute('aria-selected',k===t)});store.set('tab',t);if(t==='nav'){wake();initMap();map?.invalidateSize()}}
 $('tabs').innerHTML=TABS.map(([k,l])=>`<button id="t-${k}" role="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>${l}</button>`).join('');
 TABS.forEach(([k])=>$('t-'+k).onclick=()=>show(k));
 let lock=null;async function wake(){try{lock=await navigator.wakeLock?.request('screen')}catch{}}
@@ -326,7 +363,7 @@ const ROSE_AR=['ش','ق','ج','غ'];
 let smooth=null;
 function onOri(e){let h=e.webkitCompassHeading!=null?e.webkitCompassHeading:(e.absolute||e.type==='deviceorientationabsolute')&&e.alpha!=null?360-e.alpha:null;
   if(h==null)return;h=fix(h+(screen.orientation?.angle||0)+offset,360);
-  smooth=smooth==null?h:fix(smooth+((h-smooth+540)%360-180)*.25,360);heading=smooth;$('c-hint').hidden=false;renderCompass();renderNav()}
+  smooth=smooth==null?h:fix(smooth+((h-smooth+540)%360-180)*.25,360);heading=smooth;$('c-hint').hidden=false;renderCompass();renderNav();renderMap()}
 let oriOn=false;
 async function startCompass(){if(oriOn)return;try{if(typeof DeviceOrientationEvent!=='undefined'&&DeviceOrientationEvent.requestPermission){if(await DeviceOrientationEvent.requestPermission()!=='granted')throw 0}}catch{$('c-head').textContent='مرفوض';return}
   oriOn=true;$('c-start').hidden=true;addEventListener('deviceorientationabsolute',onOri);addEventListener('deviceorientation',onOri);
@@ -335,13 +372,19 @@ $('c-start').onclick=startCompass;
 // Android grants without a prompt; iOS needs the button
 if(!(typeof DeviceOrientationEvent!=='undefined'&&DeviceOrientationEvent.requestPermission))startCompass();
 function renderCompass(){
+  const f=+store.get('fmt',0);$('fmt').value=f;
+  if(pos)$('c-coord').textContent=formats(pos)[f][1].replace(/ (?=\d+°)/,'\n');
+  $('c-alt').textContent=gps?.altitude!=null?Math.round(gps.altitude):'—';$('c-acc').textContent=gps?'±'+Math.round(gps.accuracy):'—';
+  $('c-speed').textContent=gps?.speed!=null?(gps.speed*3.6).toFixed(1):'—';$('c-time').textContent=gps?new Date().toLocaleTimeString('ar',{numberingSystem:'latn'}):'—';
   if(pos){const q=bearing(pos,KAABA);$('c-qibla').textContent=q.toFixed(1)+'°';$('c-mecca').textContent='مكة على بعد '+fmtDist(distance(pos,KAABA));$('qibla-mark').setAttribute('transform',`rotate(${q})`)}
   if(heading==null)return;$('rose').setAttribute('transform',`rotate(${-heading})`);$('c-head').textContent=Math.round(heading)+'°';$('c-name').textContent=dirName(heading)}
 
+$('fmt').onchange=e=>{store.set('fmt',+e.target.value);renderCompass();renderWps()};
+$('c-copy').onclick=()=>pos&&copy(formats(pos)[+store.get('fmt',0)][1],$('c-copy'));
 /* ---------- navigator ---------- */
 let wps=store.get('wps',[]),target=store.get('target',null);
-function renderWps(){$('wps').innerHTML=wps.length?'':'<li class="muted">ما فيه نقاط. أضف نقطة أو احفظ موقعك.</li>';
-  wps.forEach((w,i)=>{const li=document.createElement('li');li.innerHTML=`<span class="grow"><b></b><br><span class="num muted">${w.c[0].toFixed(5)}, ${w.c[1].toFixed(5)}</span>${pos?` <span class="muted">· ${fmtDist(distance(pos,w.c))}</span>`:''}</span><button>${target===i?'الهدف':'توجه'}</button><button aria-label="حذف">حذف</button>`;
+function renderWps(){drawWps();$('wps').innerHTML=wps.length?'':'<li class="muted">ما فيه نقاط. أضف نقطة أو احفظ موقعك.</li>';
+  wps.forEach((w,i)=>{const li=document.createElement('li');li.innerHTML=`<span class="grow"><b></b><br><span class="num muted">${formats(w.c)[+store.get('fmt',0)][1]}</span>${pos?` <span class="muted">· ${fmtDist(distance(pos,w.c))}</span>`:''}</span><button>${target===i?'الهدف':'توجه'}</button><button aria-label="حذف">حذف</button>`;
     li.querySelector('b').textContent=w.n;const[go,del]=li.querySelectorAll('button');if(target===i)go.className='primary';
     go.onclick=()=>{target=i;store.set('target',i);renderNav();renderWps()};
     del.onclick=()=>{if(del.dataset.sure){wps.splice(i,1);if(target===i)target=null;else if(target>i)target--;store.set('wps',wps);store.set('target',target);renderWps();renderNav()}else{del.dataset.sure=1;del.textContent='متأكد؟'}};
@@ -363,10 +406,55 @@ function renderNav(){
   $('n-dist').textContent=fmtDist(d);$('n-bear').textContent=Math.round(b)+'°';
   $('n-eta').textContent=moving?(()=>{const m=Math.round(d/sp/60);return m<60?m+' د':(m/60|0)+' س '+m%60+' د'})():'—';
   $('nav-arrow').setAttribute('transform',`rotate(${course!=null?b-course:b})`)}
+
+/* ---------- desert map: Leaflet tiles (cached by sw.js), imported places, trail ---------- */
+let places=[],mapAt=0,map=null,me=null,placeLayer=null,wpLayer=null,trailLine=null,toTarget=null,follow=true,trail=store.get('trail',[]);
+function parsePlaces(text){const t=text.trim(),out=[];
+  if(t[0]==='{'){for(const f of JSON.parse(t).features||[])if(f.geometry?.type==='Point')out.push({n:f.properties?.name||f.properties?.title||'',c:[f.geometry.coordinates[1],f.geometry.coordinates[0]]})}
+  else{const x=new DOMParser().parseFromString(t,'application/xml'),nm=e=>e.querySelector('name')?.textContent.trim()||'';
+    x.querySelectorAll('wpt').forEach(w=>out.push({n:nm(w),c:[+w.getAttribute('lat'),+w.getAttribute('lon')]}));
+    x.querySelectorAll('Placemark').forEach(p=>{const co=p.querySelector('Point coordinates');if(co){const[lo,la]=co.textContent.trim().split(',').map(Number);out.push({n:nm(p),c:[la,lo]})}});
+    x.querySelectorAll('node').forEach(n=>{const v=n.querySelector('tag[k="name"]')?.getAttribute('v');if(v)out.push({n:v,c:[+n.getAttribute('lat'),+n.getAttribute('lon')]})})}
+  return out.filter(p=>isFinite(p.c[0])&&isFinite(p.c[1])&&Math.abs(p.c[0])<=90)}
+$('pl-file').onchange=async e=>{let added=0;
+  for(const f of e.target.files){try{const ps=parsePlaces(await f.text());places.push(...ps);added+=ps.length}catch{$('pl-status').textContent='ما قدرت أقرا الملف '+f.name}}
+  await dbPut({id:'places',cat:'_',places});e.target.value='';$('pl-status').textContent=`انضاف ${added} مكان. المجموع ${places.length}.`;drawPlaces()};
+$('pl-clear').onclick=async()=>{const b=$('pl-clear');if(!b.dataset.sure){b.dataset.sure=1;b.textContent='متأكد؟';return}delete b.dataset.sure;b.textContent='مسح الأماكن';places=[];await dbDel('places');drawPlaces()};
+$('trail-clear').onclick=()=>{const b=$('trail-clear');if(!b.dataset.sure){b.dataset.sure=1;b.textContent='متأكد؟';return}delete b.dataset.sure;b.textContent='مسح المسار';trail=[];store.set('trail',trail);trailLine?.setLatLngs([])};
+$('map-follow').onclick=()=>{follow=true;$('map-follow').className='primary';if(map&&pos)map.setView(pos,Math.max(map.getZoom(),14))};
+const label=(m,n)=>n&&m.bindTooltip(n,{permanent:true,direction:'top',className:'lbl',offset:[0,-6]});
+function initMap(){if(map||!window.L)return;
+  map=L.map('map',{attributionControl:true}).setView(pos||[24.7,46.7],pos?14:6);
+  const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}),
+    sat=L.layerGroup([L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Esri'}),
+      L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:19})]);
+  (store.get('layer','sat')==='sat'?sat:osm).addTo(map);
+  L.control.layers({'قمر صناعي':sat,'خريطة':osm}).addTo(map);
+  map.on('baselayerchange',e=>store.set('layer',e.layer===sat?'sat':'osm'));
+  map.on('dragstart',()=>{follow=false;$('map-follow').className=''});
+  map.on('zoomend',()=>$('map').classList.toggle('far',map.getZoom()<11));
+  trailLine=L.polyline(trail,{color:'#e0823f',weight:3,dashArray:'6 6'}).addTo(map);
+  placeLayer=L.layerGroup().addTo(map);wpLayer=L.layerGroup().addTo(map);
+  toTarget=L.polyline([],{color:'#4fc2a8',weight:2}).addTo(map);
+  me=L.marker(pos||[0,0],{zIndexOffset:1000,icon:L.divIcon({className:'',iconSize:[30,30],html:'<svg id="me-ico" viewBox="-12 -12 24 24" width="30" height="30"><circle r="11" fill="#e0823f33"/><path d="M0,-9 L6.5,7 L0,3.5 L-6.5,7Z" fill="#e0823f" stroke="#fff" stroke-width="1.5"/></svg>'})}).addTo(map);
+  drawPlaces();drawWps();mapAt=0;renderMap()}
+function drawPlaces(){if(placeLayer){placeLayer.clearLayers();for(const p of places)label(L.circleMarker(p.c,{radius:5,color:'#fff',weight:1.5,fillColor:'#1e6b5c',fillOpacity:1}).addTo(placeLayer),p.n)}mapAt=0;renderMap()}
+function drawWps(){if(!wpLayer)return;wpLayer.clearLayers();wps.forEach((w,i)=>label(L.circleMarker(w.c,{radius:7,color:'#fff',weight:2,fillColor:i===target?'#e0823f':'#b8561f',fillOpacity:1}).addTo(wpLayer),w.n))}
+function renderMap(){const now=Date.now();if(now-mapAt<500)return;mapAt=now; // ponytail: redraw at most 2/s, compass fires much faster
+  const sp=gps?.speed,course=(sp>1.5&&gps.heading!=null&&!isNaN(gps.heading)?gps.heading:heading)??0;
+  if(pos&&!manual&&(!trail.length||distance(trail[trail.length-1],pos)>25)){trail.push([+pos[0].toFixed(6),+pos[1].toFixed(6)]);if(trail.length>5000)trail.shift();store.set('trail',trail);trailLine?.addLatLng(pos)} // ponytail: 5000-point cap, ~125 km of trail
+  if(map&&pos){me.setLatLng(pos);const ico=document.getElementById('me-ico');if(ico)ico.style.transform=`rotate(${course}deg)`;
+    toTarget.setLatLngs(wps[target]?[pos,wps[target].c]:[]);if(follow&&!$('v-nav').hidden)map.panTo(pos,{animate:false})}
+  if(!pos){$('near').innerHTML='<li class="muted">بانتظار موقعك.</li>';return}
+  const near=places.map(p=>({...p,d:distance(pos,p.c),b:bearing(pos,p.c)})).sort((a,b)=>a.d-b.d).slice(0,10);
+  $('near').innerHTML=near.length?'':'<li class="muted">ما فيه أماكن. استورد ملف خريطة من تحت.</li>';
+  for(const p of near){const li=document.createElement('li');li.innerHTML='<span class="grow"><b></b> <span class="muted"></span></span><button>توجه</button>';
+    li.querySelector('b').textContent=p.n||'بدون اسم';li.querySelector('.muted').textContent=`${side(p.b,course)} · ${fmtDist(p.d)}`;
+    li.querySelector('button').onclick=()=>{wps.push({n:p.n||'مكان',c:p.c});target=wps.length-1;store.set('wps',wps);store.set('target',target);renderWps();renderNav()};$('near').append(li)}}
 function renderFormats(){if(!pos)return;$('fmts').innerHTML='';for(const[l,v]of formats(pos)){const a=document.createElement('span'),b=document.createElement('span'),c=document.createElement('button');
   a.className='muted';a.textContent=l;b.className='num';b.textContent=v;c.textContent='نسخ';c.onclick=()=>copy(v,c);$('fmts').append(a,b,c)}}
 
-function refresh(){renderPrayer();renderCompass();renderNav();renderFormats();renderWps()}
+function refresh(){renderPrayer();renderCompass();renderNav();renderFormats();renderWps();renderMap()}
 
 /* ---------- media (IndexedDB) ---------- */
 let idb;const dbOpen=()=>idb||(idb=new Promise((ok,no)=>{try{const r=indexedDB.open('barr',1);r.onupgradeneeded=()=>r.result.createObjectStore('media',{keyPath:'id'});r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}catch(e){no(e)}}));
@@ -429,5 +517,6 @@ $('recipes').innerHTML=RECIPES.map(r=>`<article class="card recipe"><div class="
 show(store.get('tab','prayer'));
 if(!pos)pos=store.get('last',null);
 refresh();showAdhanName();renderMedia();startGPS();
+dbGet('places').then(r=>{if(r){places=r.places;mapAt=0;renderMap()}});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
