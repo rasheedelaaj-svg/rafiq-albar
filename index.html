@@ -18,6 +18,8 @@
   --shadow:0 1px 2px rgba(15,27,38,.06),0 4px 14px rgba(15,27,38,.08);
   /* old names still used inline and in JS-built SVG */
   --ink:var(--tint);--surface:var(--group);--btn:var(--tint-soft);
+  /* motion: strong ease-out for responses, iOS drawer curve for sheets */
+  --ease-out:cubic-bezier(.23,1,.32,1);--ease-drawer:cubic-bezier(.32,.72,0,1);
   --display:"Reem Kufi","IBM Plex Sans Arabic",system-ui,sans-serif;
   --body:"IBM Plex Sans Arabic",-apple-system,system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,monospace;
@@ -32,6 +34,8 @@
 /* Dynamic Type: WebKit maps -apple-system-body to the user's text size; other browsers keep 16px */
 html{font-size:16px;font:-apple-system-body}
 html,body{height:100%}
+::selection{background:color-mix(in srgb,var(--accent) 35%,transparent)}
+input,textarea{caret-color:var(--tint)}
 [hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:1rem;line-height:1.6;direction:rtl;-webkit-tap-highlight-color:transparent;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
@@ -45,8 +49,8 @@ section>h1+.muted{margin-top:-10px}
 .card{background:var(--group);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 button,.btn{text-decoration:none;font:inherit;font-weight:600;border:0;background:var(--tint-soft);color:var(--tint);border-radius:12px;padding:10px 16px;min-height:44px;cursor:pointer;
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s,transform .15s}
-button:active,.btn:active{opacity:.65;transform:scale(.98)}
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:transform 160ms var(--ease-out),opacity 160ms var(--ease-out)}
+button:active,.btn:active{opacity:.8;transform:scale(.97)}
 button.primary{background:var(--accent);color:var(--accent-fg)}
 button.danger{background:var(--danger-soft);color:var(--danger)}
 button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--tint);outline-offset:2px}
@@ -77,7 +81,7 @@ nav.tabs button[aria-selected=true] svg{stroke-width:2.2}
 .hero .big{font-size:3.4rem}
 .dunes{position:absolute;left:0;right:0;bottom:-1px;width:100%;height:60px}
 .hero .muted{color:inherit;opacity:.75}
-.hero .num{align-self:flex-start;font-size:1.6rem;font-weight:500}
+.hero .num{font-size:1.6rem;font-weight:500}
 /* scrolling pill row when there are too many options for a segmented control */
 .pills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}
 .pills::-webkit-scrollbar{display:none}
@@ -107,12 +111,11 @@ details.riddle{border-bottom:.5px solid var(--line);padding:4px 0}
 details.riddle:last-child{border-bottom:0}
 details.riddle summary{cursor:pointer;font-weight:600;list-style:none;display:flex;align-items:center;gap:8px;min-height:44px}
 details.riddle summary::-webkit-details-marker{display:none}
-details.riddle summary::after{content:"";margin-inline-start:auto;flex:none;width:8px;height:8px;border-left:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s}
+details.riddle summary::after{content:"";margin-inline-start:auto;flex:none;width:8px;height:8px;border-left:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform 200ms var(--ease-out)}
 details.riddle[open] summary::after{transform:rotate(-45deg)}
 details.riddle p{margin:6px 0 10px;color:var(--tint);font-family:var(--display);font-size:1.15rem}
 details.riddle p.sp{margin:0 0 10px;color:var(--fg);font-family:var(--body);font-size:1.05rem;line-height:1.95}
 details.riddle p.verse{margin:8px 0 14px;padding:10px 0;text-align:center;font-family:var(--display);font-size:1.15rem;color:var(--tint);line-height:2.1;border-block:.5px solid var(--line)}
-.recipe .plate{font-size:2.2rem;width:64px;height:64px;border-radius:16px;background:var(--bg);display:grid;place-items:center;flex:none}
 .recipe ol,.recipe ul{margin:0;padding-inline-start:20px}
 .recipe li{margin-bottom:4px}
 .recipe>b{font-size:.8rem;color:var(--muted);font-weight:600;margin-bottom:-6px}
@@ -145,22 +148,32 @@ figure.photo{margin:8px 0;display:flex;flex-direction:column;gap:6px}
 figure.photo img{width:100%;max-height:300px;object-fit:cover;border-radius:14px;background:var(--seg)}
 figure.photo figcaption{display:flex;justify-content:space-between;gap:8px;font-size:.8rem}
 /* «المزيد» hub */
-.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.tile{flex-direction:column;align-items:flex-start;justify-content:flex-start;text-align:start;gap:6px;padding:16px;min-height:150px;border-radius:20px;background:var(--group);color:var(--fg);font-weight:400}
-.tile b{font-family:var(--display);font-size:1.15rem;font-weight:700}
-.tile-i{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:var(--c);color:#fff;margin-bottom:8px}
+.tiles{display:flex;flex-direction:column;background:var(--group);border-radius:16px;overflow:hidden}
+.tile{justify-content:flex-start;text-align:start;gap:14px;padding:12px 16px;min-height:64px;border-radius:0;background:none;color:var(--fg);font-weight:400;position:relative}
+.tile+.tile::before{content:"";position:absolute;top:0;left:0;right:66px;border-top:.5px solid var(--line)}
+.tile-t{flex:1;display:flex;flex-direction:column;line-height:1.35}
+.tile b{font-size:1.02rem;font-weight:600}
+.tile-i{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:var(--c);color:#fff;flex:none}
+.tile .chev{color:var(--muted);opacity:.6;flex:none}
 button.back{align-self:flex-start;background:none;padding:0 2px;min-height:36px;margin-bottom:-14px;font-weight:500}
 svg.sky{display:block;width:100%;max-width:360px;margin:8px auto;background:#0b1d33;border-radius:14px}
 @media (prefers-reduced-motion:no-preference){.rot{transition:transform .25s linear}}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* sheets slide in from their edge; the slide is skipped when reduced motion is on, the fade stays */
+.panel{transition:transform 320ms var(--ease-drawer),opacity 200ms var(--ease-out)}
+@starting-style{.panel{transform:translateY(100%)}#searchp{transform:translateY(-100%)}}
+details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
+@keyframes rise{from{opacity:0;transform:translateY(-4px)}}
+.tile:active{transform:none;background:var(--seg)}
+@media (prefers-reduced-motion:reduce){.rot{transition:none}button,.btn{transition:opacity 160ms ease}button:active,.btn:active{transform:none}
+  @starting-style{.panel,#searchp{transform:none;opacity:0}}details.riddle[open]>:not(summary){animation:fade 150ms ease}}
+@keyframes fade{from{opacity:0}}
 </style>
 
 <section id="v-prayer">
   <header class="hero">
     <div class="row" style="justify-content:space-between"><span class="hero-k">رفيق البر</span><span class="muted" id="hijri"></span></div>
-    <span class="muted" id="next-label" style="margin-top:18px">الصلاة القادمة</span>
-    <div class="big" id="next-name">—</div>
-    <div class="num" id="next-count">--:--:--</div>
+    <div class="big" id="next-name" style="margin-top:22px">—</div>
+    <div class="row" style="gap:10px;align-items:baseline"><span>بعد</span><span class="num" id="next-count">--:--:--</span></div>
     <span class="muted" id="loc-line">جاري تحديد الموقع…</span>
   <svg class="dunes" viewBox="0 0 390 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60V38c40-14 80-22 130-10s90 18 140 2 90-20 120-14v44z" fill="var(--dune2)"/><path d="M0 60V48c60-10 110-14 170-4s120 10 220-6v22z" fill="var(--bg)"/></svg>
   </header>
@@ -401,7 +414,7 @@ svg.sky{display:block;width:100%;max-width:360px;margin:8px auto;background:#0b1
 <nav class="tabs" id="tabs"></nav>
 
 <script>
-const APP_VER='24'; // keep in step with V in sw.js
+const APP_VER='26'; // keep in step with V in sw.js
 // CORE-START (pure functions, tested in check.js)
 const R=Math.PI/180,KAABA=[21.4225,39.8262];
 const sin=d=>Math.sin(d*R),cos=d=>Math.cos(d*R),tan=d=>Math.tan(d*R),asin=x=>Math.asin(x)/R,acos=x=>Math.acos(Math.max(-1,Math.min(1,x)))/R,atan2=(y,x)=>Math.atan2(y,x)/R;
@@ -489,7 +502,7 @@ function show(t){[...BAR,...TABS.map(x=>x[0])].forEach(k=>{const v=$('v-'+k);if(
   store.set('tab',t);scrollTo(0,0);if(t==='nav'){wake();initMap();map?.invalidateSize()}}
 $('tabs').innerHTML=BAR.map(k=>`<button id="t-${k}" role="tab">${ico(k)}${k==='more'?'المزيد':TABS.find(x=>x[0]===k)[1]}</button>`).join('');
 BAR.forEach(k=>$('t-'+k).onclick=()=>show(k));
-$('more-tiles').innerHTML=MORE.map(([k,t,d,c])=>`<button class="tile" data-k="${k}" style="--c:${c}"><span class="tile-i">${ico(k,26)}</span><b>${t}</b><span class="muted">${d}</span></button>`).join('');
+$('more-tiles').innerHTML=MORE.map(([k,t,d,c])=>`<button class="tile" data-k="${k}" style="--c:${c}"><span class="tile-i">${ico(k,20)}</span><span class="tile-t"><b>${t}</b><span class="muted">${d}</span></span><svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>`).join('');
 $('more-tiles').onclick=e=>{const b=e.target.closest('.tile');if(b)show(b.dataset.k)};
 MORE.forEach(([k])=>{const h=$('v-'+k).querySelector('h1');const b=document.createElement('button');b.className='back';b.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>المزيد';b.onclick=()=>show('more');h.before(b)});
 let lock=null;async function wake(){try{lock=await navigator.wakeLock?.request('screen')}catch{}}
@@ -964,7 +977,7 @@ const EX=[['🦵','قرفصاء (سكوات)','قف ورجولك بعرض كتو
  ['🏖️','صعود الطعس','اطلع الكثيب الرملي بخطوات قصيرة وانزل مشي. من أقوى تمارين الرجول والنفس.']];
 const PLAN=[['السبت','دائرة تمارين (اضغط ابدأ تحت)'],['الأحد','مشي سريع على الرمل 30 إلى 40 دقيقة'],['الاثنين','دائرة تمارين'],['الثلاثاء','راحة أو مشي خفيف'],['الأربعاء','دائرة تمارين + صعود الطعس 5 مرات'],['الخميس','مشي طويل مع الشباب 45 دقيقة'],['الجمعة','راحة']];
 let healthCat=store.get('health','طبخات البر');
-const recipeCards=L=>L.map(r=>`<article class="card recipe"><div class="row"><div class="plate" aria-hidden="true">${r.i}</div><div><h3>${r.n}</h3><span class="muted">${r.t}</span></div></div>
+const recipeCards=L=>L.map(r=>`<article class="card recipe"><div class="row" style="justify-content:space-between;align-items:baseline"><h3>${r.n}</h3><span class="muted">${r.t}</span></div>
   <b>المقادير</b><ul>${r.g.map(x=>`<li>${x}</li>`).join('')}</ul><b>الطريقة</b><ol>${r.s.map(x=>`<li>${x}</li>`).join('')}</ol></article>`).join('');
 function renderHealth(){$('fd-cats').innerHTML=['طبخات البر','أكلات صحية','تمارين','المقاضي'].map(c=>`<button class="chip" data-h="${c}" aria-pressed="${c===healthCat}">${c}</button>`).join('');
   const ex=healthCat==='تمارين',sh=healthCat==='المقاضي';$('workout').hidden=!ex;$('shop').hidden=!sh;$('recipes').hidden=ex||sh;$('fd-note').hidden=sh;if(sh)return renderShop();
@@ -981,7 +994,7 @@ function shopRow(it){const li=document.createElement('li');
   li.querySelector('button').onclick=()=>{shop[shopL].splice(shop[shopL].indexOf(it),1);saveShop();renderShop()};return li}
 function renderShop(){document.querySelectorAll('#sh-lists .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===shopL));
   const L=shop[shopL],todo=L.filter(x=>!x.d),done=L.filter(x=>x.d);
-  $('shop-todo').replaceChildren(...todo.map(shopRow));if(!todo.length)$('shop-todo').innerHTML=`<li class="muted">${L.length?'اشتريت كل شي 👌':'القائمة فاضية. اكتب فوق وش تبي.'}</li>`;
+  $('shop-todo').replaceChildren(...todo.map(shopRow));if(!todo.length)$('shop-todo').innerHTML=`<li class="muted">${L.length?'اشتريت كل شي':'القائمة فاضية. اكتب فوق وش تبي.'}</li>`;
   $('shop-done').replaceChildren(...done.map(shopRow));$('shop-done-wrap').hidden=!done.length;$('shop-n').textContent=`(${done.length})`;
   $('shop-basics').hidden=shopL!=='t'}
 $('sh-lists').onclick=e=>{if(e.target.dataset.l){shopL=e.target.dataset.l;store.set('shopl',shopL);renderShop()}};
@@ -993,7 +1006,7 @@ $('shop-clear').onclick=()=>{const b=$('shop-clear');if(!b.dataset.sure){b.datas
 $('shop-basics').onclick=()=>{const have=new Set(shop.t.map(x=>x.t));TRIP.filter(t=>!have.has(t)).forEach(t=>shop.t.push({t,d:false}));saveShop();renderShop()};
 $('fd-cats').onclick=e=>{if(e.target.dataset.h){healthCat=e.target.dataset.h;store.set('health',healthCat);renderHealth()}};
 $('wk-plan').innerHTML=PLAN.map(([d,t])=>`<li><b style="min-width:70px">${d}</b><span class="grow">${t}</span></li>`).join('');
-$('wk-ex').innerHTML=EX.map(([i,n,t])=>`<details class="riddle"><summary>${i} ${n}</summary><p class="sp">${t}</p></details>`).join('');
+$('wk-ex').innerHTML=EX.map(([i,n,t])=>`<details class="riddle"><summary>${n}</summary><p class="sp">${t}</p></details>`).join('');
 // circuit: first 7 exercises, work/rest seconds, rounds
 const wk={on:false,t:null};
 function speak(t){try{const u=new SpeechSynthesisUtterance(t);u.lang='ar-SA';speechSynthesis.cancel();speechSynthesis.speak(u)}catch{}}
@@ -1001,7 +1014,7 @@ function wkStop(msg){clearInterval(wk.t);wk.on=false;$('wk-go').textContent='ا�
 $('wk-go').onclick=()=>{if(wk.on)return wkStop('وقفت.');const work=+$('wk-work').value,rest=+$('wk-rest').value,rounds=+$('wk-rounds').value,list=EX.slice(0,7);
   const steps=[];for(let r=0;r<rounds;r++)list.forEach((e,k)=>{steps.push([e[1],work,`الجولة ${r+1} من ${rounds}`]);if(k<list.length-1||r<rounds-1)steps.push([k<list.length-1?'راحة، بعدها '+list[k+1][1]:'راحة بين الجولات، بعدها '+list[0][1],k<list.length-1?rest:rest*3,'']) });
   let i=-1,left=0;wk.on=true;$('wk-go').textContent='إيقاف';
-  const next=()=>{if(++i>=steps.length){speak('خلصت التمرين، عافاك الله');return wkStop('خلصت التمرين 💪')}left=steps[i][1];$('wk-now').textContent=steps[i][0];$('wk-round').textContent=steps[i][2];speak(steps[i][0])};
+  const next=()=>{if(++i>=steps.length){speak('خلصت التمرين، عافاك الله');return wkStop('خلصت التمرين')}left=steps[i][1];$('wk-now').textContent=steps[i][0];$('wk-round').textContent=steps[i][2];speak(steps[i][0])};
   next();wk.t=setInterval(()=>{left--;$('wk-left').textContent=left;if(left===3)speak('ثلاثة');if(left<=0)next()},1000);$('wk-left').textContent=left};
 renderHealth();
 
