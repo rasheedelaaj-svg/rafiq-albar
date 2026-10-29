@@ -124,7 +124,10 @@ video{max-height:45vh;background:#000}
 .mbtn{min-height:44px}
 .mbtn svg{width:20px;height:20px;flex:none}
 .warn{color:var(--danger);font-size:.875rem}
-#mapwrap{position:relative;height:calc(100dvh - 120px - env(safe-area-inset-bottom,0px));min-height:360px;margin-inline:calc(50% - 50vw);margin-top:calc(-1 * max(12px,env(safe-area-inset-top,0px)));max-width:100vw}
+/* map screen: the map owns the whole view, everything else lives in floating controls and sheets */
+body.mapmode{padding-bottom:0;overflow:hidden}
+.panel.menu{max-height:88%;background:var(--bg)}
+#mapwrap{position:relative;height:calc(100dvh - 50px - env(safe-area-inset-bottom,0px));min-height:360px;margin-inline:calc(50% - 50vw);margin-top:calc(-1 * max(12px,env(safe-area-inset-top,0px)));max-width:100vw}
 #map{position:absolute;inset:0;z-index:0}
 .fabs{position:absolute;display:flex;gap:12px;z-index:500}
 .fabs.tl{top:calc(12px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));flex-wrap:wrap;width:120px}
@@ -214,7 +217,7 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
       <div style="flex:1;min-width:0"><b class="num" id="nb-dist" style="font-size:1.4rem"></b> <span id="nb-side"></span><div class="muted" id="nb-info" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div></div>
       <button class="fab sm" id="nb-voice" aria-label="الصوت"></button><button class="fab sm" id="nb-stop" aria-label="إنهاء الملاحة"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
-    <div class="fabs tl"><button class="fab" id="m-layer" aria-label="نوع الخريطة" style="color:var(--ink)"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></button><button class="fab" id="m-search" aria-label="بحث"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></button>
+    <div class="fabs tl"><button class="fab" id="m-menu" aria-label="قائمة الملاحة: النقاط والحذف والإعدادات" style="color:var(--tint)"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><button class="fab" id="m-layer" aria-label="نوع الخريطة" style="color:var(--ink)"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></button><button class="fab" id="m-search" aria-label="بحث"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></button>
       <button class="fab" id="m-north" aria-label="البوصلة"><svg id="m-north-ico" viewBox="-12 -12 24 24" width="30" height="30"><path d="M0,-10 L4,0 L-4,0Z" fill="#e5484d"/><path d="M0,10 L4,0 L-4,0Z" fill="#8a97a3"/><text y="4" text-anchor="middle" font-size="7" font-weight="700" fill="#10202e" font-family="sans-serif">N</text></svg></button></div>
     <div class="fabs br"><button class="fab" id="m-zin" aria-label="تكبير"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></button><button class="fab" id="m-zout" aria-label="تصغير"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg></button>
       <button class="fab me" id="map-follow" aria-label="موقعي"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8"/></svg></button></div>
@@ -228,8 +231,9 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
       <div class="fmt" id="sh-fmts" hidden></div>
       <div class="row" style="justify-content:space-between;border-top:1px solid var(--line);padding-top:10px"><button id="sh-details" class="link">تفاصيل</button><button id="sh-nav" class="link" style="font-weight:700">الملاحة ↩</button></div>
     </div>
-  </div>
-  <h2>تفاصيل الملاحة</h2>
+    <div id="menup" class="panel menu" hidden>
+      <div class="row" style="justify-content:space-between"><h2>قائمة الملاحة</h2><button id="mn-close" aria-label="إغلاق القائمة"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>إغلاق</button></div>
+  <div class="card"><h2>النقاط المحفوظة</h2><ul class="list" id="wps"></ul></div>
   <div class="card">
     <div class="row" style="justify-content:space-between"><span>الهدف: <b id="target-name">لم تختر هدف</b></span><span class="muted" id="gps-acc"></span></div>
     <div class="dial">
@@ -270,7 +274,9 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
     <div class="row"><input type="text" id="wp-coord" placeholder="24°28'12&quot;N 54°22'30&quot;E"><button id="wp-add" class="primary">أضف</button></div>
     <span class="warn" id="wp-err" hidden></span>
   </div>
-  <div class="card"><h2>النقاط المحفوظة</h2><ul class="list" id="wps"></ul></div>
+
+    </div>
+  </div>
 </section>
 
 <section id="v-compass" hidden>
@@ -414,7 +420,7 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
 <nav class="tabs" id="tabs"></nav>
 
 <script>
-const APP_VER='26'; // keep in step with V in sw.js
+const APP_VER='27'; // keep in step with V in sw.js
 // CORE-START (pure functions, tested in check.js)
 const R=Math.PI/180,KAABA=[21.4225,39.8262];
 const sin=d=>Math.sin(d*R),cos=d=>Math.cos(d*R),tan=d=>Math.tan(d*R),asin=x=>Math.asin(x)/R,acos=x=>Math.acos(Math.max(-1,Math.min(1,x)))/R,atan2=(y,x)=>Math.atan2(y,x)/R;
@@ -499,7 +505,7 @@ const BAR=['prayer','nav','compass','media','more'],MORE=[['fun','ألعاب ا�
 const ico=(k,w=24)=>`<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
 function show(t){[...BAR,...TABS.map(x=>x[0])].forEach(k=>{const v=$('v-'+k);if(v)v.hidden=k!==t});
   const sel=MORE.some(m=>m[0]===t)?'more':t;BAR.forEach(k=>$('t-'+k).setAttribute('aria-selected',k===sel));
-  store.set('tab',t);scrollTo(0,0);if(t==='nav'){wake();initMap();map?.invalidateSize()}}
+  store.set('tab',t);scrollTo(0,0);document.body.classList.toggle('mapmode',t==='nav');if(t==='nav'){wake();initMap();map?.invalidateSize()}}
 $('tabs').innerHTML=BAR.map(k=>`<button id="t-${k}" role="tab">${ico(k)}${k==='more'?'المزيد':TABS.find(x=>x[0]===k)[1]}</button>`).join('');
 BAR.forEach(k=>$('t-'+k).onclick=()=>show(k));
 $('more-tiles').innerHTML=MORE.map(([k,t,d,c])=>`<button class="tile" data-k="${k}" style="--c:${c}"><span class="tile-i">${ico(k,20)}</span><span class="tile-t"><b>${t}</b><span class="muted">${d}</span></span><svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>`).join('');
@@ -599,10 +605,10 @@ $('c-copy').onclick=()=>pos&&copy(formats(pos)[+store.get('fmt',0)][1],$('c-copy
 /* ---------- navigator ---------- */
 let wps=store.get('wps',[]),target=store.get('target',null);
 function renderWps(){drawWps();$('wps').innerHTML=wps.length?'':'<li class="muted">ما فيه نقاط. أضف نقطة أو احفظ موقعك.</li>';
-  wps.forEach((w,i)=>{const li=document.createElement('li');li.innerHTML=`<span class="grow"><b></b><br><span class="num muted">${formats(w.c)[+store.get('fmt',0)][1]}</span>${pos?` <span class="muted">· ${fmtDist(distance(pos,w.c))}</span>`:''}</span><button>${target===i?'الهدف':'توجه'}</button><button aria-label="حذف">حذف</button>`;
+  wps.forEach((w,i)=>{const li=document.createElement('li');li.innerHTML=`<span class="grow"><b></b><br><span class="num muted">${formats(w.c)[+store.get('fmt',0)][1]}</span>${pos?` <span class="muted">· ${fmtDist(distance(pos,w.c))}</span>`:''}</span><button>${target===i?'الهدف':'توجه'}</button><button class="danger" aria-label="حذف">حذف</button>`;
     li.querySelector('b').textContent=w.n;const[go,del]=li.querySelectorAll('button');if(target===i)go.className='primary';
     go.onclick=()=>{startNav(i);show('nav');window.scrollTo(0,0)};
-    del.onclick=()=>{if(del.dataset.sure){wps.splice(i,1);if(target===i)target=null;else if(target>i)target--;store.set('wps',wps);store.set('target',target);renderWps();renderNav()}else{del.dataset.sure=1;del.textContent='متأكد؟'}};
+    del.onclick=()=>{if(del.dataset.sure){wps.splice(i,1);if(target===i)target=null;else if(target>i)target--;store.set('wps',wps);store.set('target',target);renderWps();renderNav()}else{del.dataset.sure=1;del.textContent='متأكد؟';setTimeout(()=>{delete del.dataset.sure;del.textContent='حذف'},4000)}};
     $('wps').append(li)})}
 $('wp-add').onclick=()=>{const c=parseCoord($('wp-coord').value),err=$('wp-err');
   if(!c){err.hidden=false;err.textContent='ما فهمت الإحداثيات. جرب مثلاً: 24.4539, 54.3773 أو 40R 234567 2712345';return}
@@ -662,7 +668,7 @@ function drawWps(){if(!wpLayer)return;wpLayer.clearLayers();wps.forEach((w,i)=>l
 /* bottom sheet for a tapped place, like OsmAnd's context menu */
 let sheet=null;
 const osmLink=c=>`https://osmand.net/go?lat=${c[0].toFixed(6)}&lon=${c[1].toFixed(6)}&z=15`;
-function openSheet(it){sheet=it;$('sh-osm').href=osmLink(it.c);$('searchp').hidden=true;$('sheet').hidden=false;$('sh-edit').hidden=true;$('sh-fmts').hidden=true;
+function openSheet(it){sheet=it;$('menup').hidden=true;$('sh-osm').href=osmLink(it.c);$('searchp').hidden=true;$('sheet').hidden=false;$('sh-edit').hidden=true;$('sh-fmts').hidden=true;
   $('sh-name').textContent=it.n||'بدون اسم';$('sh-folder').textContent=it.kind==='wp'?'★ المفضلة':it.kind==='place'?'أماكن مستوردة':'';
   const f=formats(it.c);$('sh-coord').textContent=f[1][1];
   $('sh-info').textContent=pos?`${dirName(bearing(pos,it.c))} · ${Math.round(bearing(pos,it.c))}°`:'';$('sh-dist').textContent=pos?fmtDist(distance(pos,it.c)):'توجه';
@@ -676,7 +682,9 @@ $('sh-save').onclick=()=>{wps[sheet.i].n=$('sh-ename').value.trim()||wps[sheet.i
 $('sh-del').onclick=()=>{const b=$('sh-del');if(!b.dataset.sure){b.dataset.sure=1;b.textContent='متأكد؟';return}delete b.dataset.sure;b.textContent='حذف';const i=sheet.i;wps.splice(i,1);if(target===i){target=null;navOn=false}else if(target>i)target--;store.set('wps',wps);store.set('target',target);renderWps();renderNav();closeSheet()};
 $('sh-share').onclick=async()=>{const f=formats(sheet.c),t=`${sheet.n||'موقع'}\n${f[1][1]}\n${f[4][1]}`;try{await navigator.share({title:sheet.n,text:t})}catch(e){if(e?.name!=='AbortError')copy(t,$('sh-share').querySelector('span'))}};
 $('sh-more').onclick=()=>{$('sh-fmts').hidden=!$('sh-fmts').hidden};
-$('sh-details').onclick=()=>{closeSheet();document.querySelector('#v-nav h2').scrollIntoView({behavior:'smooth'})};
+function openMenu(){closeSheet();$('searchp').hidden=true;$('menup').hidden=false}
+$('m-menu').onclick=()=>$('menup').hidden?openMenu():$('menup').hidden=true;$('mn-close').onclick=()=>$('menup').hidden=true;
+$('sh-details').onclick=openMenu;
 $('sh-go').onclick=$('sh-nav').onclick=()=>{startNav(asWp());closeSheet()};
 
 /* search: imported places and favourites by name, or any coordinate format */
@@ -695,7 +703,7 @@ let navOn=false,voice=store.get('voice',true),said={side:'',sideAt:0,miles:new S
 const VOICE_ON='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>',VOICE_OFF='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>';
 function say(t){if(!voice)return;try{const u=new SpeechSynthesisUtterance(t);u.lang='ar-SA';const v=speechSynthesis.getVoices().find(v=>v.lang.startsWith('ar'));if(v)u.voice=v;speechSynthesis.cancel();speechSynthesis.speak(u)}catch{}}
 const spokenDist=d=>d>=1000?`${(d/1000).toFixed(d<10000?1:0).replace('.0','')} كيلو`:`${Math.round(d/10)*10} متر`;
-function startNav(i){target=i;store.set('target',i);navOn=true;said={side:'',sideAt:0,miles:new Set(),arrived:false};
+function startNav(i){$('menup').hidden=true;target=i;store.set('target',i);navOn=true;said={side:'',sideAt:0,miles:new Set(),arrived:false};
   if(pos){const d=distance(pos,wps[i].c);[50000,20000,10000,5000,2000,1000,500,200,100].forEach(m=>{if(d<=m)said.miles.add(m)});say(`بدأت الملاحة إلى ${wps[i].n}. المسافة ${spokenDist(d)}، اتجاه ${dirName(bearing(pos,wps[i].c))}`)}
   renderWps();renderNav()}
 $('nb-stop').onclick=()=>{navOn=false;speechSynthesis?.cancel();renderNav()};
