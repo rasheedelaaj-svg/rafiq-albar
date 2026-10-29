@@ -1,7 +1,7 @@
 // node check.js — asserts the pure math in app.html
 const fs=require('fs'),assert=require('assert');
 const src=fs.readFileSync(__dirname+'/app.html','utf8').split('// CORE-START')[1].replace(/^.*\n/,'').split('// CORE-END')[0];
-const C=new Function(src+';return{prayerTimes,bearing,distance,toUTM,fromUTM,parseCoord,formats,side,toMGRS,parseCoordStrict,projSeg,isGap,trackStats,reverseRoute,routeProgress,toGPX}')();
+const C=new Function(src+';return{prayerTimes,bearing,distance,toUTM,fromUTM,parseCoord,formats,side,toMGRS,parseCoordStrict,projSeg,isGap,trackStats,reverseRoute,routeProgress,toGPX,tilesIn}')();
 const hm=h=>`${String(Math.floor(h)).padStart(2,'0')}:${String(Math.round(h%1*60)).padStart(2,'0')}`;
 const t=C.prayerTimes(2026,10,29,24.7136,46.6753,3,'umm');console.log('Riyadh',Object.fromEntries(Object.entries(t).map(([k,v])=>[k,hm(v)])));
 const near=(a,b,e)=>assert(Math.abs(a-b)<e,`${a} vs ${b}`);
@@ -39,4 +39,6 @@ assert(C.isGap({c:[28,46],t:0},{c:[28.1,46],t:5000}));assert(!C.isGap({c:[28,46]
 const r2=C.reverseRoute([[{c:[28,46],t:0},{c:[28,46.001],t:1}],[{c:[28,46.01],t:9},{c:[28,46.011],t:10}]]);assert.deepEqual(r2.map(p=>p.gap),[false,false,true,false]);
 pr=C.routeProgress(r2,[28,46.005],0);assert(pr.k!==1,'never matches across a gap');
 const g=C.toGPX([{n:'المخيم <1>',c:[28.391972,46.336194],cat:'camp',note:'جنب الطلحة'}],[{name:'رحلة',segs}]);assert(g.includes('المخيم &lt;1&gt;')&&g.includes('<type>camp</type>')&&(g.match(/<trkpt/g)||[]).length===60);
+// 46.7E 24.7N at z14: x=floor(226.7/360*16384)=10317, y=floor((1-asinh(tan 24.7°)/π)/2*16384)=7031; z0 is one tile; a small box gives a few tiles per zoom
+assert.deepEqual(C.tilesIn([46.7,24.7,46.7,24.7],14,14),[[14,10317,7031]]);assert.equal(C.tilesIn([-180,-85,180,85],0,0).length,1);assert.equal(C.tilesIn([46,24,47,25],0,4).length,5);
 console.log('ok');
