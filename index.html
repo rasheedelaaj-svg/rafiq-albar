@@ -18,7 +18,7 @@
 }
 html,body{height:100%}
 body{background:var(--bg);color:var(--fg);font:15px/1.6 var(--body);direction:rtl;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 96px}
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px calc(110px + env(safe-area-inset-bottom,0px))}
 h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;font-weight:700}
 h1{font-size:1.5rem}h2{font-size:1.15rem}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
@@ -58,6 +58,10 @@ details.riddle p{margin:6px 0 0;color:var(--ink);font-family:var(--display);font
 .recipe ol,.recipe ul{margin:0;padding-inline-start:20px}
 .recipe h3{font-size:1.05rem}
 video,audio{width:100%;border-radius:10px}
+video{max-height:45vh;background:#000}
+button.danger{background:#fdecec;color:#b42318;border-color:#f5b5b0}
+.mbtn{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-weight:600}
+.mbtn svg{width:20px;height:20px;flex:none}
 .warn{color:var(--ink);font-size:.85rem}
 #mapwrap{position:relative;height:calc(100dvh - 120px - env(safe-area-inset-bottom,0px));min-height:360px;margin-inline:calc(50% - 50vw);margin-top:-12px;max-width:100vw}
 #map{position:absolute;inset:0;z-index:0}
@@ -233,7 +237,7 @@ details.riddle p.verse{margin:6px 0 12px;text-align:center;font-family:var(--dis
     <div class="row"><input type="text" id="m-url" placeholder="أو الصق رابط ملف للتحميل"><button id="m-dl">نزّل</button></div>
     <span class="muted" id="m-status">الملفات تنحفظ داخل التطبيق وتشتغل بدون نت.</span>
   </div>
-  <div class="card" id="player-card" hidden><b id="now-title"></b><div id="player"></div></div>
+  <div class="card" id="player-card" hidden><div class="row" style="justify-content:space-between"><b id="now-title"></b><button class="danger mbtn" id="now-del" hidden></button></div><div id="player"></div></div>
   <div class="card" id="mushaf" hidden>
     <div class="row" style="justify-content:space-between"><h2>القرآن كامل · سعد الغامدي</h2><button id="gmd-all" class="primary">نزّل الكل</button></div>
     <span class="muted" id="gmd-status">يشتغل بالنت، وإذا نزلت السورة تشتغل بدون نت. القرآن كامل حوالي 1 جيجا.</span>
@@ -630,7 +634,7 @@ async function renderMushaf(){$('mushaf').hidden=cat!=='quran';if(cat!=='quran')
 async function playGmd(items,i){const it=items[i],rec=gmdHave.has(it.id)?await dbGet(it.id):null;if(curUrl)URL.revokeObjectURL(curUrl);curUrl=null;
   const el=document.createElement('audio');el.controls=true;el.autoplay=true;let k=0;
   if(rec){curUrl=URL.createObjectURL(rec.blob);el.src=curUrl}else{el.src=it.urls[0];el.onerror=()=>{if(++k<it.urls.length)el.src=it.urls[k];else $('now-title').textContent='ما قدرت أشغل '+it.name+'. تأكد من النت.'}}
-  el.onended=()=>{if(items[i+1])playGmd(items,i+1)};$('player').replaceChildren(el);$('now-title').textContent=it.name+' · سعد الغامدي';$('player-card').hidden=false}
+  el.onended=()=>{if(items[i+1])playGmd(items,i+1)};$('player').replaceChildren(el);$('now-title').textContent=it.name+' · سعد الغامدي';$('player-card').hidden=false;$('now-del').hidden=true;curId=null}
 $('gmd-all').onclick=async()=>{const b=$('gmd-all');if(b.dataset.busy){b.dataset.stop=1;return}b.dataset.busy=1;b.textContent='إيقاف';delete b.dataset.stop;
   const todo=gmdItems().filter(it=>!gmdHave.has(it.id));let done=0,fail=0;
   for(const it of todo){if(b.dataset.stop)break;$('gmd-status').textContent=`جاري التنزيل: ${it.name} (${done+1} من ${todo.length})`;if(await gmdFetch(it))done++;else fail++}
@@ -642,12 +646,17 @@ async function renderMedia(){renderMushaf();document.querySelectorAll('#cats .ch
     $('artist-links').innerHTML=`<span class="muted">اسمع ${artist} من:</span><a class="btn" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${q}">يوتيوب</a><a class="btn" target="_blank" rel="noopener" href="https://play.anghami.com/search/${q}">أنغامي</a><a class="btn" target="_blank" rel="noopener" href="https://open.spotify.com/search/${q}">سبوتيفاي</a>`}
   const items=(await dbAll()).filter(i=>i.cat===cat&&(!songs||(i.artist||'غيرهم')===artist)).sort((a,b)=>a.added-b.added);
   $('m-list').innerHTML=items.length?'':`<li class="muted">${songs?'ما فيه شي لـ'+artist+'. اختر الفنان فوق وبعدين أضف ملفاته.':'القسم فاضي. أضف ملفات من زر الإضافة.'}</li>`;
-  items.forEach((it,i)=>{const li=document.createElement('li');li.innerHTML='<span class="grow"></span><button class="primary">تشغيل</button><button>حذف</button>';li.firstChild.textContent=it.name;
-    const[p,d]=li.querySelectorAll('button');p.onclick=()=>play(items,i);
-    d.onclick=async()=>{if(!d.dataset.sure){d.dataset.sure=1;d.textContent='متأكد؟';return}await dbDel(it.id);renderMedia()};$('m-list').append(li)})}
+  items.forEach((it,i)=>{const li=document.createElement('li');li.innerHTML=`<span class="grow"></span><button class="primary mbtn" aria-label="تشغيل">${ICO_PLAY}تشغيل</button><button class="danger mbtn" aria-label="حذف">${ICO_DEL}حذف</button>`;li.firstChild.textContent=it.name;
+    const[p,d]=li.querySelectorAll('button');p.onclick=()=>play(items,i);delBtn(d,it.id);$('m-list').append(li)})}
+const ICO_PLAY='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  ICO_DEL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
+function delBtn(d,id){d.onclick=async()=>{if(!d.dataset.sure){d.dataset.sure=1;d.innerHTML=ICO_DEL+'متأكد؟ اضغط مرة ثانية';setTimeout(()=>{delete d.dataset.sure;d.innerHTML=ICO_DEL+'حذف'},4000);return}
+  if(curId===id){$('player').replaceChildren();$('player-card').hidden=true}await dbDel(id);renderMedia()}}
+let curId=null;
 function play(items,i){const it=items[i];if(curUrl)URL.revokeObjectURL(curUrl);curUrl=URL.createObjectURL(it.blob);
   const el=document.createElement(it.type.startsWith('video')?'video':'audio');el.controls=true;el.src=curUrl;el.autoplay=true;el.setAttribute('playsinline','');
-  el.onended=()=>{if(items[i+1])play(items,i+1)};$('player').replaceChildren(el);$('now-title').textContent=it.name;$('player-card').hidden=false}
+  el.onended=()=>{if(items[i+1])play(items,i+1)};$('player').replaceChildren(el);$('now-title').textContent=it.name;$('player-card').hidden=false;
+  curId=it.id;const nd=$('now-del');nd.hidden=false;nd.innerHTML=ICO_DEL+'حذف';delete nd.dataset.sure;delBtn(nd,it.id)}
 
 /* ---------- riddles ---------- */
 const RIDDLES=[['شي كل ما زاد نقص؟','العمر'],['له أسنان وما يعض؟','المشط'],['يمشي بلا رجلين ويبكي بلا عيون؟','السحاب'],['بيت ما له أبواب ولا شبابيك؟','البيضة'],
