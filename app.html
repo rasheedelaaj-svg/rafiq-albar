@@ -209,12 +209,12 @@ video,audio{width:100%;border-radius:10px}
     <div class="row" style="justify-content:space-between"><span>الفريق الأول: <b class="num" id="ch-s0">0</b></span><span>الفريق الثاني: <b class="num" id="ch-s1">0</b></span></div>
     <b id="ch-turn"></b>
     <div style="text-align:center;padding:18px 0;display:flex;flex-direction:column;gap:6px">
-      <span class="muted" id="ch-kind">اضغط ابدأ</span>
+      <span class="muted" id="ch-kind">اضغط «اعرض الاسم»</span>
       <div class="big" id="ch-title">؟</div>
       <div class="num" style="font-size:2rem" id="ch-time">60</div>
     </div>
     <div class="row" style="justify-content:center"><button class="primary" id="ch-start">اعرض الاسم</button><button class="primary" id="ch-go" hidden>ابدأ الوقت</button><button id="ch-ok" class="primary" hidden>عرفوه</button><button id="ch-skip" hidden>تخطي</button></div>
-    <label class="row">وقت الدور <select id="ch-sec"><option>45</option><option selected>60</option><option>90</option></select> ثانية</label>
+    <label class="row">وقت الدور <select id="ch-sec"><option value="60">دقيقة</option><option value="120" selected>دقيقتين</option><option value="180">3 دقايق</option><option value="240">4 دقايق</option><option value="300">5 دقايق</option></select></label>
   </div>
 
   <div id="g-sj" class="card" hidden>
@@ -542,7 +542,7 @@ const deck=()=>shuffle(Object.entries(TITLES).flatMap(([k,v])=>v.map(t=>[k,t])))
 let ch={deck:deck(),score:[0,0],team:0,left:0,timer:null,round:false};
 function chRender(){$('ch-s0').textContent=ch.score[0];$('ch-s1').textContent=ch.score[1];$('ch-turn').textContent='الدور على: '+(ch.team?'الفريق الثاني':'الفريق الأول');
   $('ch-start').hidden=ch.round;$('ch-go').hidden=$('ch-ok').hidden=$('ch-skip').hidden=!ch.round;
-  $('ch-go').textContent=ch.timer?'إيقاف مؤقت':ch.left<+$('ch-sec').value?'كمّل':'ابدأ الوقت';$('ch-time').textContent=ch.round?ch.left:$('ch-sec').value}
+  $('ch-go').textContent=ch.timer?'إيقاف مؤقت':ch.left<+$('ch-sec').value?'كمّل':'ابدأ الوقت';const t=ch.round?ch.left:+$('ch-sec').value;$('ch-time').textContent=`${t/60|0}:${String(t%60).padStart(2,'0')}`}
 function chNext(){if(!ch.deck.length)ch.deck=deck();const[k,t]=ch.deck.pop();$('ch-kind').textContent=k;$('ch-title').textContent=t}
 function chStop(){clearInterval(ch.timer);ch.timer=null}
 function chEnd(){chStop();ch.round=false;$('ch-kind').textContent='خلص الوقت';$('ch-title').textContent='؟';ch.team=1-ch.team;
