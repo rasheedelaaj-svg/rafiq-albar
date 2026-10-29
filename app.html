@@ -30,9 +30,9 @@ button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 input,select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
 input[type=text]{flex:1}
-nav.tabs{position:fixed;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(7,1fr);background:var(--surface);border-top:1px solid var(--line);
+nav.tabs{position:fixed;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(8,1fr);background:var(--surface);border-top:1px solid var(--line);
   padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);z-index:5}
-nav.tabs button{border:0;border-radius:0;background:none;padding:8px 2px 10px;font-size:.75rem;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted)}
+nav.tabs button{border:0;border-radius:0;background:none;padding:8px 2px 10px;font-size:.68rem;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted)}
 nav.tabs button svg{width:22px;height:22px}
 nav.tabs button[aria-selected=true]{color:var(--ink)}
 .big{font-family:var(--display);font-size:2.4rem;line-height:1.1}
@@ -80,6 +80,8 @@ button.link{background:none;border:0;color:var(--ink);font-size:1.05rem}
 #map.far .lbl{display:none}
 .lbl{font-family:var(--body);font-size:12px;padding:1px 6px;background:#fffd;color:#2a2118;border:0;box-shadow:none}
 .lbl::before{display:none}
+svg.sky{display:block;width:100%;max-width:360px;margin:8px auto;background:#0b1d33;border-radius:12px}
+.emo{font-size:3rem;text-align:center;margin:6px 0}
 details.riddle p.sp{margin:0 0 8px;color:var(--fg);font-family:var(--body);font-size:1.05rem}
 details.riddle p.verse{margin:6px 0 12px;text-align:center;font-family:var(--display);font-size:1.15rem;color:var(--ink);line-height:2}
 @media (prefers-reduced-motion:no-preference){.rot{transition:transform .25s linear}}
@@ -288,6 +290,14 @@ details.riddle p.verse{margin:6px 0 12px;text-align:center;font-family:var(--dis
   <div class="card" id="stories"></div>
 </section>
 
+<section id="v-info" hidden>
+  <h1>معلومات البر</h1>
+  <span class="muted">نباتات الصحراء ونجوم الاهتداء وحشراتها. اضغط على أي واحد يفتح.</span>
+  <div class="row" id="in-cats"></div>
+  <span class="muted" id="in-note"></span>
+  <div class="card" id="info"></div>
+</section>
+
 <section id="v-food" hidden>
   <h1>طبخات البر</h1>
   <span class="muted">المقادير لأربعة أشخاص تقريباً.</span>
@@ -371,8 +381,9 @@ const ICONS={
   media:'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
   fun:'<path d="M9 9a3 3 0 1 1 4 2.8c-.7.3-1 1-1 1.7V15M12 19h.01"/>',
   stories:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h7M8 11h7"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/>',
   food:'<path d="M4 11h16a8 8 0 0 1-16 0zM8 7c0-1 1-1 1-2M12 7c0-1 1-1 1-2M16 7c0-1 1-1 1-2"/>'};
-const TABS=[['prayer','الصلاة'],['nav','الملاحة'],['compass','البوصلة'],['media','الصوتيات'],['fun','الألعاب'],['stories','القصص'],['food','الطبخ']];
+const TABS=[['prayer','الصلاة'],['nav','الملاحة'],['compass','البوصلة'],['media','الصوتيات'],['fun','الألعاب'],['stories','القصص'],['info','معلومات'],['food','الطبخ']];
 function show(t){TABS.forEach(([k])=>{$('v-'+k).hidden=k!==t;$('t-'+k).setAttribute('aria-selected',k===t)});store.set('tab',t);if(t==='nav'){wake();initMap();map?.invalidateSize()}}
 $('tabs').innerHTML=TABS.map(([k,l])=>`<button id="t-${k}" role="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>${l}</button>`).join('');
 TABS.forEach(([k])=>$('t-'+k).onclick=()=>show(k));
@@ -723,6 +734,72 @@ function renderStories(){const cats=['الكل',...new Set(STORIES.map(x=>x[0]))
   $('st-cats').innerHTML=cats.map(c=>`<button class="chip" data-s="${c}" aria-pressed="${c===stCat}">${c}</button>`).join('');
   $('stories').innerHTML=STORIES.filter(x=>stCat==='الكل'||x[0]===stCat).map(([c,t,b])=>`<details class="riddle"><summary>${t} <span class="muted">· ${c}</span></summary><div style="margin-top:8px;line-height:1.9;font-size:1.05rem">${b.split('\n').map(l=>l[0]==='§'?`<p class="verse">${l.slice(1).replace(' ... ','<br>')}</p>`:`<p class="sp">${l}</p>`).join('')}</div></details>`).join('')}
 $('st-cats').onclick=e=>{if(e.target.dataset.s){stCat=e.target.dataset.s;store.set('stcat',stCat);renderStories()}};renderStories();
+
+/* ---------- info ---------- */
+// [name, latin/other, emoji, text]
+const PLANTS=[
+['العرفج','Rhanterium epapposum','🌼','شجيرة صغيرة كثيفة، تخضر بعد المطر ويطلع فيها زهر أصفر في الربيع، وريحتها زينة إذا ترطبت. حطبها يولع بسرعة، ومرعى زين للإبل والغنم. هي النبتة الوطنية لدولة الكويت.'],
+['الرمث','Haloxylon salicornicum','🌿','شجيرة ملحية أغصانها خضراء رفيعة بلا ورق واضح، تنتشر في السهول والقيعان. الإبل تحبها، والحطب منها يعطي جمر زين.'],
+['الأرطى','Calligonum comosum','🌾','شجيرة الرمال والنفود، أغصانها رفيعة متشابكة، وجذورها طويلة تثبّت الطعوس. جمرها قوي ويدوم، وكانوا يدبغون الجلود بعروقها.'],
+['الغضا','Haloxylon persicum','🔥','شجرة رملية مشهورة عند العرب بجمرها اللي يدوم طويل، ولهذا تكثر في الشعر: «جمر الغضا». تنمو في النفود والرمال العميقة.'],
+['السمر','Vachellia tortilis','🌳','شجرة شوكية مظلّتها عريضة ومسطحة، ظلها ملجأ في القيظ. حطبها من أجود الحطب وجمره ثقيل، والإبل تاكل ورقها وثمرها. انتبه للشوك.'],
+['الطلح','Vachellia gerrardii','🌳','شبيه السمر لكن أكبر وأعلى، ينمو في الأودية والشعاب. زهره أبيض أو أصفر كريات، وصمغه يُستعمل من قديم.'],
+['السدر','Ziziphus spina-christi','🍃','شجرة دائمة الخضرة في الأودية والقرى، ثمرها النبق يؤكل حلو. ورقها يُطحن ويُغسل فيه، وخشبها قاسي وحطبه زين.'],
+['الخزامى','Horwoodia dicksoniae','💜','زهرة بنفسجية ريحتها فواحة، تطلع في الربيع بعد سنين المطر في الشمال. من أحلى روائح البر، والناس يطلعون يتمشون في مواسمها.'],
+['النفل','Trigonella stellata','🌱','عشبة ربيعية صغيرة زهرها أصفر، من أطيب المراعي. يقولون إذا كثر النفل سمنت الحلال.'],
+['القيصوم','Achillea fragrantissima','🌿','شجيرة رمادية ريحتها قوية وحادة، يستعملها أهل البادية بالطب الشعبي للبطن والزكام، ويحطونها في الماي يغلونها.'],
+['الشيح','Artemisia sieberi','🌿','شجيرة رمادية صغيرة ريحتها عطرية، تنتشر في الشمال. يُغلى ويُشرب عند أهل البر، ومرعى للغنم.'],
+['الثمام','Panicum turgidum','🌾','عشب كثيف طويل يشبه الخيزران الرفيع، ينمو في الرمل. كانوا يسقفون فيه العشش ويسدّون فيه، والإبل تاكله.'],
+['الحنظل','Citrullus colocynthis','🍈','نبات زاحف ثمرته كروية مخططة خضراء وتصفر إذا يبست، تشبه البطيخ الصغير. مُرّ جداً وسام، لا ياكله أحد ولا تعطيه للأطفال.'],
+['العُشَر','Calotropis procera','⚠️','شجيرة ورقها عريض رمادي وثمرها منفوخ مثل البالون. فيها حليب أبيض سام، إذا جا في العين يضرها بقوة. لا تلمسها ولا تقطعها، ولا تشب حطبها.'],
+['الفقع (الكمأ)','Terfezia','🥔','مو نبات، فطر يطلع تحت الأرض بعد أمطار الوسم والرعد، ويُعرف بتشقق التراب فوقه وعند نبتة الرقروق. أنواعه الزبيدي والخلاسي والجبي. أكل البر الفاخر.']];
+const BUGS=[
+['العقرب الأسود','Androctonus crassicauda','🦂','عقرب كبير ذيله غليظ، من أخطر عقارب الجزيرة. يختبي تحت الحجر والحطب وبين أغراض المخيم بالليل. نفّض الفراش والجزمة قبل اللبس. إذا لدغ أحد: هدّه، لا تجرح مكان اللدغة ولا تمصّها، وروح المستشفى على طول خصوصاً للأطفال والكبار.'],
+['العقرب الأصفر','Leiurus quinquestriatus','🦂','عقرب أصفر نحيف وذيله رفيع، سمّه قوي جداً ومن أخطر العقارب في العالم، مع إنه شكله أضعف. نفس الحذر ونفس الإسعاف: المستشفى بسرعة.'],
+['عنكبوت الجمل','Solifugae','🕷️','كبير وسريع ولونه رملي، يقرب من الضو والظل بالليل. شكله مخيف وعضته تعوّر، لكنه ما فيه سم خطير على الإنسان. نظّف الجرح.'],
+['أم أربعة وأربعين','Scolopendra','🐛','دودة طويلة برجول كثيرة ولونها أصفر أو بني، تختبي تحت الحجر. لسعتها مؤلمة جداً وتورّم، ونادراً تكون خطيرة. الكمادات الباردة، والمستشفى إذا زاد الورم.'],
+['الجراد','Schistocerca gregaria','🦗','يجي أسراب في بعض السنين ويأكل الأخضر. كان أهل البادية يصيدونه بالفجر وهو بارد ما يطير، ويحمسونه أو يسلقونه ويملحونه. لا تاكل جراد مرشوش بمبيد.'],
+['أبو جعل (الجُعَل)','Scarabaeus','🪲','خنفساء سودا تدحرج كور البعر وتدفنها، تنظّف البر. ما تضر.'],
+['الخنفساء السودا','Tenebrionidae','🪲','خنفساء سودا بطيئة تمشي على الرمل بالليل، إذا خافت ترفع مؤخرتها وتطلع ريحة. ما تضر.'],
+['النمل','Formicidae','🐜','في البر أنواع، منها نمل أسود كبير قرصته حارة. لا تنصب الخيمة على بيت نمل، وشوف الأرض قبل الجلسة.'],
+['القراد','Ixodida','🕷️','يتعلق بالإبل والغنم ويقرب من الإنسان. إذا لقيته لاصق في الجلد اسحبه بملقط من قريب للجلد بهدوء، لا تحرقه ولا تعصره.'],
+['الدبور','Vespa orientalis','🐝','دبور أحمر بني بخط أصفر، يجي عند الماي والأكل الحلو. لسعته مؤلمة، والخطر على اللي عنده حساسية. لا تخلي علب العصير مفتوحة.'],
+['البعوض والذباب','Diptera','🦟','يكثرون عند المزارع والماي والرطوبة بعد المطر. خيّم بعيد عن مستنقعات الماي، وخذ طارد حشرات.']];
+// stars: d = drawing [x,y,size,label?] in a 200x120 box, l = lines [i,j]
+const STARS=[
+['الجدي (نجم القطب)','Polaris','النجم اللي ما يتحرك. ثابت في جهة الشمال، وكل النجوم تدور حوله. إذا وقفت ووجهك له فأنت تطالع الشمال، ويمينك الشرق. ارتفاعه عن الأفق يساوي خط العرض حقك (في الكويت والسعودية بين 20 و30 درجة تقريباً). مو لامع مرة، فعشان تلقاه استعمل بنات نعش أو الكف الخضيب.',
+ {d:[[170,22,5,'الجدي'],[30,95,3],[52,88,3],[72,92,3],[90,96,3],[100,80,3],[125,78,3,'الدبّ'],[118,58,3,'المرق']],l:[[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,4]],p:[[7,6,0]]}],
+['بنات نعش','الدب الأكبر · Big Dipper','سبعة نجوم على شكل مغرفة أو نعش وراه ثلاث بنات. النجمين في طرف المغرفة (الدبّ والمرق) إذا مديت خط بينهم وكملته حوالي خمس مرات طولهم يوصلك للجدي. تبين زين في الربيع والصيف أول الليل جهة الشمال.',
+ {d:[[20,95,3],[45,85,3],[68,90,3],[88,96,3],[98,78,3],[125,74,4,'الدبّ'],[120,52,4,'المرق'],[178,20,5,'الجدي']],l:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,3]],p:[[6,5,7]]}],
+['الكف الخضيب','Cassiopeia','خمسة نجوم على شكل حرف W أو M، تكون في الجهة المقابلة لبنات نعش حول الجدي. لما تكون بنات نعش واطية تحت (الخريف والشتاء)، الكف الخضيب يكون عالي، فتستعمله تلقى الجدي في نصف المسافة بينهم.',
+ {d:[[30,40,4],[65,70,4],[100,45,4],[135,72,4],[165,38,4],[100,110,5,'الجدي']],l:[[0,1],[1,2],[2,3],[3,4]]}],
+['سهيل','Canopus','ثاني ألمع نجم في السماء، يطلع واطي في الجنوب قريب من الأفق. إذا شفته فأنت تطالع الجنوب تقريباً. يطلع في الفجر آخر شهر أغسطس، وطلوعه عند العرب بشارة بانكسار الحر: «إذا طلع سهيل برد الليل». يرتفع شوي فوق الأفق ويغيب بسرعة، ويبين أوضح كل ما رحت جنوب.',
+ {d:[[100,72,7,'سهيل'],[20,112,0],[180,112,0]],l:[[1,2]],h:1}],
+['الثريا','Pleiades','عنقود صغير من ست أو سبع نجوم متقاربة كأنها حفنة لؤلؤ. طلوعها مع الفجر (أول يونيو) عند العرب بداية القيظ، وغيابها مواسم. تشوفها زين في ليالي الشتاء فوق الراس. حادّ النظر يعدّ سبعة.',
+ {d:[[90,50,4],[105,44,4],[118,52,3],[100,62,4],[86,66,3],[112,68,3],[124,40,2]],l:[]}],
+['الجوزاء','Orion','من أوضح أشكال السماء في الشتاء: أربع نجوم على شكل مستطيل، وفي الوسط ثلاث نجوم على خط واحد (النظم أو حزام الجوزاء). النجم الأول من الثلاث يطلع من الشرق تماماً ويغيب في الغرب تماماً، فهي بوصلة طبيعية. فوقها نجم أحمر (منكب الجوزاء) وتحتها نجم أبيض مزرق (رِجل الجوزاء).',
+ {d:[[55,20,5,'المنكب'],[145,25,4],[85,60,3],[100,57,3],[115,54,3,'النظم'],[60,100,4],[148,98,5,'الرِّجل']],l:[[0,2],[1,4],[2,3],[3,4],[2,5],[4,6]]}],
+['المرزم','Sirius · الشعرى اليمانية','ألمع نجم في السماء كلها، أبيض يلمع ويتغير لونه قريب الأفق. كثير من أهل الخليج يسمونه المرزم (واسم مرزم بالأصل لنجم جنبه). تلقاه إذا مديت خط الثلاث نجوم حق الجوزاء لتحت يسار. يبين في ليالي الشتاء، وطلوعه الفجري في الصيف يسمونه «الشعرى» وفيه شدة الحر.',
+ {d:[[150,25,3],[135,32,3],[120,39,3,'نظم الجوزاء'],[45,95,8,'المرزم']],l:[[0,1],[1,2]],p:[[0,2,3]]}],
+['الدبران','Aldebaran','نجم أحمر برتقالي لامع، يجي ورا الثريا دايماً كأنه يلحقها، ولهذا سموه الدبران (التابع). حوله نجوم على شكل حرف V. تلقاه بين الثريا والجوزاء.',
+ {d:[[40,30,3,'الثريا'],[110,70,6,'الدبران'],[130,55,3],[140,72,3],[150,62,3],[170,100,4,'الجوزاء']],l:[[1,2],[1,3],[2,4],[3,4]]}],
+['العقرب','Scorpius','شكل كبير على هيئة عقرب في الجنوب بليالي الصيف، وفي قلبه نجم أحمر لامع اسمه قلب العقرب. ذيله المعقوف قريب من الأفق الجنوبي. لما يكون عالي فهو في جهة الجنوب.',
+ {d:[[170,20,3],[165,35,3],[160,50,3],[130,55,6,'قلب العقرب'],[110,70,3],[100,90,3],[80,105,3],[55,108,3],[40,98,3],[45,85,3]],l:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[6,7],[7,8],[8,9]]}],
+['الزهرة','Venus · نجمة الصبح','مو نجم، كوكب. أشد شي يلمع بعد القمر، لا يرمش. يطلع إما في الغرب بعد المغرب (نجمة المسا) أو في الشرق قبل الفجر (نجمة الصبح). إذا شفتها قبل الفجر فالشرق قدامك.',
+ {d:[[100,55,9,'الزهرة'],[20,112,0],[180,112,0]],l:[[1,2]],h:1}]];
+function skySvg(s){const P=s.d;let g=s.l.map(([a,b])=>`<line x1="${P[a][0]}" y1="${P[a][1]}" x2="${P[b][0]}" y2="${P[b][1]}" stroke="#7fb2d6" stroke-width="1" stroke-opacity=".6"/>`).join('');
+  (s.p||[]).forEach(([a,b,c])=>{const q=P[c]||[P[b][0]+(P[b][0]-P[a][0])*4,P[b][1]+(P[b][1]-P[a][1])*4];g+=`<line x1="${P[b][0]}" y1="${P[b][1]}" x2="${q[0]}" y2="${q[1]}" stroke="#f5c542" stroke-dasharray="4 4" stroke-width="1.5"/>`});
+  if(s.h)g+=`<rect x="0" y="112" width="200" height="8" fill="#3b2f1e"/><text x="100" y="108" fill="#9fb7cc" font-size="9" text-anchor="middle">الأفق</text>`;
+  g+=P.filter(p=>p[2]).map(([x,y,r,n])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${r>=6?'#fff6d6':'#fff'}"/>${n?`<text x="${x}" y="${y-r-4}" fill="#cfe3f3" font-size="10" text-anchor="middle">${n}</text>`:''}`).join('');
+  return `<svg class="sky" viewBox="0 0 200 120" role="img" aria-label="رسمة ${s.n}">${g}</svg>`}
+let infoCat=store.get('info','نباتات');
+const imgLink=n=>`<a class="btn" target="_blank" rel="noopener" href="https://www.google.com/search?tbm=isch&q=${encodeURIComponent(n)}">صور حقيقية</a>`;
+function renderInfo(){$('in-cats').innerHTML=['نباتات','نجوم','حشرات'].map(c=>`<button class="chip" data-i="${c}" aria-pressed="${c===infoCat}">${c}</button>`).join('');
+  $('in-note').textContent=infoCat==='نجوم'?'الرسمة تقريبية للشكل. الخط الأصفر المتقطع يوريك وين تمد عينك.':'الصور الحقيقية تفتح بحث جوجل (يبيلها نت).';
+  const L=infoCat==='نباتات'?PLANTS:infoCat==='حشرات'?BUGS:STARS;
+  $('info').innerHTML=L.map(x=>{const st=infoCat==='نجوم';return `<details class="riddle"><summary>${st?'✨':x[2]} ${x[0]} <span class="muted">· ${x[1]}</span></summary>
+    ${st?skySvg({...x[3],n:x[0]}):`<div class="emo">${x[2]}</div>`}<p class="sp">${st?x[2]:x[3]}</p>${imgLink(st?x[0]+' نجم '+x[1]:x[0]+' '+x[1])}</details>`}).join('')}
+$('in-cats').onclick=e=>{if(e.target.dataset.i){infoCat=e.target.dataset.i;store.set('info',infoCat);renderInfo()}};renderInfo();
 
 /* ---------- recipes ---------- */
 const RECIPES=[
