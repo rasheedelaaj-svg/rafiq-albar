@@ -191,6 +191,7 @@ video,audio{width:100%;border-radius:10px}
   <h1>الصوتيات والفيديو</h1>
   <div class="row" id="cats"></div>
   <div class="card">
+    <div class="row" id="artists" hidden></div>
     <div class="row">
       <label class="btn" style="background:var(--accent);color:var(--accent-fg);border-color:var(--accent)">أضف ملفات من الجوال<input type="file" id="m-files" accept="audio/*,video/*" multiple hidden></label>
     </div>
@@ -505,7 +506,9 @@ const CATS=[['quran','قرآن'],['songs','أغاني وشيلات'],['stories',
 let cat=store.get('cat','quran');
 $('cats').innerHTML=CATS.map(([k,l])=>`<button class="chip" data-c="${k}">${l}</button>`).join('');
 $('cats').onclick=e=>{const c=e.target.dataset.c;if(c){cat=c;store.set('cat',c);renderMedia()}};
-async function addBlob(name,blob){const c=blob.type.startsWith('video')?'video':cat;await dbPut({id:Date.now()+Math.random().toString(36).slice(2),cat:c,name,type:blob.type,blob,added:Date.now()})}
+const ARTISTS=['محمد عبده','عبادي الجوهر','عبدالمجيد عبدالله','عبدالله الطواري','غيرهم'];let artist=store.get('artist',ARTISTS[0]);
+$('artists').onclick=e=>{const a=e.target.dataset.a;if(a){artist=a;store.set('artist',a);renderMedia()}};
+async function addBlob(name,blob){const c=blob.type.startsWith('video')?'video':cat;await dbPut({id:Date.now()+Math.random().toString(36).slice(2),cat:c,name,type:blob.type,blob,added:Date.now(),artist:c==='songs'?artist:undefined})}
 $('m-files').onchange=async e=>{const fs=[...e.target.files];$('m-status').textContent='جاري الحفظ…';for(const f of fs)await addBlob(f.name.replace(/\.[^.]+$/,''),f);$('m-status').textContent=`انحفظ ${fs.length} ملف.`;e.target.value='';renderMedia()};
 $('m-dl').onclick=async()=>{const u=$('m-url').value.trim();if(!u)return;$('m-status').textContent='جاري التحميل…';
   try{const r=await fetch(u);if(!r.ok)throw 0;const b=await r.blob();await addBlob(decodeURIComponent(u.split('/').pop().split('?')[0]).replace(/\.[^.]+$/,'')||'ملف',b);$('m-status').textContent='تم التحميل.';$('m-url').value='';renderMedia()}
@@ -535,8 +538,10 @@ $('gmd-all').onclick=async()=>{const b=$('gmd-all');if(b.dataset.busy){b.dataset
   for(const it of todo){if(b.dataset.stop)break;$('gmd-status').textContent=`جاري التنزيل: ${it.name} (${done+1} من ${todo.length})`;if(await gmdFetch(it))done++;else fail++}
   delete b.dataset.busy;b.textContent='نزّل الكل';$('gmd-status').textContent=`انتهى: نزلت ${done} سورة${fail?`، وفشلت ${fail} (جرب مرة ثانية)`:''}.`;renderMushaf()};
 async function renderMedia(){renderMushaf();document.querySelectorAll('#cats .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.c===cat));
-  const items=(await dbAll()).filter(i=>i.cat===cat).sort((a,b)=>a.added-b.added);
-  $('m-list').innerHTML=items.length?'':'<li class="muted">القسم فاضي. أضف ملفات من زر الإضافة.</li>';
+  const songs=cat==='songs';$('artists').hidden=!songs;
+  if(songs)$('artists').innerHTML=ARTISTS.map(a=>`<button class="chip" data-a="${a}" aria-pressed="${a===artist}">${a}</button>`).join('');
+  const items=(await dbAll()).filter(i=>i.cat===cat&&(!songs||(i.artist||'غيرهم')===artist)).sort((a,b)=>a.added-b.added);
+  $('m-list').innerHTML=items.length?'':`<li class="muted">${songs?'ما فيه شي لـ'+artist+'. اختر الفنان فوق وبعدين أضف ملفاته.':'القسم فاضي. أضف ملفات من زر الإضافة.'}</li>`;
   items.forEach((it,i)=>{const li=document.createElement('li');li.innerHTML='<span class="grow"></span><button class="primary">تشغيل</button><button>حذف</button>';li.firstChild.textContent=it.name;
     const[p,d]=li.querySelectorAll('button');p.onclick=()=>play(items,i);
     d.onclick=async()=>{if(!d.dataset.sure){d.dataset.sure=1;d.textContent='متأكد؟';return}await dbDel(it.id);renderMedia()};$('m-list').append(li)})}
