@@ -2,101 +2,150 @@
 <title>رفيق البر</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b0f13" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
-/* layout: one-screen app, content above a fixed bottom tab bar; white with sky-blue buttons (user asked for a single light look) */
+/* design system: white page + sky-blue tint (the user's pick), one sand accent for "you are here / pointer";
+   grouped surfaces without borders, segmented controls for categories, light + dark follow the phone setting */
 :root{
-  --bg:#ffffff;--surface:#f4f9fd;--fg:#10202e;--muted:#5d6f7e;--line:#d9e7f1;
-  --accent:#5cc8f5;--accent-fg:#06263a;--btn:#e7f6fe;--btn-line:#bfe5f8;--ink:#0679b3;--good:#1e8a5a;--qibla:#1e8a6e;
+  --bg:#ffffff;--group:#f2f6f9;--elev:#ffffff;--fg:#0f1b26;--muted:#5f6e7b;--line:rgba(15,27,38,.1);
+  --tint:#0877b8;--accent:#5cc8f5;--accent-fg:#052234;--tint-soft:rgba(8,119,184,.09);--seg:rgba(118,128,140,.14);
+  --sand:#d9822b;--good:#1e8a5a;--qibla:#1e8a6e;--danger:#c4321f;--danger-soft:rgba(196,50,31,.09);
+  --hero:linear-gradient(165deg,#5cc8f5 0%,#a9e4fb 100%);--hero-fg:#052234;
+  --shadow:0 1px 2px rgba(15,27,38,.06),0 4px 14px rgba(15,27,38,.08);
+  /* old names still used inline and in JS-built SVG */
+  --ink:var(--tint);--surface:var(--group);--btn:var(--tint-soft);
   --display:"Reem Kufi","IBM Plex Sans Arabic",system-ui,sans-serif;
-  --body:"IBM Plex Sans Arabic",system-ui,sans-serif;
+  --body:"IBM Plex Sans Arabic",-apple-system,system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,monospace;
-  color-scheme:light;
+  color-scheme:light dark;
 }
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0b0f13;--group:#161b21;--elev:#1e242b;--fg:#eef3f7;--muted:#97a4b0;--line:rgba(255,255,255,.1);
+  --tint:#6dd0f8;--tint-soft:rgba(109,208,248,.13);--seg:rgba(118,128,140,.24);
+  --sand:#f0a35a;--good:#4cc38a;--qibla:#3fc7a0;--danger:#ff7b6b;--danger-soft:rgba(255,123,107,.13);
+  --hero:linear-gradient(165deg,#0f5576 0%,#13344a 100%);--hero-fg:#eaf7ff;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.35)}}
+/* Dynamic Type: WebKit maps -apple-system-body to the user's text size; other browsers keep 16px */
+html{font-size:16px;font:-apple-system-body}
 html,body{height:100%}
 [hidden]{display:none!important}
-body{background:var(--bg);color:var(--fg);font:15px/1.6 var(--body);direction:rtl;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px calc(110px + env(safe-area-inset-bottom,0px))}
-h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;font-weight:700}
-h1{font-size:1.5rem}h2{font-size:1.15rem}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:1rem;line-height:1.6;direction:rtl;-webkit-tap-highlight-color:transparent;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-top:max(12px,env(safe-area-inset-top,0px));padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;font-weight:700;letter-spacing:0}
+h1{font-size:2rem;line-height:1.25;padding-top:8px}h2{font-size:1.15rem}h3{font-size:1.05rem}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums;direction:ltr;unicode-bidi:isolate}
-.muted{color:var(--muted);font-size:.85rem}
-section{display:flex;flex-direction:column;gap:14px;max-width:560px;margin-inline:auto}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.muted{color:var(--muted);font-size:.875rem}
+section{display:flex;flex-direction:column;gap:16px;max-width:560px;margin-inline:auto}
+section>h1+.muted{margin-top:-10px}
+.card{background:var(--group);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-button,.btn{text-decoration:none;font:inherit;border:1px solid var(--btn-line);background:var(--btn);color:var(--fg);border-radius:10px;padding:8px 12px;cursor:pointer}
-button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-input,select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+button,.btn{text-decoration:none;font:inherit;font-weight:600;border:0;background:var(--tint-soft);color:var(--tint);border-radius:12px;padding:10px 16px;min-height:44px;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:opacity .15s,transform .15s}
+button:active,.btn:active{opacity:.65;transform:scale(.98)}
+button.primary{background:var(--accent);color:var(--accent-fg)}
+button.danger{background:var(--danger-soft);color:var(--danger)}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--tint);outline-offset:2px}
+input,select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:9px 12px;min-height:44px;min-width:0;box-sizing:border-box}
+input[type=checkbox]{min-height:0;width:22px;height:22px;accent-color:var(--tint)}
 input[type=text]{flex:1}
-nav.tabs{position:fixed;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(8,1fr);background:var(--surface);border-top:1px solid var(--line);
-  padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);z-index:5}
-nav.tabs button{border:0;border-radius:0;background:none;padding:8px 2px 10px;font-size:.68rem;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted)}
-nav.tabs button svg{width:22px;height:22px}
-nav.tabs button[aria-selected=true]{color:var(--ink)}
-.big{font-family:var(--display);font-size:2.4rem;line-height:1.1}
-.times{display:grid;grid-template-columns:1fr auto;gap:0}
-.times div{padding:9px 4px;border-bottom:1px solid var(--line)}
-.times .now{color:var(--ink);font-weight:600}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.stat{display:flex;flex-direction:column}
-.stat b{font-family:var(--mono);font-size:1.5rem;font-variant-numeric:tabular-nums;direction:ltr;text-align:right}
-.dial{position:relative;width:min(78vw,300px);aspect-ratio:1;max-width:100%;margin-inline:auto}
-.dial svg{width:100%;height:100%;display:block}
-.fmt{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center}
+label.row{justify-content:space-between}
+/* segmented control for category rows */
+.seg{display:flex;gap:2px;flex-wrap:nowrap;background:var(--seg);border-radius:12px;padding:3px;overflow-x:auto;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg .chip{flex:1 0 auto;background:none;color:var(--fg);min-height:36px;padding:6px 12px;border-radius:9px;font-size:.9rem;white-space:nowrap}
+.seg .chip[aria-pressed=true]{background:var(--elev);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.chip[aria-pressed=true]{background:var(--accent);color:var(--accent-fg)}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;display:grid;grid-template-columns:repeat(8,1fr);z-index:5;
+  background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:saturate(1.8) blur(20px);backdrop-filter:saturate(1.8) blur(20px);
+  border-top:.5px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+nav.tabs button{border-radius:0;background:none;padding:7px 0 6px;min-height:50px;font-size:.66rem;font-weight:500;flex-direction:column;gap:3px;color:var(--muted);white-space:nowrap}
+nav.tabs button:active{transform:none}
+nav.tabs button svg{width:24px;height:24px}
+nav.tabs button[aria-selected=true]{color:var(--tint)}
+nav.tabs button[aria-selected=true] svg{stroke-width:2.2}
+.big{font-family:var(--display);font-size:2.6rem;line-height:1.1}
+/* prayer: the one hero surface in the app */
+.hero{background:var(--hero);color:var(--hero-fg);border-radius:20px;padding:20px;gap:4px}
+.hero .muted{color:inherit;opacity:.75}
+.hero .big{font-size:3rem}
+.hero .num{align-self:flex-start;font-size:1.6rem;font-weight:500}
+/* scrolling pill row when there are too many options for a segmented control */
+.pills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}
+.pills::-webkit-scrollbar{display:none}
+.pills .chip{flex:none;white-space:nowrap;min-height:36px;padding:6px 14px;border-radius:18px;font-size:.9rem}
+.times{display:grid;grid-template-columns:1fr auto;gap:2px 0}
+.times div{padding:11px 10px;border-bottom:.5px solid var(--line)}
+.times div:nth-last-child(-n+2){border-bottom:0}
+.times .now{color:var(--tint);font-weight:700;background:var(--tint-soft);border-bottom-color:transparent}
+.times .now:nth-child(odd){border-radius:0 10px 10px 0}.times .now:nth-child(even){border-radius:10px 0 0 10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px 12px}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat b{font-family:var(--mono);font-size:1.45rem;font-weight:500;font-variant-numeric:tabular-nums;direction:ltr;text-align:right}
+.dial{position:relative;width:min(80vw,310px);aspect-ratio:1;max-width:100%;margin-inline:auto}
+.dial svg{width:100%;height:100%;display:block;overflow:visible}
+.fmt{display:grid;grid-template-columns:auto 1fr auto;gap:8px 12px;align-items:center}
 .fmt span:nth-child(3n+2){overflow-wrap:anywhere}
 ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
-ul.list li{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+ul.list li{display:flex;gap:8px;align-items:center;padding:8px 0;min-height:44px;border-bottom:.5px solid var(--line)}
+ul.list li:last-child{border-bottom:0}
 ul.list li .grow{flex:1;min-width:0;overflow-wrap:anywhere}
-.chip[aria-pressed=true]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
-details.riddle{border-bottom:1px solid var(--line);padding:10px 0}
-details.riddle summary{cursor:pointer;font-weight:600}
-details.riddle p{margin:6px 0 0;color:var(--ink);font-family:var(--display);font-size:1.1rem}
-.recipe .plate{font-size:2.6rem;width:72px;height:72px;border-radius:50%;background:var(--bg);display:grid;place-items:center;flex:none}
+/* disclosure rows with an SF-style chevron at the trailing edge */
+details.riddle{border-bottom:.5px solid var(--line);padding:4px 0}
+details.riddle:last-child{border-bottom:0}
+details.riddle summary{cursor:pointer;font-weight:600;list-style:none;display:flex;align-items:center;gap:8px;min-height:44px}
+details.riddle summary::-webkit-details-marker{display:none}
+details.riddle summary::after{content:"";margin-inline-start:auto;flex:none;width:8px;height:8px;border-left:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .2s}
+details.riddle[open] summary::after{transform:rotate(-45deg)}
+details.riddle p{margin:6px 0 10px;color:var(--tint);font-family:var(--display);font-size:1.15rem}
+details.riddle p.sp{margin:0 0 10px;color:var(--fg);font-family:var(--body);font-size:1.05rem;line-height:1.95}
+details.riddle p.verse{margin:8px 0 14px;padding:10px 0;text-align:center;font-family:var(--display);font-size:1.15rem;color:var(--tint);line-height:2.1;border-block:.5px solid var(--line)}
+.recipe .plate{font-size:2.2rem;width:64px;height:64px;border-radius:16px;background:var(--bg);display:grid;place-items:center;flex:none}
 .recipe ol,.recipe ul{margin:0;padding-inline-start:20px}
-.recipe h3{font-size:1.05rem}
-video,audio{width:100%;border-radius:10px}
+.recipe li{margin-bottom:4px}
+.recipe>b{font-size:.8rem;color:var(--muted);font-weight:600;margin-bottom:-6px}
+video,audio{width:100%;border-radius:12px}
 video{max-height:45vh;background:#000}
-button.danger{background:#fdecec;color:#b42318;border-color:#f5b5b0}
-.mbtn{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-weight:600}
+.mbtn{min-height:44px}
 .mbtn svg{width:20px;height:20px;flex:none}
-.warn{color:var(--ink);font-size:.85rem}
-#mapwrap{position:relative;height:calc(100dvh - 120px - env(safe-area-inset-bottom,0px));min-height:360px;margin-inline:calc(50% - 50vw);margin-top:-12px;max-width:100vw}
+.warn{color:var(--danger);font-size:.875rem}
+#mapwrap{position:relative;height:calc(100dvh - 120px - env(safe-area-inset-bottom,0px));min-height:360px;margin-inline:calc(50% - 50vw);margin-top:calc(-1 * max(12px,env(safe-area-inset-top,0px)));max-width:100vw}
 #map{position:absolute;inset:0;z-index:0}
 .fabs{position:absolute;display:flex;gap:12px;z-index:500}
 .fabs.tl{top:calc(12px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));flex-wrap:wrap;width:120px}
 .fabs.br{bottom:16px;right:max(12px,env(safe-area-inset-right,0px));flex-direction:column;align-items:flex-end}
-.fab{width:52px;height:52px;border-radius:50%;padding:0;display:grid;place-items:center;background:#fff;color:#10202e;border:0;box-shadow:0 2px 8px #0003}
-.fab.sm{width:40px;height:40px}.fab.me{background:var(--ink);color:#fff;width:58px;height:58px}
-#navbar{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));left:140px;right:12px;z-index:600;background:#fff;border-radius:14px;box-shadow:0 2px 10px #0003;padding:8px 10px;display:flex;gap:8px;align-items:center}
-.panel{position:absolute;left:0;right:0;bottom:0;z-index:700;background:var(--bg);border-radius:18px 18px 0 0;box-shadow:0 -4px 16px #0002;padding:14px max(16px,env(safe-area-inset-right,0px)) 14px max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px;max-height:75%;overflow:auto}
-#searchp{top:0;bottom:auto;border-radius:0 0 18px 18px;padding-top:calc(12px + env(safe-area-inset-top,0px))}
+.fab{width:50px;height:50px;min-height:0;border-radius:50%;padding:0;display:grid;place-items:center;background:var(--elev);color:var(--fg);box-shadow:var(--shadow)}
+.fab.sm{width:40px;height:40px}.fab.me{background:var(--tint);color:var(--bg);width:58px;height:58px}
+#navbar{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));left:140px;right:12px;z-index:600;background:var(--elev);border-radius:16px;box-shadow:var(--shadow);padding:8px 10px;display:flex;gap:8px;align-items:center}
+.panel{position:absolute;left:0;right:0;bottom:0;z-index:700;background:var(--elev);border-radius:20px 20px 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.14);padding:18px max(16px,env(safe-area-inset-right,0px)) 14px max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:12px;max-height:75%;overflow:auto}
+.panel::before{content:"";align-self:center;width:36px;height:5px;border-radius:3px;background:var(--seg);margin:-8px 0 2px}
+#searchp{top:0;bottom:auto;border-radius:0 0 20px 20px;padding-top:calc(12px + env(safe-area-inset-top,0px))}
+#searchp::before{display:none}
 .acts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.acts button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 4px;background:var(--btn);color:var(--ink);font-size:.8rem;border-color:transparent}
-button.link{background:none;border:0;color:var(--ink);font-size:1.05rem}
+.acts button{flex-direction:column;gap:4px;padding:12px 4px;font-size:.8rem}
+button.link{background:none;color:var(--tint);font-size:1.05rem;padding-inline:4px}
 .star{width:26px;height:26px;border-radius:50%;background:#f5c518;border:2px solid #fff;box-shadow:0 1px 3px #0004;display:grid;place-items:center;color:#fff;font-size:15px;line-height:1}
-.star.tg{background:var(--ink)}
+.star.tg{background:var(--tint)}
 #map.far .lbl{display:none}
 .lbl{font-family:var(--body);font-size:12px;padding:1px 6px;background:#fffd;color:#2a2118;border:0;box-shadow:none}
 .lbl::before{display:none}
-svg.sky{display:block;width:100%;max-width:360px;margin:8px auto;background:#0b1d33;border-radius:12px}
-.emo{font-size:3rem;text-align:center;margin:6px 0}
-details.riddle p.sp{margin:0 0 8px;color:var(--fg);font-family:var(--body);font-size:1.05rem}
-details.riddle p.verse{margin:6px 0 12px;text-align:center;font-family:var(--display);font-size:1.15rem;color:var(--ink);line-height:2}
+svg.sky{display:block;width:100%;max-width:360px;margin:8px auto;background:#0b1d33;border-radius:14px}
 @media (prefers-reduced-motion:no-preference){.rot{transition:transform .25s linear}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
 <section id="v-prayer">
   <div class="row" style="justify-content:space-between">
     <h1>مواقيت الصلاة</h1><span class="muted" id="hijri"></span>
   </div>
-  <div class="card">
+  <div class="card hero">
     <span class="muted" id="next-label">الصلاة القادمة</span>
     <div class="big" id="next-name">—</div>
-    <div class="num" style="font-size:1.4rem" id="next-count">--:--:--</div>
+    <div class="num" id="next-count">--:--:--</div>
     <span class="muted" id="loc-line">جاري تحديد الموقع…</span>
   </div>
   <div class="card"><div class="times" id="times"></div></div>
@@ -199,7 +248,7 @@ details.riddle p.verse{margin:6px 0 12px;text-align:center;font-family:var(--dis
     <div class="dial">
       <svg viewBox="-100 -100 200 200" aria-label="البوصلة">
         <g id="rose" class="rot"></g>
-        <path d="M0,-99 L7,-84 L-7,-84 Z" fill="var(--ink)"/>
+        <path d="M0,-99 L7,-84 L-7,-84 Z" fill="var(--sand)"/>
       </svg>
     </div>
     <div class="row" style="justify-content:space-between">
@@ -230,12 +279,12 @@ details.riddle p.verse{margin:6px 0 12px;text-align:center;font-family:var(--dis
 
 <section id="v-media" hidden>
   <h1>الصوتيات والفيديو</h1>
-  <div class="row" id="cats"></div>
+  <div class="seg" id="cats"></div>
   <div class="card">
-    <div class="row" id="artists" hidden></div>
+    <div class="pills" id="artists" hidden></div>
     <div class="row" id="artist-links" hidden></div>
     <div class="row">
-      <label class="btn" style="background:var(--accent);color:var(--accent-fg);border-color:var(--accent)">أضف ملفات من الجوال<input type="file" id="m-files" accept="audio/*,video/*" multiple hidden></label>
+      <label class="btn" style="background:var(--accent);color:var(--accent-fg)">أضف ملفات من الجوال<input type="file" id="m-files" accept="audio/*,video/*" multiple hidden></label>
     </div>
     <div class="row"><input type="text" id="m-url" placeholder="أو الصق رابط ملف للتحميل"><button id="m-dl">نزّل</button></div>
     <span class="muted" id="m-status">الملفات تنحفظ داخل التطبيق وتشتغل بدون نت.</span>
@@ -251,7 +300,7 @@ details.riddle p.verse{margin:6px 0 12px;text-align:center;font-family:var(--dis
 
 <section id="v-fun" hidden>
   <h1>ألعاب البر</h1>
-  <div class="row" id="games"><button class="chip" data-g="charades">بدون كلام</button><button class="chip" data-g="sj">سين جيم</button><button class="chip" data-g="riddle">ألغاز</button></div>
+  <div class="seg" id="games"><button class="chip" data-g="charades">بدون كلام</button><button class="chip" data-g="sj">سين جيم</button><button class="chip" data-g="riddle">ألغاز</button></div>
 
   <div id="g-charades" class="card" hidden>
     <span class="muted">واحد من الفريق يشوف الاسم ويمثله بدون كلام، والباقين يخمنون.</span>
@@ -288,21 +337,21 @@ details.riddle p.verse{margin:6px 0 12px;text-align:center;font-family:var(--dis
 <section id="v-stories" hidden>
   <h1>قصص البر</h1>
   <span class="muted">قصص قصيرة تنقرا على السمرة. اضغط على أي قصة تفتحها.</span>
-  <div class="row" id="st-cats"></div>
+  <div class="pills" id="st-cats"></div>
   <div class="card" id="stories"></div>
 </section>
 
 <section id="v-info" hidden>
   <h1>معلومات البر</h1>
   <span class="muted">نباتات الصحراء ونجوم الاهتداء وحشراتها. اضغط على أي واحد يفتح.</span>
-  <div class="row" id="in-cats"></div>
+  <div class="seg" id="in-cats"></div>
   <span class="muted" id="in-note"></span>
   <div class="card" id="info"></div>
 </section>
 
 <section id="v-food" hidden>
   <h1>طبخ وصحة</h1>
-  <div class="row" id="fd-cats"></div>
+  <div class="seg" id="fd-cats"></div>
   <span class="muted" id="fd-note"></span>
   <div id="recipes" style="display:flex;flex-direction:column;gap:14px"></div>
   <div id="workout" hidden style="display:flex;flex-direction:column;gap:14px">
@@ -455,7 +504,8 @@ $('adhan-file').onchange=async e=>{const f=e.target.files[0];if(!f)return;await 
 async function showAdhanName(){const r=await dbGet('adhan');if(r)$('adhan-name').textContent='الصوت الحالي: '+r.name}
 
 /* ---------- compass ---------- */
-let heading=null,offset=+store.get('offset',0)||0;if(Math.abs(offset)>30)offset=0; // older builds allowed any value; a big one just rotates the dial$('c-offset').value=offset;
+let heading=null,offset=+store.get('offset',0)||0;if(Math.abs(offset)>30)offset=0; // older builds allowed any value; a big one just rotates the dial
+$('c-offset').value=offset;
 $('c-offset').oninput=e=>{offset=Math.max(-30,Math.min(30,+e.target.value||0));store.set('offset',offset)};
 $('c-offset').onchange=e=>{e.target.value=offset};
 const ROSE_AR=['ش','ق','ج','غ'];
@@ -811,8 +861,8 @@ const imgLink=n=>`<a class="btn" target="_blank" rel="noopener" href="https://ww
 function renderInfo(){$('in-cats').innerHTML=['نباتات','نجوم','حشرات'].map(c=>`<button class="chip" data-i="${c}" aria-pressed="${c===infoCat}">${c}</button>`).join('');
   $('in-note').textContent=infoCat==='نجوم'?'الرسمة تقريبية للشكل. الخط الأصفر المتقطع يوريك وين تمد عينك.':'الصور الحقيقية تفتح بحث جوجل (يبيلها نت).';
   const L=infoCat==='نباتات'?PLANTS:infoCat==='حشرات'?BUGS:STARS;
-  $('info').innerHTML=L.map(x=>{const st=infoCat==='نجوم';return `<details class="riddle"><summary>${st?'✨':x[2]} ${x[0]} <span class="muted">· ${x[1]}</span></summary>
-    ${st?skySvg({...x[3],n:x[0]}):`<div class="emo">${x[2]}</div>`}<p class="sp">${st?x[2]:x[3]}</p>${imgLink(st?x[0]+' نجم '+x[1]:x[0]+' '+x[1])}</details>`}).join('')}
+  $('info').innerHTML=L.map(x=>{const st=infoCat==='نجوم';return `<details class="riddle"><summary>${x[0]} <span class="muted">· ${x[1]}</span></summary>
+    ${st?skySvg({...x[3],n:x[0]}):''}<p class="sp">${st?x[2]:x[3]}</p>${imgLink(st?x[0]+' نجم '+x[1]:x[0]+' '+x[1])}</details>`}).join('')}
 $('in-cats').onclick=e=>{if(e.target.dataset.i){infoCat=e.target.dataset.i;store.set('info',infoCat);renderInfo()}};renderInfo();
 
 /* ---------- recipes ---------- */
