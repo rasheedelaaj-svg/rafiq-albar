@@ -357,17 +357,22 @@ const settings={method:store.get('method','umm'),asr:store.get('asr','1'),adhan:
 $('method').value=settings.method;$('asr').value=settings.asr;$('adhan-on').checked=settings.adhan;
 $('method').onchange=e=>{store.set('method',e.target.value);settings.method=e.target.value;refresh()};
 $('asr').onchange=e=>{store.set('asr',e.target.value);settings.asr=e.target.value;refresh()};
-$('adhan-on').onchange=e=>{store.set('adhan',e.target.checked);settings.adhan=e.target.checked;try{Notification.requestPermission()}catch{}};
+$('adhan-on').onchange=e=>{store.set('adhan',e.target.checked);settings.adhan=e.target.checked;try{Notification.requestPermission()}catch{}scheduleNative()};
 function dayTimes(date){if(!pos)return null;const t=prayerTimes(date.getFullYear(),date.getMonth()+1,date.getDate(),pos[0],pos[1],-date.getTimezoneOffset()/60,settings.method,+settings.asr);
   const o={};for(const k in t){const d=new Date(date);d.setHours(0,0,0,0);d.setTime(d.getTime()+Math.round(t[k]*60)*60000);o[k]=d}return o}
 const clock=d=>d.toLocaleTimeString('ar',{hour:'numeric',minute:'2-digit',numberingSystem:'latn'});
 let today=null,lastFired=store.get('fired','');
 function nextPrayer(now){const t=dayTimes(now),tm=dayTimes(new Date(now.getTime()+864e5));for(const k of['fajr','dhuhr','asr','maghrib','isha'])if(t[k]>now)return[k,t[k]];return['fajr',tm.fajr]}
+// iPhone app only: hand the next 10 days of prayer times to the native side, which schedules system alerts
+let nativeSent='';
+function scheduleNative(){const h=window.webkit?.messageHandlers?.adhan;if(!h||!pos)return;const out=[];
+  if(settings.adhan)for(let d=0;d<10;d++){const t=dayTimes(new Date(Date.now()+d*864e5));for(const k of['fajr','dhuhr','asr','maghrib','isha'])out.push({t:t[k].getTime(),n:PN[k]})}
+  const key=JSON.stringify(out);if(key!==nativeSent){nativeSent=key;h.postMessage(out)}}
 function renderPrayer(){
   try{$('hijri').textContent=new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric'}).format(new Date())}catch{}
   if(!pos)return;const now=new Date();today=dayTimes(now);const[nk,nt]=nextPrayer(now);
   $('times').innerHTML=Object.keys(PN).map(k=>`<div class="${k===nk?'now':''}">${PN[k]}</div><div class="num ${k===nk?'now':''}">${clock(today[k])}</div>`).join('');
-  $('next-name').textContent=PN[nk];
+  $('next-name').textContent=PN[nk];scheduleNative();
   $('loc-line').textContent=(manual?'موقع يدوي: ':'حسب موقعك: ')+pos.map(v=>v.toFixed(4)).join(', ');
 }
 function tick(){if(!pos)return;const now=new Date(),[nk,nt]=nextPrayer(now),s=Math.max(0,Math.round((nt-now)/1000));
