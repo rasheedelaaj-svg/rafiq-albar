@@ -77,6 +77,10 @@ nav.tabs button[aria-selected=true] svg{stroke-width:2.2}
 /* scrolling pill row when there are too many options for a segmented control */
 .pills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}
 .pills::-webkit-scrollbar{display:none}
+ul.shop li[class]{justify-content:center}
+ul.shop button svg{width:20px;height:20px}
+ul.shop button.danger{background:none;color:var(--muted)}
+#shop-done span:not(.row){text-decoration:line-through;color:var(--muted)}
 .pills .chip{flex:none;white-space:nowrap;min-height:36px;padding:6px 14px;border-radius:18px;font-size:.9rem}
 .times{display:grid;grid-template-columns:1fr auto;gap:2px 0}
 .times div{padding:11px 10px;border-bottom:.5px solid var(--line)}
@@ -354,6 +358,14 @@ svg.sky{display:block;width:100%;max-width:360px;margin:8px auto;background:#0b1
   <div class="seg" id="fd-cats"></div>
   <span class="muted" id="fd-note"></span>
   <div id="recipes" style="display:flex;flex-direction:column;gap:14px"></div>
+  <div id="shop" hidden style="display:flex;flex-direction:column;gap:14px">
+    <div class="seg" id="sh-lists"><button class="chip" data-l="g">مقاضي</button><button class="chip" data-l="t">مستلزمات الرحلة</button></div>
+    <form class="row" id="shop-form" autocomplete="off"><input type="text" id="shop-in" placeholder="وش تبي تشتري؟" enterkeyhint="done"><button class="primary" id="shop-add">أضف</button></form>
+    <div class="card"><ul class="list shop" id="shop-todo"></ul></div>
+    <div id="shop-done-wrap" hidden><div class="row" style="justify-content:space-between;padding-inline:4px"><b class="muted">تم <span id="shop-n"></span></b><span class="row"><button id="shop-reset">رجّعها كلها</button><button class="danger" id="shop-clear">امسح المشترى</button></span></div>
+      <div class="card"><ul class="list shop" id="shop-done"></ul></div></div>
+    <button id="shop-basics" hidden>أضف القائمة الأساسية للرحلة</button>
+  </div>
   <div id="workout" hidden style="display:flex;flex-direction:column;gap:14px">
     <div class="card"><h2>تمرين دائري بالصوت</h2>
       <div class="row"><label>تمرين <select id="wk-work"><option value="30">30 ث</option><option value="40" selected>40 ث</option><option value="45">45 ث</option><option value="60">60 ث</option></select></label>
@@ -910,10 +922,31 @@ const PLAN=[['السبت','دائرة تمارين (اضغط ابدأ تحت)'],
 let healthCat=store.get('health','طبخات البر');
 const recipeCards=L=>L.map(r=>`<article class="card recipe"><div class="row"><div class="plate" aria-hidden="true">${r.i}</div><div><h3>${r.n}</h3><span class="muted">${r.t}</span></div></div>
   <b>المقادير</b><ul>${r.g.map(x=>`<li>${x}</li>`).join('')}</ul><b>الطريقة</b><ol>${r.s.map(x=>`<li>${x}</li>`).join('')}</ol></article>`).join('');
-function renderHealth(){$('fd-cats').innerHTML=['طبخات البر','أكلات صحية','تمارين'].map(c=>`<button class="chip" data-h="${c}" aria-pressed="${c===healthCat}">${c}</button>`).join('');
-  const ex=healthCat==='تمارين';$('workout').hidden=!ex;$('recipes').hidden=ex;
+function renderHealth(){$('fd-cats').innerHTML=['طبخات البر','أكلات صحية','تمارين','المقاضي'].map(c=>`<button class="chip" data-h="${c}" aria-pressed="${c===healthCat}">${c}</button>`).join('');
+  const ex=healthCat==='تمارين',sh=healthCat==='المقاضي';$('workout').hidden=!ex;$('shop').hidden=!sh;$('recipes').hidden=ex||sh;$('fd-note').hidden=sh;if(sh)return renderShop();
   $('fd-note').textContent=ex?'بدون أدوات، تنسوى عند المخيم. أحسن وقت الفجر أو بعد المغرب، مو وقت الحر.':'المقادير لأربعة أشخاص تقريباً.';
   if(!ex)$('recipes').innerHTML=recipeCards(healthCat==='أكلات صحية'?HEALTHY:RECIPES)}
+/* shopping lists: {g:[{t,d}],t:[...]} in localStorage, ticked items drop to a "done" group */
+const shop=Object.assign({g:[],t:[]},store.get('shop',{}));let shopL=store.get('shopl','g');
+const TRIP=['ماي','ثلج','فحم','حطب','ولاعة','قدر وصاج','دلة وترمس','قهوة وهيل','شاي وسكر','تمر','خبز','لحم أو دجاج','رز','بهارات','زيت','ملح','صحون وأكواب','مناديل وأكياس زبالة','خيمة وفرشة','بطانيات','كشاف وبطاريات','باور بنك','شنطة إسعافات','طارد حشرات','واقي شمس','حبل','مجرفة','عدة السيارة وكفر احتياط','ماي زيادة للسيارة'];
+function saveShop(){store.set('shop',shop)}
+function shopRow(it){const li=document.createElement('li');
+  li.innerHTML=`<label class="grow row" style="flex-wrap:nowrap;justify-content:flex-start;gap:12px;cursor:pointer;min-height:44px"><input type="checkbox"${it.d?' checked':''}><span></span></label><button class="danger" aria-label="حذف" style="min-width:44px;padding:0">${ICO_DEL}</button>`;
+  li.querySelector('span').textContent=it.t;
+  li.querySelector('input').onchange=()=>{it.d=!it.d;saveShop();renderShop()};
+  li.querySelector('button').onclick=()=>{shop[shopL].splice(shop[shopL].indexOf(it),1);saveShop();renderShop()};return li}
+function renderShop(){document.querySelectorAll('#sh-lists .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===shopL));
+  const L=shop[shopL],todo=L.filter(x=>!x.d),done=L.filter(x=>x.d);
+  $('shop-todo').replaceChildren(...todo.map(shopRow));if(!todo.length)$('shop-todo').innerHTML=`<li class="muted">${L.length?'اشتريت كل شي 👌':'القائمة فاضية. اكتب فوق وش تبي.'}</li>`;
+  $('shop-done').replaceChildren(...done.map(shopRow));$('shop-done-wrap').hidden=!done.length;$('shop-n').textContent=`(${done.length})`;
+  $('shop-basics').hidden=shopL!=='t'}
+$('sh-lists').onclick=e=>{if(e.target.dataset.l){shopL=e.target.dataset.l;store.set('shopl',shopL);renderShop()}};
+$('shop-form').onsubmit=e=>{e.preventDefault();const v=$('shop-in').value.trim();if(!v)return;
+  v.split(/[،,\n]+/).map(x=>x.trim()).filter(Boolean).forEach(t=>shop[shopL].push({t,d:false}));$('shop-in').value='';saveShop();renderShop();$('shop-in').focus()};
+$('shop-reset').onclick=()=>{shop[shopL].forEach(x=>x.d=false);saveShop();renderShop()};
+$('shop-clear').onclick=()=>{const b=$('shop-clear');if(!b.dataset.sure){b.dataset.sure=1;b.textContent='متأكد؟';setTimeout(()=>{delete b.dataset.sure;b.textContent='امسح المشترى'},4000);return}
+  delete b.dataset.sure;b.textContent='امسح المشترى';shop[shopL]=shop[shopL].filter(x=>!x.d);saveShop();renderShop()};
+$('shop-basics').onclick=()=>{const have=new Set(shop.t.map(x=>x.t));TRIP.filter(t=>!have.has(t)).forEach(t=>shop.t.push({t,d:false}));saveShop();renderShop()};
 $('fd-cats').onclick=e=>{if(e.target.dataset.h){healthCat=e.target.dataset.h;store.set('health',healthCat);renderHealth()}};
 $('wk-plan').innerHTML=PLAN.map(([d,t])=>`<li><b style="min-width:70px">${d}</b><span class="grow">${t}</span></li>`).join('');
 $('wk-ex').innerHTML=EX.map(([i,n,t])=>`<details class="riddle"><summary>${i} ${n}</summary><p class="sp">${t}</p></details>`).join('');
