@@ -126,6 +126,14 @@ video{max-height:45vh;background:#000}
 .mbtn svg{width:20px;height:20px;flex:none}
 .warn{color:var(--danger);font-size:.875rem}
 html{scroll-padding-bottom:100px}
+/* الطقس */
+.wx-hours{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}
+.wx-hours::-webkit-scrollbar{display:none}
+.wx-h{flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--elev);border-radius:16px;padding:8px 10px;min-width:56px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.wx-h .emo{font-size:26px}
+.wx-de{font-size:28px}
+.wx-warn{background:var(--danger-soft);border-radius:12px;padding:8px 12px;font-weight:600}
+#wx-det .stat b{font-size:1.05rem;font-family:var(--body);direction:rtl;text-align:start}
 /* المصحف */
 @font-face{font-family:"Amiri Quran";src:url(lib/amiri-quran.woff2) format("woff2");font-display:swap}
 #q-read{position:fixed;inset:0;z-index:60;background:#fdf8ec;color:#1d1f1b;overflow-y:auto;overscroll-behavior:contain;padding:calc(8px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px}
@@ -546,6 +554,20 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
   <div class="seg" id="q-kind"><button class="chip" data-k="sura">السور</button><button class="chip" data-k="juz">الأجزاء</button></div>
   <ul class="list" id="q-index"></ul>
 </section>
+<section id="v-weather" hidden>
+  <h1>الطقس</h1>
+  <div class="card" id="wx-now" hidden>
+    <div class="row" style="gap:14px"><span class="emo" id="wx-emo" style="font-size:64px"></span><div><div class="big num" id="wx-temp"></div><b id="wx-desc"></b></div></div>
+    <div class="warn wx-warn" id="wx-warn" hidden></div>
+    <div class="grid2" id="wx-det"></div>
+    <span class="muted" id="wx-age"></span>
+  </div>
+  <div class="row"><button id="wx-refresh" class="primary">تحديث</button><span class="muted" id="wx-status"></span></div>
+  <h2>الساعات الجاية</h2>
+  <div class="wx-hours" id="wx-hours"></div>
+  <h2>الأسبوع</h2>
+  <ul class="list" id="wx-days"></ul>
+</section>
 <div id="q-read" hidden>
   <div class="q-top"><button id="q-close" class="x" aria-label="إغلاق">✕</button><b id="q-title" class="grow"></b><button id="q-small" aria-label="تصغير الخط">أ-</button><button id="q-big" aria-label="تكبير الخط">أ+</button></div>
   <div id="q-page"></div>
@@ -605,7 +627,7 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
 <nav class="tabs" id="tabs"></nav>
 
 <script>
-const APP_VER='31'; // keep in step with V in sw.js
+const APP_VER='32'; // keep in step with V in sw.js
 // CORE-START (pure functions, tested in check.js)
 const R=Math.PI/180,KAABA=[21.4225,39.8262];
 const sin=d=>Math.sin(d*R),cos=d=>Math.cos(d*R),tan=d=>Math.tan(d*R),asin=x=>Math.asin(x)/R,acos=x=>Math.acos(Math.max(-1,Math.min(1,x)))/R,atan2=(y,x)=>Math.atan2(y,x)/R;
@@ -740,33 +762,33 @@ const ICONS={
   nav:'<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z" fill="currentColor" fill-opacity=".18"/><path d="M9 4v14M15 6v14"/>',
   more:'<path d="M2 20l6.5-11 4 6 3-4.5L22 20z" fill="currentColor" fill-opacity=".18"/><path d="M8.5 9l1.8 3M15.5 10.5l1.4 2.2"/>',
   prayer:'<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" fill="currentColor" fill-opacity=".18"/>'};
-const BAR=[['nav','الخريطة'],['more','الساحة'],['prayer','الصلاة']],HUBV=['compass','media','fun','stories','info','food','quran'];
+const BAR=[['nav','الخريطة'],['more','الساحة'],['prayer','الصلاة']],HUBV=['compass','media','fun','stories','info','food','quran','weather'];
 const TILE={map:['🗺️','الخريطة','nav'],compass:['🧭','البوصلة','compass'],qibla:['🕋','القبلة','compass'],speed:['🏎️','عداد السرعة','nav'],
   save:['📍','حفظ نقطة','nav','#a-save'],points:['📌','نقاطي','nav','#a-points'],rec:['🔴','تسجيل رحلة','nav','#a-rec'],back:['↩️','العودة على الدرب','nav','#a-back'],offline:['⬇️','خرائط بدون نت','nav','#a-menu'],
-  prayer:['🌙','مواقيت الصلاة','prayer'],mushaf:['📗','المصحف','quran'],wird:['📿','الورد اليومي','quran','#q-wird-go'],quran:['🎧','تلاوة القرآن','media','#cats [data-c=quran]'],songs:['🎵','أغاني وشيلات','media','#cats [data-c=songs]'],astories:['🎙️','قصص صوتية','media','#cats [data-c=stories]'],video:['🎬','فيديو','media','#cats [data-c=video]'],
+  prayer:['🌙','مواقيت الصلاة','prayer'],mushaf:['📗','المصحف','quran'],weather:['🌤️','الطقس','weather'],wird:['📿','الورد اليومي','quran','#q-wird-go'],quran:['🎧','تلاوة القرآن','media','#cats [data-c=quran]'],songs:['🎵','أغاني وشيلات','media','#cats [data-c=songs]'],astories:['🎙️','قصص صوتية','media','#cats [data-c=stories]'],video:['🎬','فيديو','media','#cats [data-c=video]'],
   charades:['🎭','بدون كلام','fun','#games [data-g=charades]'],sj:['❓','سين جيم','fun','#games [data-g=sj]'],riddle:['🧩','ألغاز','fun','#games [data-g=riddle]'],
   stories:['📜','قصص البر','stories'],plants:['🌵','نباتات البر','info','#in-cats [data-i="نباتات"]'],stars:['✨','النجوم','info','#in-cats [data-i="نجوم"]'],insects:['🦂','الحشرات','info','#in-cats [data-i="حشرات"]'],
   recipes:['🍲','طبخات البر','food','#fd-cats [data-h="طبخات البر"]'],healthy:['🥗','أكلات صحية','food','#fd-cats [data-h="أكلات صحية"]'],workout:['🏃','تمارين','food','#fd-cats [data-h="تمارين"]'],shop:['🛒','المقاضي','food','#fd-cats [data-h="المقاضي"]']};
-const HUB=[['feat','مميزة','⭐',['map','prayer','mushaf','wird','qibla','compass','rec','back']],['nav','التنقل','🧭',['map','compass','qibla','speed','save','points','rec','back','offline']],
-  ['din','عبادة','🕌',['mushaf','wird','prayer','qibla','quran']],['media','صوتيات','🎧',['quran','songs','astories','video']],['games','ألعاب','🎮',['charades','sj','riddle']],
+const HUB=[['nav','التنقل','🧭',['map','compass','speed','save','points','rec','back','offline']],['wx','الطقس','🌤️',['weather']],
+  ['din','عبادة','🕌',['mushaf','wird','prayer','qibla','quran']],['media','صوتيات','🎧',['songs','astories','video']],['games','ألعاب','🎮',['charades','sj','riddle']],
   ['know','قصص ومعلومات','📚',['stories','plants','stars','insects']],['life','صحة وطبخ','🌿',['recipes','healthy','workout','shop']]];
 const ico=(k,w=26)=>`<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
 // the map screen ends where the floating bar starts; the bar grows with the iPhone's text size
 const tabH=()=>document.documentElement.style.setProperty('--tabh',Math.max(0,innerHeight-$('tabs').getBoundingClientRect().top)+'px');
 function show(t){['nav','more','prayer',...HUBV].forEach(k=>$('v-'+k).hidden=k!==t);
   const sel=HUBV.includes(t)?'more':t;BAR.forEach(([k])=>$('t-'+k).setAttribute('aria-selected',k===sel));
-  store.set('tab',t);scrollTo(0,0);tabH();document.body.classList.toggle('mapmode',t==='nav');if(t==='nav'){initMap();map?.invalidateSize()}if(t==='quran'){qHome();if(!$('q-index').children.length)qIndex('sura')}keepAwake()}
+  store.set('tab',t);scrollTo(0,0);tabH();document.body.classList.toggle('mapmode',t==='nav');if(t==='nav'){initMap();map?.invalidateSize()}if(t==='weather'){renderWx();if(!wx||Date.now()-wx.at>1800000)wxFetch()}if(t==='quran'){qHome();if(!$('q-index').children.length)qIndex('sura')}keepAwake()}
 $('tabs').innerHTML=BAR.map(([k,l])=>`<button id="t-${k}" role="tab">${ico(k)}<span>${l}</span></button>`).join('');
 BAR.forEach(([k])=>$('t-'+k).onclick=()=>show(k));
 $('hub-chips').innerHTML=HUB.map(([id,n,e])=>`<button class="hchip" data-s="${id}"><span class="emo">${e}</span>${n}</button>`).join('');
 $('hub-list').innerHTML=HUB.map(([id,n,e,ts])=>`<div class="hsec" id="hs-${id}"><h2><span class="emo">${e}</span>${n}</h2><div class="hgrid">${ts.map(k=>`<button class="htile" data-t="${k}"><span class="emo">${TILE[k][0]}</span><span>${TILE[k][1]}</span></button>`).join('')}</div></div>`).join('');
-const paintChip=id=>document.querySelectorAll('.hchip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===id));paintChip('feat');
+const paintChip=id=>document.querySelectorAll('.hchip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===id));paintChip('nav');
 $('hub-chips').onclick=e=>{const b=e.target.closest('.hchip');if(!b)return;paintChip(b.dataset.s);$('hub-q').value='';hubFilter();
-  const s=$('hs-'+b.dataset.s);scrollTo({top:b.dataset.s==='feat'?0:s.getBoundingClientRect().top+scrollY-$('hub-top').offsetHeight-8,behavior:'smooth'})};
+  const s=$('hs-'+b.dataset.s);scrollTo({top:b.dataset.s==='nav'?0:s.getBoundingClientRect().top+scrollY-$('hub-top').offsetHeight-8,behavior:'smooth'})};
 $('hub-list').onclick=e=>{const b=e.target.closest('.htile');if(!b)return;const[,,v,sel]=TILE[b.dataset.t];show(v);if(sel)document.querySelector(sel)?.click()};
 $('hub-find').onclick=()=>{const q=$('hub-q');q.hidden=!q.hidden;if(!q.hidden)q.focus();else{q.value='';hubFilter()}};
 function hubFilter(){const q=$('hub-q').value.trim();document.querySelectorAll('.hsec').forEach(s=>{let any=false;
-  s.querySelectorAll('.htile').forEach(t=>{const ok=!q||TILE[t.dataset.t][1].includes(q);t.hidden=!ok;any||=ok});s.hidden=!any||(!!q&&s.id==='hs-feat')})}
+  s.querySelectorAll('.htile').forEach(t=>{const ok=!q||TILE[t.dataset.t][1].includes(q);t.hidden=!ok;any||=ok});s.hidden=!any})}
 $('hub-q').oninput=hubFilter;
 HUBV.forEach(k=>{const h=$('v-'+k).querySelector('h1');const b=document.createElement('button');b.className='back';b.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>الساحة';b.onclick=()=>show('more');h.before(b)});
 
@@ -1284,6 +1306,35 @@ function play(items,i){const it=items[i];if(curUrl)URL.revokeObjectURL(curUrl);c
   const el=document.createElement(it.type.startsWith('video')?'video':'audio');el.controls=true;el.src=curUrl;el.autoplay=true;el.setAttribute('playsinline','');
   el.onended=()=>{if(items[i+1])play(items,i+1)};$('player').replaceChildren(el);$('now-title').textContent=it.name;$('player-card').hidden=false;
   curId=it.id;const nd=$('now-del');nd.hidden=false;nd.innerHTML=ICO_DEL+'حذف';delete nd.dataset.sure;delBtn(nd,it.id)}
+
+/* ---------- weather: Open-Meteo (free, no key) + its dust forecast; the last result stays on the phone for use without internet ---------- */
+const WMO={0:['☀️','صحو'],1:['🌤️','غائم جزئياً'],2:['⛅','غائم جزئياً'],3:['☁️','غائم'],45:['🌫️','ضباب'],48:['🌫️','ضباب'],51:['🌦️','رذاذ خفيف'],53:['🌦️','رذاذ'],55:['🌦️','رذاذ كثيف'],
+  61:['🌧️','مطر خفيف'],63:['🌧️','مطر'],65:['🌧️','مطر غزير'],66:['🌧️','مطر متجمد'],67:['🌧️','مطر متجمد'],71:['🌨️','ثلج خفيف'],73:['🌨️','ثلج'],75:['🌨️','ثلج كثيف'],77:['🌨️','حبيبات ثلج'],
+  80:['🌦️','زخات مطر'],81:['🌧️','زخات مطر'],82:['⛈️','زخات غزيرة'],85:['🌨️','زخات ثلج'],86:['🌨️','زخات ثلج'],95:['⛈️','عاصفة رعدية'],96:['⛈️','رعد وبرد'],99:['⛈️','رعد وبرد']};
+const wmo=c=>WMO[c]||['🌡️','—'];
+const dustLvl=d=>d==null?'':d<50?'الجو صافي من الغبار':d<150?'غبار خفيف':d<400?'غبار متوسط':'غبار كثيف';
+let wx=store.get('wx',null),wxBusy=false;
+async function wxFetch(){if(!pos||wxBusy)return;wxBusy=true;$('wx-status').textContent='أحدّث الطقس…';
+  const[la,lo]=pos.map(v=>v.toFixed(3));
+  try{const f=await(await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${la}&longitude=${lo}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,precipitation_probability,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,uv_index_max&timezone=auto&forecast_days=7`)).json();
+    if(!f.current)throw 0;let a=null;
+    try{a=await(await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${la}&longitude=${lo}&current=dust&hourly=dust&timezone=auto&forecast_days=2`)).json()}catch{}
+    wx={at:Date.now(),c:[+la,+lo],f,a};store.set('wx',wx);$('wx-status').textContent=''}
+  catch{$('wx-status').textContent=wx?'ما فيه نت، المعروض آخر تحديث محفوظ.':'الطقس يحتاج نت. أول ما يتصل الجوال يتحدث.'}
+  wxBusy=false;renderWx()}
+function renderWx(){if(!wx){$('wx-now').hidden=true;return}$('wx-now').hidden=false;const{f,a}=wx,c=f.current,[e,t]=wmo(c.weather_code),age=(Date.now()-wx.at)/60000;
+  $('wx-emo').textContent=e;$('wx-temp').textContent=Math.round(c.temperature_2m)+'°';$('wx-desc').textContent=t;
+  const dust=a?.current?.dust;
+  $('wx-det').innerHTML=[['المحسوسة',Math.round(c.apparent_temperature)+'°'],['الرطوبة',c.relative_humidity_2m+'٪'],['الرياح',`${Math.round(c.wind_speed_10m)} كم/س من ${dirName(c.wind_direction_10m)}`],
+    ['الهبات',Math.round(c.wind_gusts_10m)+' كم/س'],['الغبار',dust!=null?`${dustLvl(dust)} (${Math.round(dust)})`:'غير متاح'],['أعلى أشعة UV اليوم',f.daily.uv_index_max[0]?.toFixed(0)??'—']].map(([k,v])=>`<div class="stat"><span class="muted">${k}</span><b>${v}</b></div>`).join('');
+  const warn=[];if(c.wind_gusts_10m>=50||f.daily.wind_gusts_10m_max[0]>=60)warn.push('رياح قوية اليوم، انتبه للخيمة والغبار.');if(dust>=150)warn.push('غبار في الجو، الرؤية ممكن تكون ضعيفة.');
+  if(f.daily.precipitation_probability_max[0]>=50)warn.push('احتمال مطر اليوم، ابتعد عن مجاري الأودية والشعبان.');if(f.daily.temperature_2m_max[0]>=45)warn.push('حر شديد، اشرب ماء كثير وتجنب الشمس الظهر.');
+  $('wx-warn').hidden=!warn.length;$('wx-warn').textContent=warn.join(' ');
+  $('wx-age').textContent=`${age<2?'محدّث الحين':age<60?`آخر تحديث قبل ${Math.round(age)} دقيقة`:`آخر تحديث قبل ${Math.round(age/60)} ساعة`} · ${distance(wx.c,pos||wx.c)>20000?'لموقع سابق، مو موقعك الحالي · ':''}بيانات Open-Meteo.com`;
+  const now=Date.now(),hi=f.hourly.time.findIndex(s=>new Date(s).getTime()>now-3600000);
+  $('wx-hours').innerHTML=f.hourly.time.slice(hi,hi+24).map((s,i)=>{const j=hi+i,d=new Date(s);return`<div class="wx-h"><span class="muted">${i?d.toLocaleTimeString('ar',{hour:'numeric',numberingSystem:'latn'}):'الحين'}</span><span class="emo">${wmo(f.hourly.weather_code[j])[0]}</span><b>${Math.round(f.hourly.temperature_2m[j])}°</b><span class="muted">${f.hourly.precipitation_probability[j]?f.hourly.precipitation_probability[j]+'٪':''}</span></div>`}).join('');
+  $('wx-days').innerHTML=f.daily.time.map((s,i)=>`<li><span class="grow">${i?new Date(s+'T12:00').toLocaleDateString('ar',{weekday:'long'}):'اليوم'}<br><span class="muted">${wmo(f.daily.weather_code[i])[1]} · رياح حتى ${Math.round(f.daily.wind_gusts_10m_max[i])} كم/س${f.daily.precipitation_probability_max[i]?` · مطر ${f.daily.precipitation_probability_max[i]}٪`:''}</span></span><span class="emo wx-de">${wmo(f.daily.weather_code[i])[0]}</span><b class="num">${Math.round(f.daily.temperature_2m_max[i])}° / ${Math.round(f.daily.temperature_2m_min[i])}°</b></li>`).join('')}
+$('wx-refresh').onclick=wxFetch;
 
 /* ---------- المصحف: offline text by Madinah-mushaf page, resume where you stopped, daily wird ----------
    The text (lib/quran.json, 1.3 MB) is fetched once and kept in IndexedDB, so it opens without internet afterwards. */
