@@ -620,23 +620,23 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
     <div class="row"><button class="primary big-btn" id="fl-save">حفظ</button><button type="button" id="fl-cancel" hidden>إلغاء التعديل</button></div>
   </form>
   <form id="fl-race" class="card fl-p" autocomplete="off" hidden>
-    <h2>🏁 السباقات</h2>
+    <h2 id="fl-rtitle">🏁 السباقات</h2><input type="hidden" id="fl-redit">
     <label class="fld">اسم الطير<select id="fl-rbird"></select></label>
     <input type="text" id="fl-rbird-new" placeholder="اكتب اسم الطير الجديد" hidden>
     <label class="fld">التاريخ<input type="date" id="fl-rdate"></label>
     <div class="row"><label class="fld" style="flex:1">المسافة (متر)<input type="number" id="fl-rdist" value="400" inputmode="numeric" min="1"></label><label class="fld" style="flex:1">الزمن (ثانية)<input type="number" id="fl-rsec" step="0.001" inputmode="decimal" min="0"></label></div>
-    <button class="primary big-btn">احسب واحفظ في ملف الطير</button>
+    <div class="row"><button class="primary big-btn" id="fl-rsave">احسب واحفظ في ملف الطير</button><button type="button" id="fl-rcancel" hidden>إلغاء التعديل</button></div>
     <b id="fl-rres"></b>
   </form>
   <form id="fl-health" class="card fl-p" autocomplete="off" hidden>
-    <h2>🩺 الصحة</h2>
+    <h2 id="fl-htitle">🩺 الصحة</h2><input type="hidden" id="fl-hedit">
     <label class="fld">اسم الطير<select id="fl-hbird"></select></label>
     <input type="text" id="fl-hbird-new" placeholder="اكتب اسم الطير الجديد" hidden>
     <div class="row"><label class="fld" style="flex:1">التاريخ<input type="date" id="fl-hdate"></label><label class="fld" style="flex:1">نوع السجل<select id="fl-htype"><option>فحص عام</option><option>فيتامينات</option><option>كورس علاج</option><option>زيارة طبيب بيطري</option></select></label></div>
     <label class="fld">الوصفة / اسم العلاج أو الفيتامين<input type="text" id="fl-hname"></label>
     <label class="fld">الجرعة المسجلة حسب وصف الطبيب<input type="text" id="fl-hdose"></label>
     <label class="fld">ملاحظات<textarea id="fl-hnote" rows="2"></textarea></label>
-    <button class="primary big-btn">حفظ السجل الصحي</button>
+    <div class="row"><button class="primary big-btn" id="fl-hsave">حفظ السجل الصحي</button><button type="button" id="fl-hcancel" hidden>إلغاء التعديل</button></div>
     <span class="muted" id="fl-hmsg"></span>
   </form>
   <div id="fl-prof" class="fl-p" hidden></div>
@@ -758,7 +758,7 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
 <nav class="tabs" id="tabs"></nav>
 
 <script>
-const APP_VER='37'; // keep in step with V in sw.js
+const APP_VER='38'; // keep in step with V in sw.js
 // CORE-START (pure functions, tested in check.js)
 const R=Math.PI/180,KAABA=[21.4225,39.8262];
 const sin=d=>Math.sin(d*R),cos=d=>Math.cos(d*R),tan=d=>Math.tan(d*R),asin=x=>Math.asin(x)/R,acos=x=>Math.acos(Math.max(-1,Math.min(1,x)))/R,atan2=(y,x)=>Math.atan2(y,x)/R;
@@ -1475,13 +1475,19 @@ $('fl-train').onsubmit=ev=>{ev.preventDefault();const id=+$('fl-edit').value,e={
     feed:$('fl-feed').value.trim(),type:$('fl-type').value.trim(),hunt:'',notes:$('fl-notes').value.trim()},err=t=>{$('fl-err').hidden=false;$('fl-err').textContent=t};
   if(!e.bird||!e.date)return err('اكتب اسم الطير والتاريخ');if(!e.weight&&!e.type&&!e.feed&&!e.notes)return err('اكتب الوزن أو النشاط أو العلف');
   if(id){const i=FL.t.findIndex(x=>x.id===id);if(i>=0)FL.t[i]={...FL.t[i],...e}}else FL.t.unshift(e);flSave();flProfile(e.bird,id?'تم حفظ التعديل ✓':'تم الحفظ ✓')};
-function flRaceForm(bird){flPick('fl-rbird',bird);$('fl-rdate').value=ymd();$('fl-rres').textContent=''}
 $('fl-race').onsubmit=ev=>{ev.preventDefault();const b=flBird('fl-rbird'),d=+$('fl-rdist').value,z=+$('fl-rsec').value;if(!b||!d||!z){$('fl-rres').textContent='اكتب اسم الطير والمسافة والزمن';return}
-  const e={id:Date.now(),bird:b,date:$('fl-rdate').value||ymd(),distance:d,seconds:+z.toFixed(3),kmh:d/z*3.6};FL.r.unshift(e);flSave();$('fl-rres').textContent=`${e.kmh.toFixed(2)} كم/س · ${e.seconds} ثانية لمسافة ${d} متر • تم الحفظ ✓`;flPick('fl-rbird',b)};
-function flHealthForm(bird){flPick('fl-hbird',bird);$('fl-hdate').value=ymd();$('fl-hmsg').textContent=''}
+  const id=+$('fl-redit').value,e={id:id||Date.now(),bird:b,date:$('fl-rdate').value||ymd(),distance:d,seconds:+z.toFixed(3),kmh:d/z*3.6};flPut('r',e);flSave();flRaceForm(null,b);$('fl-rres').textContent=`${e.kmh.toFixed(2)} كم/س · ${e.seconds} ثانية لمسافة ${d} متر • ${id?'تم حفظ التعديل':'تم الحفظ'} ✓`;if(id)flProfile(b)};
+// editing keeps the entry's id and place in the list
+function flPut(k,e){const i=FL[k].findIndex(x=>x.id===e.id);if(i<0)FL[k].unshift(e);else FL[k][i]=e}
+function flRaceForm(e,bird){$('fl-redit').value=e?.id||'';flPick('fl-rbird',e?.bird||bird);$('fl-rdate').value=e?.date||ymd();if(e){$('fl-rdist').value=e.distance;$('fl-rsec').value=e.seconds}else $('fl-rsec').value='';
+  $('fl-rres').textContent='';$('fl-rtitle').textContent=e?'✏️ تعديل السباق':'🏁 السباقات';$('fl-rsave').textContent=e?'حفظ التعديل':'احسب واحفظ في ملف الطير';$('fl-rcancel').hidden=!e}
+$('fl-rcancel').onclick=()=>{const b=flBird('fl-rbird');flRaceForm(null,b);flProfile(b)};
+function flHealthForm(bird,e){$('fl-hedit').value=e?.id||'';flPick('fl-hbird',e?.bird||bird);$('fl-hdate').value=e?.date||ymd();if(e)$('fl-htype').value=e.type;['name','dose','note'].forEach(k=>$('fl-h'+k).value=e?.[k]||'');$('fl-hmsg').textContent='';
+  $('fl-htitle').textContent=e?'✏️ تعديل السجل الصحي':'🩺 الصحة';$('fl-hsave').textContent=e?'حفظ التعديل':'حفظ السجل الصحي';$('fl-hcancel').hidden=!e}
+$('fl-hcancel').onclick=()=>{const b=flBird('fl-hbird');flHealthForm(b);flProfile(b)};
 $('fl-health').onsubmit=ev=>{ev.preventDefault();const b=flBird('fl-hbird');if(!b){$('fl-hmsg').textContent='اختر الطير';return}
-  FL.h.unshift({id:Date.now(),bird:b,date:$('fl-hdate').value||ymd(),type:$('fl-htype').value,name:$('fl-hname').value.trim(),dose:$('fl-hdose').value.trim(),note:$('fl-hnote').value.trim()});flSave();
-  ['fl-hname','fl-hdose','fl-hnote'].forEach(i=>$(i).value='');$('fl-hmsg').textContent='تم الحفظ ✓';flPick('fl-hbird',b)};
+  const id=+$('fl-hedit').value;flPut('h',{id:id||Date.now(),bird:b,date:$('fl-hdate').value||ymd(),type:$('fl-htype').value,name:$('fl-hname').value.trim(),dose:$('fl-hdose').value.trim(),note:$('fl-hnote').value.trim()});flSave();
+  flHealthForm(b);if(id)flProfile(b);$('fl-hmsg').textContent=id?'تم حفظ التعديل ✓':'تم الحفظ ✓'};
 function flChart(t){const p=t.filter(x=>+x.weight>0).sort(wSort);if(p.length<2)return'<p class="muted">الرسم يطلع بعد ما تسجّل وزنين أو أكثر.</p>';
   const W=p.map(x=>+x.weight),n=W.length,lo0=Math.min(...W),hi0=Math.max(...W),pad=Math.max((hi0-lo0)*.2,10),lo=lo0-pad,hi=hi0+pad,X=i=>60+i*500/(n-1),Y=w=>200-(w-lo)/(hi-lo)*150;
   let s=`<svg viewBox="0 0 620 250" class="fl-chart">`;for(let k=0;k<4;k++){const y=50+k*50,v=Math.round(hi-(hi-lo)*k/3);s+=`<line x1="50" x2="600" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="44" y="${y+4}" text-anchor="end" font-size="18" fill="var(--muted)">${v}</text>`}
@@ -1498,11 +1504,12 @@ function flProfile(b,msg){const t=FL.t.filter(x=>x.bird===b),r=FL.r.filter(x=>x.
     ${Object.entries(byDay).map(([d,L])=>`<div class="card fl-day"><b>📅 ${d}</b><div class="fl-diff">${diffHtml(st[d])}</div>${L.map(x=>`<div class="fl-ent"><div>${esc(x.time)} • ${esc(x.slot)}${x.type?' — '+esc(x.type):''}</div>
       <div class="muted">${[x.weight?`⚖️ ${x.weight} جم`:'',x.feed?`🍖 ${esc(x.feed)}`:'',x.duration?`⏱️ ${x.duration} دقيقة`:''].filter(Boolean).join(' • ')}</div>${x.notes?`<div class="muted">${esc(x.notes)}</div>`:''}
       <div class="row"><button class="fl-ed" data-id="${x.id}">✏️ تعديل</button><button class="danger fl-del" data-k="t" data-id="${x.id}">🗑️ حذف</button></div></div>`).join('')}</div>`).join('')}
-    <h3>🏁 نتائج السباق</h3>${r.length?'':'<p class="muted">ما فيه سباقات.</p>'}<ul class="list">${r.map(x=>`<li><span class="grow">${x.date} · ${x.distance} م · ${x.seconds} ث · <b>${x.kmh.toFixed(2)} كم/س</b></span><button class="danger fl-del" data-k="r" data-id="${x.id}">🗑️</button></li>`).join('')}</ul>
-    <h3>🩺 السجل الصحي</h3>${h.length?'':'<p class="muted">ما فيه سجلات صحية.</p>'}<ul class="list">${h.map(x=>`<li><span class="grow"><b>${esc(x.type)}</b> · ${x.date}${x.name?' · '+esc(x.name):''}${x.dose?' · '+esc(x.dose):''}${x.note?`<br><span class="muted">${esc(x.note)}</span>`:''}</span><button class="danger fl-del" data-k="h" data-id="${x.id}">🗑️ حذف</button></li>`).join('')}</ul>`;
+    <h3>🏁 نتائج السباق</h3>${r.length?'':'<p class="muted">ما فيه سباقات.</p>'}<ul class="list">${r.map(x=>`<li><span class="grow">${x.date} · ${x.distance} م · ${x.seconds} ث · <b>${x.kmh.toFixed(2)} كم/س</b></span><button class="fl-ed2" data-k="r" data-id="${x.id}" aria-label="تعديل">✏️</button><button class="danger fl-del" data-k="r" data-id="${x.id}">🗑️</button></li>`).join('')}</ul>
+    <h3>🩺 السجل الصحي</h3>${h.length?'':'<p class="muted">ما فيه سجلات صحية.</p>'}<ul class="list">${h.map(x=>`<li><span class="grow"><b>${esc(x.type)}</b> · ${x.date}${x.name?' · '+esc(x.name):''}${x.dose?' · '+esc(x.dose):''}${x.note?`<br><span class="muted">${esc(x.note)}</span>`:''}<span class="row"><button class="fl-ed2" data-k="h" data-id="${x.id}">✏️ تعديل</button><button class="danger fl-del" data-k="h" data-id="${x.id}">🗑️ حذف</button></span></span></li>`).join('')}</ul>`;
   flShow('prof');$('fl-back').onclick=()=>flShow('home');
-  $('fl-p-w').onclick=()=>{flForm(null,b);flShow('train')};$('fl-p-r').onclick=()=>{flRaceForm(b);flShow('race')};$('fl-p-h').onclick=()=>{flHealthForm(b);flShow('health')};
+  $('fl-p-w').onclick=()=>{flForm(null,b);flShow('train')};$('fl-p-r').onclick=()=>{flRaceForm(null,b);flShow('race')};$('fl-p-h').onclick=()=>{flHealthForm(b);flShow('health')};
   document.querySelectorAll('.fl-ed').forEach(x=>x.onclick=()=>{flForm(FL.t.find(e=>e.id===+x.dataset.id));flShow('train')});
+  document.querySelectorAll('.fl-ed2').forEach(x=>x.onclick=()=>{const k=x.dataset.k,e=FL[k].find(y=>y.id===+x.dataset.id);if(k==='h'){flShow('health');flHealthForm(null,e)}else{flShow('race');flRaceForm(e)}scrollTo(0,0)});
   document.querySelectorAll('.fl-del').forEach(x=>x.onclick=()=>{if(!x.dataset.sure){x.dataset.sure=1;x.textContent='متأكد؟';setTimeout(()=>{delete x.dataset.sure;x.textContent='🗑️ حذف'},4000);return}
     FL[x.dataset.k]=FL[x.dataset.k].filter(e=>e.id!==+x.dataset.id);flSave();flNames().includes(b)?flProfile(b):flShow('home')})}
 
