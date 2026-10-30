@@ -127,6 +127,25 @@ video{max-height:45vh;background:#000}
 .mbtn svg{width:20px;height:20px;flex:none}
 .warn{color:var(--danger);font-size:.875rem}
 html{scroll-padding-bottom:100px}
+/* المصحف */
+@font-face{font-family:"Amiri Quran";src:url(lib/amiri-quran.woff2) format("woff2");font-display:swap}
+#q-read{position:fixed;inset:0;z-index:60;background:#fdf8ec;color:#1d1f1b;overflow-y:auto;overscroll-behavior:contain;padding:calc(8px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px}
+@media (prefers-color-scheme:dark){#q-read{background:#1a1813;color:#efe7d6}}
+body.reading{overflow:hidden}body.reading nav.tabs{display:none}
+.q-top,.q-bot{display:flex;gap:8px;align-items:center;position:sticky;background:inherit;z-index:1}
+.q-top{top:calc(-8px - env(safe-area-inset-top,0px));padding-block:6px}.q-bot{bottom:calc(-12px - env(safe-area-inset-bottom,0px));padding-block:8px;justify-content:space-between}
+.q-top button:not(.x),.q-bot button{background:var(--tint-soft);color:var(--tint)}
+.q-pno{font-family:"Amiri Quran",serif;font-size:20px}
+#q-page{flex:1;font-family:"Amiri Quran","Geeza Pro",serif;line-height:2.15;text-align:justify;text-align-last:center}
+.q-par{margin:0}
+.q-n{color:#8a6a1f;white-space:nowrap}
+.q-sura{text-align:center;font-size:.8em;border:1.5px solid #c9a75c;border-radius:12px;padding:2px 0;margin:10px 0 2px;background:rgba(201,167,92,.12)}
+.q-basm{text-align:center;font-size:.9em}
+.q-row{width:100%;justify-content:flex-start;background:none;color:var(--fg);font-weight:400;gap:10px;text-align:start;padding:6px 0}
+.q-row b{flex:1}
+.prog .bar{height:100%;width:0;background:var(--accent);border-radius:4px}
+.wird-mini{padding:10px 14px;font-weight:600}
+.wird-mini button{min-height:38px;padding:4px 16px}
 /* «الساحة»: emoji tiles on soft white cards, pill chips on top, floating tab bar */
 .emo{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;line-height:1}
 #v-more{gap:6px}
@@ -264,6 +283,7 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
     <span class="muted" id="loc-line">جاري تحديد الموقع…</span>
   <svg class="dunes" viewBox="0 0 390 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60V38c40-14 80-22 130-10s90 18 140 2 90-20 120-14v44z" fill="var(--dune2)"/><path d="M0 60V48c60-10 110-14 170-4s120 10 220-6v22z" fill="var(--bg)"/></svg>
   </header>
+  <div class="card row wird-mini" id="pr-wird" style="justify-content:space-between"><span></span><button class="primary">اقرأ</button></div>
   <div class="card"><div class="times" id="times"></div></div>
   <div class="card">
     <h2>الإعدادات</h2>
@@ -512,6 +532,28 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
   </div>
 </section>
 
+<section id="v-quran" hidden>
+  <h1>المصحف</h1>
+  <div class="card">
+    <h2>📿 الورد اليومي</h2>
+    <b id="q-wtext"></b>
+    <div class="prog"><div id="q-wbar" class="bar"></div></div>
+    <span class="muted" id="q-wmeta"></span>
+    <div class="row"><button id="q-wird-go" class="primary">اقرأ ورد اليوم</button><button id="q-wird-done">أتممت الورد ✓</button></div>
+    <label class="row">مقدار الورد<select id="q-wsize"><option value="1">صفحة باليوم</option><option value="2">صفحتين</option><option value="4">٤ صفحات</option><option value="5">٥ صفحات</option><option value="10">نص جزء</option><option value="20">جزء كامل</option></select></label>
+  </div>
+  <button id="q-cont" class="primary big-btn"></button>
+  <span class="muted" id="q-status"></span>
+  <div class="seg" id="q-kind"><button class="chip" data-k="sura">السور</button><button class="chip" data-k="juz">الأجزاء</button></div>
+  <ul class="list" id="q-index"></ul>
+</section>
+<div id="q-read" hidden>
+  <div class="q-top"><button id="q-close" class="x" aria-label="إغلاق">✕</button><b id="q-title" class="grow"></b><button id="q-small" aria-label="تصغير الخط">أ-</button><button id="q-big" aria-label="تكبير الخط">أ+</button></div>
+  <div id="q-page"></div>
+  <button id="q-wend" class="primary big-btn" hidden>أتممت ورد اليوم ✓</button>
+  <div class="q-bot"><button id="q-next">الصفحة التالية</button><span id="q-pno" class="q-pno"></span><button id="q-prev">السابقة</button></div>
+</div>
+
 <section id="v-more" hidden>
   <div id="hub-top">
     <div class="hchips"><button id="hub-find" class="hchip find" aria-label="بحث"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button><div id="hub-chips" class="hchips-in"></div></div>
@@ -564,7 +606,7 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
 <nav class="tabs" id="tabs"></nav>
 
 <script>
-const APP_VER='30'; // keep in step with V in sw.js
+const APP_VER='31'; // keep in step with V in sw.js
 // CORE-START (pure functions, tested in check.js)
 const R=Math.PI/180,KAABA=[21.4225,39.8262];
 const sin=d=>Math.sin(d*R),cos=d=>Math.cos(d*R),tan=d=>Math.tan(d*R),asin=x=>Math.asin(x)/R,acos=x=>Math.acos(Math.max(-1,Math.min(1,x)))/R,atan2=(y,x)=>Math.atan2(y,x)/R;
@@ -680,6 +722,11 @@ function fromGPX(text,parse){const doc=parse(text);if(!doc||doc.getElementsByTag
 function tilesIn(b,minz,maxz){const out=[];for(let z=minz;z<=maxz;z++){const n=2**z,cl=v=>Math.max(0,Math.min(n-1,v)),X=lo=>cl(Math.floor((lo+180)/360*n)),
     Y=la=>{const r=Math.max(-85.0511,Math.min(85.0511,la))*Math.PI/180;return cl(Math.floor((1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n))};
   for(let x=X(b[0]);x<=X(b[2]);x++)for(let y=Y(b[3]);y<=Y(b[1]);y++)out.push([z,x,y])}return out}
+// Quran, Hafs / Madinah mushaf: first global ayah id of each page and juz (index 0 unused, last entry a sentinel), verses per surah
+const QPAGE=[0,1,8,13,24,32,37,45,56,65,69,77,84,91,96,101,109,113,120,127,134,142,149,153,161,171,177,184,189,194,198,204,210,218,223,227,232,238,241,245,253,256,260,264,267,272,277,282,289,290,294,303,309,316,323,331,339,346,355,364,371,377,385,394,402,409,415,426,434,442,447,451,459,467,474,480,488,494,500,505,508,513,517,520,527,531,538,545,553,559,568,573,580,585,588,595,599,607,615,621,628,634,641,648,656,664,669,672,675,679,683,687,693,701,706,711,715,720,727,734,740,746,752,759,765,773,778,783,790,798,808,817,825,834,842,849,858,863,871,880,884,891,900,908,914,921,927,932,936,941,947,955,966,977,985,992,998,1006,1012,1022,1028,1036,1042,1050,1059,1075,1085,1092,1098,1104,1110,1114,1118,1125,1133,1142,1150,1161,1169,1177,1186,1194,1201,1206,1213,1222,1230,1236,1242,1249,1256,1262,1267,1272,1276,1283,1290,1297,1304,1308,1315,1322,1329,1335,1342,1347,1353,1358,1365,1371,1379,1385,1390,1398,1407,1418,1426,1435,1443,1453,1462,1471,1479,1486,1493,1502,1511,1519,1527,1536,1545,1555,1562,1571,1582,1591,1601,1611,1619,1627,1634,1640,1649,1660,1666,1675,1683,1692,1700,1708,1713,1721,1726,1736,1742,1750,1756,1761,1769,1775,1784,1793,1803,1818,1834,1854,1873,1893,1908,1916,1928,1936,1944,1956,1966,1974,1981,1989,1995,2004,2012,2020,2030,2037,2047,2057,2068,2079,2088,2096,2105,2116,2126,2134,2145,2156,2161,2168,2175,2186,2194,2202,2215,2224,2238,2251,2262,2276,2289,2302,2315,2327,2346,2361,2386,2400,2413,2425,2436,2447,2462,2474,2484,2494,2508,2519,2528,2541,2556,2565,2574,2585,2596,2601,2611,2619,2626,2634,2642,2651,2660,2668,2674,2691,2701,2716,2733,2748,2763,2778,2792,2802,2812,2819,2823,2828,2835,2845,2850,2853,2858,2867,2876,2888,2899,2911,2923,2933,2952,2972,2993,3016,3044,3069,3092,3116,3139,3160,3173,3182,3195,3204,3215,3223,3236,3248,3258,3266,3274,3281,3288,3296,3303,3312,3323,3330,3337,3347,3355,3364,3371,3379,3386,3393,3404,3415,3425,3434,3442,3451,3460,3470,3481,3489,3498,3504,3515,3524,3534,3540,3549,3556,3564,3569,3577,3584,3588,3596,3607,3614,3621,3629,3638,3646,3655,3664,3672,3679,3691,3699,3705,3718,3733,3746,3760,3776,3789,3813,3840,3865,3891,3915,3942,3971,3987,3997,4013,4032,4054,4064,4069,4080,4090,4099,4106,4115,4126,4133,4141,4150,4159,4167,4174,4183,4192,4200,4211,4219,4230,4239,4248,4257,4265,4273,4283,4288,4295,4304,4317,4324,4336,4348,4359,4373,4386,4399,4415,4433,4454,4474,4487,4496,4506,4516,4525,4531,4539,4546,4557,4565,4575,4584,4593,4599,4607,4612,4617,4624,4631,4646,4666,4682,4706,4727,4750,4767,4785,4811,4829,4853,4874,4896,4918,4942,4969,4996,5030,5056,5079,5087,5094,5100,5105,5111,5116,5126,5130,5136,5143,5151,5156,5162,5169,5178,5186,5193,5200,5209,5218,5223,5230,5237,5242,5254,5268,5287,5314,5332,5358,5386,5415,5430,5448,5461,5476,5495,5513,5543,5571,5597,5617,5642,5673,5703,5728,5759,5801,5830,5855,5883,5910,5932,5964,5994,6017,6044,6073,6099,6126,6138,6156,6177,6194,6208,6222,6237],QJUZ=[0,1,149,260,386,517,641,751,900,1042,1201,1328,1479,1649,1803,2030,2215,2484,2674,2876,3215,3386,3564,3733,4090,4265,4511,4706,5105,5242,5673,6237],QCOUNT=[7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6];
+const QSTART=QCOUNT.reduce((a,n)=>(a.push(a[a.length-1]+n),a),[1]); // QSTART[s-1] = id of ayah s:1
+function qLoc(id){let s=0;while(QSTART[s+1]<=id)s++;return[s+1,id-QSTART[s]+1]}
+const qFind=(L,id)=>{let i=1;while(L[i+1]<=id)i++;return i}; // page or juz number holding ayah id
 // CORE-END
 
 const $=id=>document.getElementById(id);
@@ -694,22 +741,22 @@ const ICONS={
   nav:'<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z" fill="currentColor" fill-opacity=".18"/><path d="M9 4v14M15 6v14"/>',
   more:'<path d="M2 20l6.5-11 4 6 3-4.5L22 20z" fill="currentColor" fill-opacity=".18"/><path d="M8.5 9l1.8 3M15.5 10.5l1.4 2.2"/>',
   prayer:'<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" fill="currentColor" fill-opacity=".18"/>'};
-const BAR=[['nav','الخريطة'],['more','الساحة'],['prayer','الصلاة']],HUBV=['compass','media','fun','stories','info','food'];
+const BAR=[['nav','الخريطة'],['more','الساحة'],['prayer','الصلاة']],HUBV=['compass','media','fun','stories','info','food','quran'];
 const TILE={map:['🗺️','الخريطة','nav'],compass:['🧭','البوصلة','compass'],qibla:['🕋','القبلة','compass'],speed:['🏎️','عداد السرعة','nav'],
   save:['📍','حفظ نقطة','nav','#a-save'],points:['📌','نقاطي','nav','#a-points'],rec:['🔴','تسجيل رحلة','nav','#a-rec'],back:['↩️','العودة على الدرب','nav','#a-back'],offline:['⬇️','خرائط بدون نت','nav','#a-menu'],
-  prayer:['🌙','مواقيت الصلاة','prayer'],quran:['📖','القرآن الكريم','media','#cats [data-c=quran]'],songs:['🎵','أغاني وشيلات','media','#cats [data-c=songs]'],astories:['🎙️','قصص صوتية','media','#cats [data-c=stories]'],video:['🎬','فيديو','media','#cats [data-c=video]'],
+  prayer:['🌙','مواقيت الصلاة','prayer'],mushaf:['📗','المصحف','quran'],wird:['📿','الورد اليومي','quran','#q-wird-go'],quran:['🎧','تلاوة القرآن','media','#cats [data-c=quran]'],songs:['🎵','أغاني وشيلات','media','#cats [data-c=songs]'],astories:['🎙️','قصص صوتية','media','#cats [data-c=stories]'],video:['🎬','فيديو','media','#cats [data-c=video]'],
   charades:['🎭','بدون كلام','fun','#games [data-g=charades]'],sj:['❓','سين جيم','fun','#games [data-g=sj]'],riddle:['🧩','ألغاز','fun','#games [data-g=riddle]'],
   stories:['📜','قصص البر','stories'],plants:['🌵','نباتات البر','info','#in-cats [data-i="نباتات"]'],stars:['✨','النجوم','info','#in-cats [data-i="نجوم"]'],insects:['🦂','الحشرات','info','#in-cats [data-i="حشرات"]'],
   recipes:['🍲','طبخات البر','food','#fd-cats [data-h="طبخات البر"]'],healthy:['🥗','أكلات صحية','food','#fd-cats [data-h="أكلات صحية"]'],workout:['🏃','تمارين','food','#fd-cats [data-h="تمارين"]'],shop:['🛒','المقاضي','food','#fd-cats [data-h="المقاضي"]']};
-const HUB=[['feat','مميزة','⭐',['map','prayer','qibla','compass','quran','rec','back','offline']],['nav','التنقل','🧭',['map','compass','qibla','speed','save','points','rec','back','offline']],
-  ['din','عبادة','🕌',['prayer','qibla','quran']],['media','صوتيات','🎧',['quran','songs','astories','video']],['games','ألعاب','🎮',['charades','sj','riddle']],
+const HUB=[['feat','مميزة','⭐',['map','prayer','mushaf','wird','qibla','compass','rec','back']],['nav','التنقل','🧭',['map','compass','qibla','speed','save','points','rec','back','offline']],
+  ['din','عبادة','🕌',['mushaf','wird','prayer','qibla','quran']],['media','صوتيات','🎧',['quran','songs','astories','video']],['games','ألعاب','🎮',['charades','sj','riddle']],
   ['know','قصص ومعلومات','📚',['stories','plants','stars','insects']],['life','صحة وطبخ','🌿',['recipes','healthy','workout','shop']]];
 const ico=(k,w=26)=>`<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
 // the map screen ends where the floating bar starts; the bar grows with the iPhone's text size
 const tabH=()=>document.documentElement.style.setProperty('--tabh',Math.max(0,innerHeight-$('tabs').getBoundingClientRect().top)+'px');
 function show(t){['nav','more','prayer',...HUBV].forEach(k=>$('v-'+k).hidden=k!==t);
   const sel=HUBV.includes(t)?'more':t;BAR.forEach(([k])=>$('t-'+k).setAttribute('aria-selected',k===sel));
-  store.set('tab',t);scrollTo(0,0);tabH();document.body.classList.toggle('mapmode',t==='nav');if(t==='nav'){initMap();map?.invalidateSize()}keepAwake()}
+  store.set('tab',t);scrollTo(0,0);tabH();document.body.classList.toggle('mapmode',t==='nav');if(t==='nav'){initMap();map?.invalidateSize()}if(t==='quran'){qHome();if(!$('q-index').children.length)qIndex('sura')}keepAwake()}
 $('tabs').innerHTML=BAR.map(([k,l])=>`<button id="t-${k}" role="tab">${ico(k)}<span>${l}</span></button>`).join('');
 BAR.forEach(([k])=>$('t-'+k).onclick=()=>show(k));
 $('hub-chips').innerHTML=HUB.map(([id,n,e])=>`<button class="hchip" data-s="${id}"><span class="emo">${e}</span>${n}</button>`).join('');
@@ -1238,6 +1285,58 @@ function play(items,i){const it=items[i];if(curUrl)URL.revokeObjectURL(curUrl);c
   const el=document.createElement(it.type.startsWith('video')?'video':'audio');el.controls=true;el.src=curUrl;el.autoplay=true;el.setAttribute('playsinline','');
   el.onended=()=>{if(items[i+1])play(items,i+1)};$('player').replaceChildren(el);$('now-title').textContent=it.name;$('player-card').hidden=false;
   curId=it.id;const nd=$('now-del');nd.hidden=false;nd.innerHTML=ICO_DEL+'حذف';delete nd.dataset.sure;delBtn(nd,it.id)}
+
+/* ---------- المصحف: offline text by Madinah-mushaf page, resume where you stopped, daily wird ----------
+   The text (lib/quran.json, 1.3 MB) is fetched once and kept in IndexedDB, so it opens without internet afterwards. */
+let QTXT=null,qp=+store.get('qpage',1)||1,qFont=+store.get('qfont',26)||26;
+const arNum=n=>String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+async function qLoad(){if(QTXT)return QTXT;const r=await dbGet('quran-text');if(r){QTXT=r.s;return QTXT}
+  const res=await fetch('lib/quran.json');if(!res.ok)throw 0;QTXT=await res.json();dbPut({id:'quran-text',cat:'_',s:QTXT});return QTXT}
+const qName=s=>QTXT?QTXT[s-1][0]:'';
+function qRender(){const a=QPAGE[qp],b=QPAGE[qp+1],[s0]=qLoc(a);let h='',par='';const flush=()=>{if(par)h+=`<p class="q-par">${par}</p>`;par=''};
+  for(let id=a;id<b;id++){const[s,v]=qLoc(id);
+    if(v===1){flush();h+=`<div class="q-sura">سورة ${qName(s)}</div>`;if(s!==1&&s!==9)h+='<div class="q-basm">بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ</div>'}
+    par+=`${QTXT[s-1][1][v-1]} <span class="q-n">﴿${arNum(v)}﴾</span> `}
+  flush();$('q-page').innerHTML=h;$('q-page').style.fontSize=qFont+'px';
+  $('q-title').textContent=`${qName(qLoc(b-1)[0])} · الجزء ${arNum(qFind(QJUZ,a))}`;$('q-pno').textContent=arNum(qp);
+  $('q-prev').disabled=qp<=1;$('q-next').disabled=qp>=604;store.set('qpage',qp);
+  const w=wirdNow();$('q-wend').hidden=w.done||qp!==w.b;$('q-read').scrollTop=0;void s0}
+async function qOpen(p){p=Math.max(1,Math.min(604,p||qp));try{await qLoad()}catch{$('q-status').textContent='المصحف يحتاج نت أول مرة بس عشان يتحمّل (1.3 ميقا)، وبعدها يشتغل بدون نت.';return}
+  qp=p;$('q-read').hidden=false;document.body.classList.add('reading');qRender()}
+function qClose(){$('q-read').hidden=true;document.body.classList.remove('reading');qHome()}
+$('q-close').onclick=qClose;
+$('q-next').onclick=()=>{if(qp<604){qp++;qRender()}};$('q-prev').onclick=()=>{if(qp>1){qp--;qRender()}};
+$('q-big').onclick=()=>{qFont=Math.min(44,qFont+2);store.set('qfont',qFont);qRender()};$('q-small').onclick=()=>{qFont=Math.max(18,qFont-2);store.set('qfont',qFont);qRender()};
+// a mushaf turns right-to-left: swiping to the right brings the next page
+let qx=null;$('q-read').addEventListener('touchstart',e=>{qx=e.touches[0].clientX},{passive:true});
+$('q-read').addEventListener('touchend',e=>{if(qx==null)return;const dx=e.changedTouches[0].clientX-qx;qx=null;if(Math.abs(dx)>70)(dx>0?$('q-next'):$('q-prev')).click()},{passive:true});
+
+/* wird: a fixed number of pages a day, continuing from where the last one ended; a khatma wraps back to page 1 */
+const dayKey=()=>new Date().toLocaleDateString('en-CA');
+let wird=store.get('wird',{size:4,next:1,days:{},khatmat:0});
+function wirdNow(){const d=wird.days[dayKey()];if(d)return{a:d[0],b:d[1],done:true};const a=wird.next;return{a,b:Math.min(604,a+wird.size-1),done:false}}
+function wirdStreak(){let n=0;const d=new Date();if(!wird.days[dayKey()])d.setDate(d.getDate()-1);for(;;){if(!wird.days[d.toLocaleDateString('en-CA')])return n;n++;d.setDate(d.getDate()-1)}}
+function wirdDone(){const w=wirdNow();if(w.done)return;wird.days[dayKey()]=[w.a,w.b];wird.next=w.b+1;if(wird.next>604){wird.next=1;wird.khatmat++}
+  const keep=Object.keys(wird.days).sort().slice(-400);wird.days=Object.fromEntries(keep.map(k=>[k,wird.days[k]]));store.set('wird',wird);qHome();if(!$('q-read').hidden)qRender()}
+$('q-wsize').value=wird.size;$('q-wsize').onchange=e=>{wird.size=+e.target.value;store.set('wird',wird);qHome()};
+$('q-wird-go').onclick=()=>qOpen(wirdNow().a);$('q-wird-done').onclick=wirdDone;$('q-wend').onclick=wirdDone;
+$('q-cont').onclick=()=>qOpen(qp);
+function qHome(){const w=wirdNow(),st=wirdStreak(),pages=`صفحة ${arNum(w.a)}${w.b>w.a?` إلى ${arNum(w.b)}`:''}`;
+  $('q-wtext').textContent=w.done?`أتممت ورد اليوم (${pages}). وردك بكرة يبدأ من صفحة ${arNum(wird.next)}.`:`ورد اليوم: ${pages}.`;
+  $('q-wird-done').hidden=w.done;$('q-wird-go').textContent=w.done?'اقرأ ورد اليوم مرة ثانية':'اقرأ ورد اليوم';
+  $('q-wbar').style.width=((wird.next-1)/604*100).toFixed(1)+'%';
+  $('q-wmeta').textContent=`الختمة: ${Math.round((wird.next-1)/604*100)}٪`+(wird.khatmat?` · ختمت ${wird.khatmat} مرة`:'')+(st?` · ${st} يوم متواصل`:'')+` · تخلص الختمة بعد ${Math.ceil((605-wird.next)/wird.size)} يوم تقريباً`;
+  $('q-cont').textContent=`أكمل من حيث وقفت: صفحة ${arNum(qp)}`;
+  const pw=$('pr-wird');pw.querySelector('span').textContent=w.done?'✓ أتممت ورد اليوم':`📿 ورد اليوم: ${pages}`;pw.querySelector('button').hidden=w.done}
+$('pr-wird').querySelector('button').onclick=()=>{show('quran');qOpen(wirdNow().a)};
+async function qIndex(kind){document.querySelectorAll('#q-kind .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===kind));
+  try{await qLoad()}catch{$('q-status').textContent='المصحف يحتاج نت أول مرة بس عشان يتحمّل (1.3 ميقا)، وبعدها يشتغل بدون نت.';return}
+  const ul=$('q-index');ul.innerHTML='';const rows=kind==='juz'?Array.from({length:30},(_,i)=>{const id=QJUZ[i+1],[s,v]=qLoc(id);return[`الجزء ${arNum(i+1)}`,`يبدأ من ${qName(s)}${v>1?` آية ${arNum(v)}`:''}`,qFind(QPAGE,id)]})
+    :QTXT.map(([n,vs],i)=>[`${arNum(i+1)}. ${n}`,`${arNum(vs.length)} آية`,qFind(QPAGE,QSTART[i])]);
+  for(const[t,d,p]of rows){const li=document.createElement('li');li.innerHTML=`<button class="q-row"><b></b><span class="muted"></span><span class="muted q-pg">ص ${arNum(p)}</span></button>`;
+    li.querySelector('b').textContent=t;li.querySelector('.muted').textContent=d;li.firstChild.onclick=()=>qOpen(p);ul.append(li)}}
+$('q-kind').onclick=e=>{const b=e.target.closest('.chip');if(b)qIndex(b.dataset.k)};
+qHome();
 
 /* ---------- riddles ---------- */
 const RIDDLES=[['شي كل ما زاد نقص؟','العمر'],['له أسنان وما يعض؟','المشط'],['يمشي بلا رجلين ويبكي بلا عيون؟','السحاب'],['بيت ما له أبواب ولا شبابيك؟','البيضة'],
