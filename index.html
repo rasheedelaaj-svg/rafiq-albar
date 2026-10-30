@@ -127,6 +127,16 @@ video{max-height:45vh;background:#000}
 .mbtn svg{width:20px;height:20px;flex:none}
 .warn{color:var(--danger);font-size:.875rem}
 html{scroll-padding-bottom:100px}
+/* الصقور */
+.fl-minis{display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:8px;margin-top:6px}
+.fl-minis div{display:flex;flex-direction:column}.fl-minis b{font-size:1rem}
+.fl-bird{gap:6px}
+.diff{font-weight:600;font-size:.875rem}.diff.up{color:#2e7d32}.diff.down{color:#b3261e}
+@media (prefers-color-scheme:dark){.diff.up{color:#8fd18f}.diff.down{color:#ff8a7a}}
+.fl-ent{border-top:.5px solid var(--line);padding-top:8px;display:flex;flex-direction:column;gap:2px}
+.fl-ent .row button{min-height:36px;padding:4px 12px;font-size:.85rem}
+.fl-chart{width:100%;height:auto}
+.ok-msg{margin:0;color:var(--good);font-weight:600}
 /* الطقس */
 .wx-hours{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}
 .wx-hours::-webkit-scrollbar{display:none}
@@ -555,6 +565,47 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
   <div class="seg" id="q-kind"><button class="chip" data-k="sura">السور</button><button class="chip" data-k="juz">الأجزاء</button></div>
   <ul class="list" id="q-index"></ul>
 </section>
+<section id="v-falcon" hidden>
+  <h1>الصقور</h1>
+  <div class="seg" id="fl-tabs"><button class="chip" data-p="home">طيوري</button><button class="chip" data-p="train">وزن / نشاط</button><button class="chip" data-p="race">سباق</button><button class="chip" data-p="health">الصحة</button></div>
+  <div id="fl-home" class="fl-p" hidden><div id="fl-birds"></div></div>
+  <form id="fl-train" class="card fl-p" autocomplete="off" hidden>
+    <h2 id="fl-t-title">تسجيل وزن / نشاط</h2>
+    <input type="hidden" id="fl-edit">
+    <label class="fld">اسم الطير<select id="fl-bird"></select></label>
+    <input type="text" id="fl-bird-new" placeholder="اكتب اسم الطير الجديد" hidden>
+    <div class="row"><label class="fld" style="flex:1">التاريخ<input type="date" id="fl-date"></label><label class="fld" style="flex:1">الوقت<input type="time" id="fl-time"></label></div>
+    <div class="row"><label class="fld" style="flex:1">الوزن (جم)<input type="number" id="fl-weight" inputmode="numeric" min="0"></label>
+      <label class="fld" style="flex:1">وقت القراءة<select id="fl-slot"><option>صباح</option><option>ظهر</option><option>عصر</option><option>مغرب</option><option>وقت حر</option></select></label></div>
+    <label class="fld">نوع العلف (اختياري)<input type="text" id="fl-feed" placeholder="مثل: حمام، سمان، دجاج"></label>
+    <label class="fld">التدريب / النشاط (اختياري)<input type="text" id="fl-type" placeholder="اكتب النشاط بكلماتك"></label>
+    <span class="muted">تقدر تسجّل وزن بس، أو نشاط بس، أو الاثنين. وترجع لأي سجل من ملف الطير ✏️ تعدّله أو تضيف عليه.</span>
+    <label class="fld">الملاحظات<textarea id="fl-notes" rows="2"></textarea></label>
+    <span class="warn" id="fl-err" hidden></span>
+    <div class="row"><button class="primary big-btn" id="fl-save">حفظ</button><button type="button" id="fl-cancel" hidden>إلغاء التعديل</button></div>
+  </form>
+  <form id="fl-race" class="card fl-p" autocomplete="off" hidden>
+    <h2>🏁 السباقات</h2>
+    <label class="fld">اسم الطير<select id="fl-rbird"></select></label>
+    <input type="text" id="fl-rbird-new" placeholder="اكتب اسم الطير الجديد" hidden>
+    <label class="fld">التاريخ<input type="date" id="fl-rdate"></label>
+    <div class="row"><label class="fld" style="flex:1">المسافة (متر)<input type="number" id="fl-rdist" value="400" inputmode="numeric" min="1"></label><label class="fld" style="flex:1">الزمن (ثانية)<input type="number" id="fl-rsec" step="0.001" inputmode="decimal" min="0"></label></div>
+    <button class="primary big-btn">احسب واحفظ في ملف الطير</button>
+    <b id="fl-rres"></b>
+  </form>
+  <form id="fl-health" class="card fl-p" autocomplete="off" hidden>
+    <h2>🩺 الصحة</h2>
+    <label class="fld">اسم الطير<select id="fl-hbird"></select></label>
+    <input type="text" id="fl-hbird-new" placeholder="اكتب اسم الطير الجديد" hidden>
+    <div class="row"><label class="fld" style="flex:1">التاريخ<input type="date" id="fl-hdate"></label><label class="fld" style="flex:1">نوع السجل<select id="fl-htype"><option>فحص عام</option><option>فيتامينات</option><option>كورس علاج</option><option>زيارة طبيب بيطري</option></select></label></div>
+    <label class="fld">الوصفة / اسم العلاج أو الفيتامين<input type="text" id="fl-hname"></label>
+    <label class="fld">الجرعة المسجلة حسب وصف الطبيب<input type="text" id="fl-hdose"></label>
+    <label class="fld">ملاحظات<textarea id="fl-hnote" rows="2"></textarea></label>
+    <button class="primary big-btn">حفظ السجل الصحي</button>
+    <span class="muted" id="fl-hmsg"></span>
+  </form>
+  <div id="fl-prof" class="fl-p" hidden></div>
+</section>
 <section id="v-weather" hidden>
   <h1>الطقس</h1>
   <div class="card" id="wx-now" hidden>
@@ -628,7 +679,7 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
 <nav class="tabs" id="tabs"></nav>
 
 <script>
-const APP_VER='32'; // keep in step with V in sw.js
+const APP_VER='33'; // keep in step with V in sw.js
 // CORE-START (pure functions, tested in check.js)
 const R=Math.PI/180,KAABA=[21.4225,39.8262];
 const sin=d=>Math.sin(d*R),cos=d=>Math.cos(d*R),tan=d=>Math.tan(d*R),asin=x=>Math.asin(x)/R,acos=x=>Math.acos(Math.max(-1,Math.min(1,x)))/R,atan2=(y,x)=>Math.atan2(y,x)/R;
@@ -763,14 +814,14 @@ const ICONS={
   nav:'<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z" fill="currentColor" fill-opacity=".18"/><path d="M9 4v14M15 6v14"/>',
   more:'<path d="M2 20l6.5-11 4 6 3-4.5L22 20z" fill="currentColor" fill-opacity=".18"/><path d="M8.5 9l1.8 3M15.5 10.5l1.4 2.2"/>',
   prayer:'<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" fill="currentColor" fill-opacity=".18"/>'};
-const BAR=[['nav','الخريطة'],['more','الساحة'],['prayer','الصلاة']],HUBV=['compass','media','fun','stories','info','food','quran','weather'];
+const BAR=[['nav','الخريطة'],['more','الساحة'],['prayer','الصلاة']],HUBV=['compass','media','fun','stories','info','food','quran','weather','falcon'];
 const TILE={map:['🗺️','الخريطة','nav'],compass:['🧭','البوصلة','compass'],qibla:['🕋','القبلة','compass'],speed:['🏎️','عداد السرعة','nav'],
   save:['📍','حفظ نقطة','nav','#a-save'],points:['📌','نقاطي','nav','#a-points'],rec:['🔴','تسجيل رحلة','nav','#a-rec'],back:['↩️','العودة على الدرب','nav','#a-back'],offline:['⬇️','خرائط بدون نت','nav','#a-menu'],
-  prayer:['🌙','مواقيت الصلاة','prayer'],mushaf:['📗','المصحف','quran'],weather:['🌤️','الطقس','weather'],wird:['📿','الورد اليومي','quran','#q-wird-go'],quran:['🎧','تلاوة القرآن','media','#cats [data-c=quran]'],songs:['🎵','أغاني وشيلات','media','#cats [data-c=songs]'],astories:['🎙️','قصص صوتية','media','#cats [data-c=stories]'],video:['🎬','فيديو','media','#cats [data-c=video]'],
+  prayer:['🌙','مواقيت الصلاة','prayer'],mushaf:['📗','المصحف','quran'],weather:['🌤️','الطقس','weather'],falcons:['🦅','طيوري','falcon','#fl-tabs [data-p=home]'],fweight:['⚖️','تسجيل الوزن','falcon','#fl-tabs [data-p=train]'],frace:['🏁','السباقات','falcon','#fl-tabs [data-p=race]'],fhealth:['🩺','صحة الطير','falcon','#fl-tabs [data-p=health]'],wird:['📿','الورد اليومي','quran','#q-wird-go'],quran:['🎧','تلاوة القرآن','media','#cats [data-c=quran]'],songs:['🎵','أغاني وشيلات','media','#cats [data-c=songs]'],astories:['🎙️','قصص صوتية','media','#cats [data-c=stories]'],video:['🎬','فيديو','media','#cats [data-c=video]'],
   charades:['🎭','بدون كلام','fun','#games [data-g=charades]'],sj:['❓','سين جيم','fun','#games [data-g=sj]'],riddle:['🧩','ألغاز','fun','#games [data-g=riddle]'],
   stories:['📜','قصص البر','stories'],plants:['🌵','نباتات البر','info','#in-cats [data-i="نباتات"]'],stars:['✨','النجوم','info','#in-cats [data-i="نجوم"]'],insects:['🦂','الحشرات','info','#in-cats [data-i="حشرات"]'],
   recipes:['🍲','طبخات البر','food','#fd-cats [data-h="طبخات البر"]'],healthy:['🥗','أكلات صحية','food','#fd-cats [data-h="أكلات صحية"]'],workout:['🏃','تمارين','food','#fd-cats [data-h="تمارين"]'],shop:['🛒','المقاضي','food','#fd-cats [data-h="المقاضي"]']};
-const HUB=[['nav','التنقل','🧭',['map','compass','speed','save','points','rec','back','offline']],['wx','الطقس','🌤️',['weather']],
+const HUB=[['nav','التنقل','🧭',['map','compass','speed','save','points','rec','back','offline']],['wx','الطقس','🌤️',['weather']],['falcon','الصقور','🦅',['falcons','fweight','frace','fhealth']],
   ['din','عبادة','🕌',['mushaf','wird','prayer','qibla','quran']],['media','صوتيات','🎧',['songs','astories','video']],['games','ألعاب','🎮',['charades','sj','riddle']],
   ['know','قصص ومعلومات','📚',['stories','plants','stars','insects']],['life','صحة وطبخ','🌿',['recipes','healthy','workout','shop']]];
 const ico=(k,w=26)=>`<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
@@ -778,7 +829,7 @@ const ico=(k,w=26)=>`<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="n
 const tabH=()=>document.documentElement.style.setProperty('--tabh',Math.max(0,innerHeight-$('tabs').getBoundingClientRect().top)+'px');
 function show(t){['nav','more','prayer',...HUBV].forEach(k=>$('v-'+k).hidden=k!==t);
   const sel=HUBV.includes(t)?'more':t;BAR.forEach(([k])=>$('t-'+k).setAttribute('aria-selected',k===sel));
-  store.set('tab',t);scrollTo(0,0);tabH();document.body.classList.toggle('mapmode',t==='nav');if(t==='nav'){initMap();map?.invalidateSize()}if(t==='weather'){renderWx();if(!wx||Date.now()-wx.at>1800000)wxFetch()}if(t==='quran'){qHome();if(!$('q-index').children.length)qIndex('sura')}keepAwake()}
+  store.set('tab',t);scrollTo(0,0);tabH();document.body.classList.toggle('mapmode',t==='nav');if(t==='nav'){initMap();map?.invalidateSize()}if(t==='falcon'&&$('fl-home').hidden&&$('fl-train').hidden&&$('fl-race').hidden&&$('fl-health').hidden&&$('fl-prof').hidden)flShow('home');if(t==='weather'){renderWx();if(!wx||Date.now()-wx.at>1800000)wxFetch()}if(t==='quran'){qHome();if(!$('q-index').children.length)qIndex('sura')}keepAwake()}
 $('tabs').innerHTML=BAR.map(([k,l])=>`<button id="t-${k}" role="tab">${ico(k)}<span>${l}</span></button>`).join('');
 BAR.forEach(([k])=>$('t-'+k).onclick=()=>show(k));
 $('hub-chips').innerHTML=HUB.map(([id,n,e])=>`<button class="hchip" data-s="${id}"><span class="emo">${e}</span>${n}</button>`).join('');
@@ -1307,6 +1358,71 @@ function play(items,i){const it=items[i];if(curUrl)URL.revokeObjectURL(curUrl);c
   const el=document.createElement(it.type.startsWith('video')?'video':'audio');el.controls=true;el.src=curUrl;el.autoplay=true;el.setAttribute('playsinline','');
   el.onended=()=>{if(items[i+1])play(items,i+1)};$('player').replaceChildren(el);$('now-title').textContent=it.name;$('player-card').hidden=false;
   curId=it.id;const nd=$('now-del');nd.hidden=false;nd.innerHTML=ICO_DEL+'حذف';delete nd.dataset.sure;delBtn(nd,it.id)}
+
+/* ---------- الصقور: the Al Saqqar app's bird file, weights and activity, races and health, kept on the phone ----------
+   A bird is just its name, as in الصقّار: the list is every name used in any record. */
+const FL=store.get('falcon',{t:[],r:[],h:[]}),flSave=()=>store.set('falcon',FL);
+const ymd=()=>new Date().toLocaleDateString('en-CA'),hm=()=>new Date().toTimeString().slice(0,5);
+const slotFor=t=>{const h=+(t||hm()).slice(0,2);return h<11?'صباح':h<14?'ظهر':h<17?'عصر':h<19?'مغرب':'وقت حر'};
+const wSort=(x,y)=>((x.date||'')+(x.time||'')).localeCompare((y.date||'')+(y.time||''))||x.id-y.id;
+const sgn=n=>(n>0?'+':n<0?'‎-':'')+Math.abs(n);
+const diffSpan=(n,t)=>`<span class="diff ${n<0?'down':n>0?'up':''}">${sgn(n)} جم ${t}</span>`;
+function dayStats(recs){const by={};recs.filter(x=>+x.weight>0).sort(wSort).forEach(x=>(by[x.date]=by[x.date]||[]).push(+x.weight));const ds=Object.keys(by).sort(),out={};
+  ds.forEach((d,i)=>{const w=by[d],o={first:w[0],last:w[w.length-1],n:w.length};if(i){const pd=ds[i-1],gap=Math.round((Date.parse(d)-Date.parse(pd))/864e5);o.prev=w[0]-by[pd][0];o.prevLabel=gap===1?'عن أمس':'عن '+pd}out[d]=o});return out}
+function diffHtml(o){if(!o)return'';const h=[];if(o.prev!=null)h.push(diffSpan(o.prev,o.prevLabel));if(o.n>1)h.push(diffSpan(o.last-o.first,`باليوم (${o.first} ← ${o.last})`));return h.join(' • ')}
+const flNames=()=>[...new Set([...FL.t,...FL.r,...FL.h].map(x=>x.bird).filter(Boolean))].sort();
+const esc=s=>String(s??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+function flPick(id,val){const s=$(id),n=flNames();s.innerHTML='<option value="">— اختر الطير —</option>'+n.map(b=>`<option>${esc(b)}</option>`).join('')+'<option value="+">➕ طير جديد</option>';
+  s.value=val&&n.includes(val)?val:n.length===1?n[0]:'';s.onchange=()=>{$(id+'-new').hidden=s.value!=='+';if(s.value==='+')$(id+'-new').focus()};$(id+'-new').hidden=true;$(id+'-new').value=''}
+const flBird=id=>$(id).value==='+'?$(id+'-new').value.trim():$(id).value;
+function flShow(p){document.querySelectorAll('#fl-tabs .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.p===p));
+  ['home','train','race','health','prof'].forEach(k=>$('fl-'+k).hidden=k!==p);if(p==='home')flHome();scrollTo(0,0)}
+$('fl-tabs').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;if(b.dataset.p==='train')flForm();if(b.dataset.p==='race')flRaceForm();if(b.dataset.p==='health')flHealthForm();flShow(b.dataset.p)};
+function flHome(){const n=flNames(),wk=new Date(Date.now()-6*864e5).toLocaleDateString('en-CA');
+  $('fl-birds').innerHTML=`<div class="row" style="justify-content:space-between"><h2>🦅 طيوري</h2><button class="primary" id="fl-add">+ تسجيل</button></div>`+(n.length?'':'<p class="muted">لا توجد طيور مسجلة. اضغط «+ تسجيل» واختر «➕ طير جديد».</p>')+
+    n.map(b=>{const t=FL.t.filter(x=>x.bird===b),lw=t.filter(x=>+x.weight>0).sort(wSort).pop(),la=t.filter(x=>x.type).sort(wSort).pop(),st=dayStats(t);
+      return`<div class="card fl-bird"><div class="row" style="justify-content:space-between"><b>🦅 ${esc(b)}</b><button class="fl-open" data-b="${esc(b)}">عرض الملف ←</button></div>
+      <div class="fl-minis"><div><span class="muted">آخر وزن</span><b>${lw?lw.weight+' جم':'—'}</b></div><div><span class="muted">هذا الأسبوع</span><b>${t.filter(x=>x.date>=wk).length}</b></div><div><span class="muted">آخر نشاط</span><b>${la?esc(la.type):'—'}</b></div></div>
+      ${lw?`<div class="fl-diff">${diffHtml(st[lw.date])}</div>`:''}</div>`}).join('');
+  $('fl-add').onclick=()=>{flForm();flShow('train')};document.querySelectorAll('.fl-open').forEach(x=>x.onclick=()=>flProfile(x.dataset.b))}
+function flForm(e,bird){$('fl-edit').value=e?.id||'';flPick('fl-bird',e?.bird||bird);$('fl-date').value=e?.date||ymd();$('fl-time').value=e?.time||hm();$('fl-weight').value=e?.weight||'';$('fl-slot').value=e?.slot||slotFor($('fl-time').value);
+  $('fl-feed').value=e?.feed||'';$('fl-type').value=e?.type||'';$('fl-notes').value=e?.notes||'';$('fl-err').hidden=true;$('fl-t-title').textContent=e?'✏️ تعديل السجل':'تسجيل وزن / نشاط';$('fl-save').textContent=e?'حفظ التعديل':'حفظ';$('fl-cancel').hidden=!e}
+$('fl-time').onchange=()=>{$('fl-slot').value=slotFor($('fl-time').value)};
+$('fl-cancel').onclick=()=>{flForm();flShow('home')};
+$('fl-train').onsubmit=ev=>{ev.preventDefault();const id=+$('fl-edit').value,e={id:id||Date.now(),bird:flBird('fl-bird'),date:$('fl-date').value,time:$('fl-time').value||hm(),weight:+$('fl-weight').value||'',slot:$('fl-slot').value,
+    feed:$('fl-feed').value.trim(),type:$('fl-type').value.trim(),hunt:'',notes:$('fl-notes').value.trim()},err=t=>{$('fl-err').hidden=false;$('fl-err').textContent=t};
+  if(!e.bird||!e.date)return err('اكتب اسم الطير والتاريخ');if(!e.weight&&!e.type&&!e.feed&&!e.notes)return err('اكتب الوزن أو النشاط أو العلف');
+  if(id){const i=FL.t.findIndex(x=>x.id===id);if(i>=0)FL.t[i]={...FL.t[i],...e}}else FL.t.unshift(e);flSave();flProfile(e.bird,id?'تم حفظ التعديل ✓':'تم الحفظ ✓')};
+function flRaceForm(bird){flPick('fl-rbird',bird);$('fl-rdate').value=ymd();$('fl-rres').textContent=''}
+$('fl-race').onsubmit=ev=>{ev.preventDefault();const b=flBird('fl-rbird'),d=+$('fl-rdist').value,z=+$('fl-rsec').value;if(!b||!d||!z){$('fl-rres').textContent='اكتب اسم الطير والمسافة والزمن';return}
+  const e={id:Date.now(),bird:b,date:$('fl-rdate').value||ymd(),distance:d,seconds:+z.toFixed(3),kmh:d/z*3.6};FL.r.unshift(e);flSave();$('fl-rres').textContent=`${e.kmh.toFixed(2)} كم/س · ${e.seconds} ثانية لمسافة ${d} متر • تم الحفظ ✓`;flPick('fl-rbird',b)};
+function flHealthForm(bird){flPick('fl-hbird',bird);$('fl-hdate').value=ymd();$('fl-hmsg').textContent=''}
+$('fl-health').onsubmit=ev=>{ev.preventDefault();const b=flBird('fl-hbird');if(!b){$('fl-hmsg').textContent='اختر الطير';return}
+  FL.h.unshift({id:Date.now(),bird:b,date:$('fl-hdate').value||ymd(),type:$('fl-htype').value,name:$('fl-hname').value.trim(),dose:$('fl-hdose').value.trim(),note:$('fl-hnote').value.trim()});flSave();
+  ['fl-hname','fl-hdose','fl-hnote'].forEach(i=>$(i).value='');$('fl-hmsg').textContent='تم الحفظ ✓';flPick('fl-hbird',b)};
+function flChart(t){const p=t.filter(x=>+x.weight>0).sort(wSort);if(p.length<2)return'<p class="muted">الرسم يطلع بعد ما تسجّل وزنين أو أكثر.</p>';
+  const W=p.map(x=>+x.weight),n=W.length,lo0=Math.min(...W),hi0=Math.max(...W),pad=Math.max((hi0-lo0)*.2,10),lo=lo0-pad,hi=hi0+pad,X=i=>60+i*500/(n-1),Y=w=>200-(w-lo)/(hi-lo)*150;
+  let s=`<svg viewBox="0 0 620 250" class="fl-chart">`;for(let k=0;k<4;k++){const y=50+k*50,v=Math.round(hi-(hi-lo)*k/3);s+=`<line x1="50" x2="600" y1="${y}" y2="${y}" stroke="var(--line)"/><text x="44" y="${y+4}" text-anchor="end" font-size="18" fill="var(--muted)">${v}</text>`}
+  s+=`<polyline fill="none" stroke="var(--tint)" stroke-width="3" points="${W.map((w,i)=>X(i)+','+Y(w)).join(' ')}"/>`;
+  W.forEach((w,i)=>{const c=i&&w<W[i-1]?'#b3261e':i&&w>W[i-1]?'#2e7d32':'var(--tint)';s+=`<circle cx="${X(i)}" cy="${Y(w)}" r="7" fill="${c}"/>`;if(i>=n-12)s+=`<text x="${X(i)}" y="${Y(w)-10}" text-anchor="middle" font-size="20" font-weight="600" fill="${c}">${w}</text>`});
+  return s+'</svg><p class="muted">الأحمر: نزل الوزن • الأخضر: زاد</p>'}
+function flProfile(b,msg){const t=FL.t.filter(x=>x.bird===b),r=FL.r.filter(x=>x.bird===b),h=FL.h.filter(x=>x.bird===b),st=dayStats(t),lw=t.filter(x=>+x.weight>0).sort(wSort).pop();
+  const best=r.length?r.reduce((a,x)=>x.seconds<a.seconds?x:a):null,fast=r.length?r.reduce((a,x)=>x.kmh>a.kmh?x:a):null,byDay={};[...t].sort(wSort).reverse().forEach(x=>(byDay[x.date]=byDay[x.date]||[]).push(x));
+  $('fl-prof').innerHTML=`<div class="row" style="justify-content:space-between"><h2>🦅 ${esc(b)}</h2><button id="fl-back">رجوع</button></div>${msg?`<p class="ok-msg">${msg}</p>`:''}
+    <div class="row"><button class="primary" id="fl-p-w">+ وزن / نشاط</button><button id="fl-p-r">+ سباق لهذا الطير</button><button id="fl-p-h">+ سجل صحي</button></div>
+    <div class="fl-minis card"><div><span class="muted">التدريبات</span><b>${t.length}</b></div><div><span class="muted">آخر وزن</span><b>${lw?lw.weight+' جم':'—'}</b></div><div><span class="muted">أفضل زمن</span><b>${best?best.seconds+' ث':'—'}</b></div><div><span class="muted">أفضل سرعة</span><b>${fast?fast.kmh.toFixed(1)+' كم/س':'—'}</b></div></div>
+    <div class="card"><h3>📈 الوزن عبر الأيام</h3>${flChart(t)}</div>
+    <h3>سجل الطير</h3>${Object.keys(byDay).length?'':'<p class="muted">ما فيه سجلات.</p>'}
+    ${Object.entries(byDay).map(([d,L])=>`<div class="card fl-day"><b>📅 ${d}</b><div class="fl-diff">${diffHtml(st[d])}</div>${L.map(x=>`<div class="fl-ent"><div>${esc(x.time)} • ${esc(x.slot)}${x.type?' — '+esc(x.type):''}</div>
+      <div class="muted">${[x.weight?`⚖️ ${x.weight} جم`:'',x.feed?`🍖 ${esc(x.feed)}`:'',x.duration?`⏱️ ${x.duration} دقيقة`:''].filter(Boolean).join(' • ')}</div>${x.notes?`<div class="muted">${esc(x.notes)}</div>`:''}
+      <div class="row"><button class="fl-ed" data-id="${x.id}">✏️ تعديل</button><button class="danger fl-del" data-k="t" data-id="${x.id}">🗑️ حذف</button></div></div>`).join('')}</div>`).join('')}
+    <h3>🏁 نتائج السباق</h3>${r.length?'':'<p class="muted">ما فيه سباقات.</p>'}<ul class="list">${r.map(x=>`<li><span class="grow">${x.date} · ${x.distance} م · ${x.seconds} ث · <b>${x.kmh.toFixed(2)} كم/س</b></span><button class="danger fl-del" data-k="r" data-id="${x.id}">🗑️</button></li>`).join('')}</ul>
+    <h3>🩺 السجل الصحي</h3>${h.length?'':'<p class="muted">ما فيه سجلات صحية.</p>'}<ul class="list">${h.map(x=>`<li><span class="grow"><b>${esc(x.type)}</b> · ${x.date}${x.name?' · '+esc(x.name):''}${x.dose?' · '+esc(x.dose):''}${x.note?`<br><span class="muted">${esc(x.note)}</span>`:''}</span><button class="danger fl-del" data-k="h" data-id="${x.id}">🗑️ حذف</button></li>`).join('')}</ul>`;
+  flShow('prof');$('fl-back').onclick=()=>flShow('home');
+  $('fl-p-w').onclick=()=>{flForm(null,b);flShow('train')};$('fl-p-r').onclick=()=>{flRaceForm(b);flShow('race')};$('fl-p-h').onclick=()=>{flHealthForm(b);flShow('health')};
+  document.querySelectorAll('.fl-ed').forEach(x=>x.onclick=()=>{flForm(FL.t.find(e=>e.id===+x.dataset.id));flShow('train')});
+  document.querySelectorAll('.fl-del').forEach(x=>x.onclick=()=>{if(!x.dataset.sure){x.dataset.sure=1;x.textContent='متأكد؟';setTimeout(()=>{delete x.dataset.sure;x.textContent='🗑️ حذف'},4000);return}
+    FL[x.dataset.k]=FL[x.dataset.k].filter(e=>e.id!==+x.dataset.id);flSave();flNames().includes(b)?flProfile(b):flShow('home')})}
 
 /* ---------- weather: Open-Meteo (free, no key) + its dust forecast; the last result stays on the phone for use without internet ---------- */
 const WMO={0:['☀️','صحو'],1:['🌤️','غائم جزئياً'],2:['⛅','غائم جزئياً'],3:['☁️','غائم'],45:['🌫️','ضباب'],48:['🌫️','ضباب'],51:['🌦️','رذاذ خفيف'],53:['🌦️','رذاذ'],55:['🌦️','رذاذ كثيف'],
