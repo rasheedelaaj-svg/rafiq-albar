@@ -151,7 +151,7 @@ html{scroll-padding-bottom:100px}
 .sp-h{display:flex;gap:8px;align-items:center;color:var(--muted)}
 .sp-row{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;text-align:center}.sp-row>div{display:flex;flex-direction:column;align-items:center;gap:4px}.sp-row>div+div{border-inline-start:1px solid var(--line)}
 #v-speed,#v-speed button{font-size:15px}#v-speed h1{font-size:26px}#v-speed h2{font-size:16px}#v-speed .muted{font-size:13px}
-.sp-row>div{min-width:0;padding:0 4px}.sp-row b{font-size:20px;font-family:var(--body);max-width:100%;overflow-wrap:anywhere}.sp-row .emo{font-size:22px}#sp-lat,#sp-lon{font-size:16px}.sp-row b,#sp-ms{direction:ltr;unicode-bidi:isolate}
+.sp-row>div{min-width:0;padding:0 4px}.sp-row b{font-size:20px;font-family:var(--body);max-width:100%;overflow-wrap:anywhere}.sp-row .emo{font-size:22px}.sp-coord{font-size:18px;text-align:center;overflow-wrap:anywhere;padding:6px 0}.sp-row b,#sp-ms{direction:ltr;unicode-bidi:isolate}
 .hd-table{display:grid;gap:6px 8px;text-align:center;align-items:center}.hd-table b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hd-lead{color:var(--good);background:var(--tint-soft);border-radius:8px}
 .hd-in{display:flex;flex-direction:column;gap:6px;padding:8px 0;border-bottom:.5px solid var(--line)}.hd-in .chip{min-height:36px;padding:4px 12px}
 #hd-names .row{margin-bottom:6px}
@@ -649,7 +649,8 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
   <div class="card"><h2 class="sp-h"><span class="emo">⛰️</span> الارتفاع</h2>
     <div class="sp-row"><div><b id="sp-altm" class="num">—</b><span class="muted">متر</span></div><div><b id="sp-altf" class="num">—</b><span class="muted">قدم</span></div></div></div>
   <div class="card"><h2 class="sp-h"><span class="emo">🌐</span> الإحداثيات</h2>
-    <div class="sp-row"><div><b id="sp-lat" class="num">—</b><span class="muted">خط العرض</span></div><div><b id="sp-lon" class="num">—</b><span class="muted">خط الطول</span></div></div>
+    <select id="sp-fmt" aria-label="صيغة الإحداثيات"><option value="0">عشري (قوقل ماب)</option><option value="1">درجات دقائق ثواني</option><option value="2">درجات ودقائق (ماجلان وقارمن)</option><option value="3">UTM</option><option value="4">MGRS (عسكري)</option></select>
+    <b id="sp-coord" class="num sp-coord">—</b>
     <div class="row" style="justify-content:space-between"><span class="muted" id="sp-acc"></span><button id="sp-copy">نسخ</button></div></div>
 </section>
 <section id="v-hand" hidden>
@@ -758,7 +759,7 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
 <nav class="tabs" id="tabs"></nav>
 
 <script>
-const APP_VER='38'; // keep in step with V in sw.js
+const APP_VER='39'; // keep in step with V in sw.js
 // CORE-START (pure functions, tested in check.js)
 const R=Math.PI/180,KAABA=[21.4225,39.8262];
 const sin=d=>Math.sin(d*R),cos=d=>Math.cos(d*R),tan=d=>Math.tan(d*R),asin=x=>Math.asin(x)/R,acos=x=>Math.acos(Math.max(-1,Math.min(1,x)))/R,atan2=(y,x)=>Math.atan2(y,x)/R;
@@ -1519,9 +1520,10 @@ function renderSpeed(){const f=here&&Date.now()-here.t<10000?here:null,sp=f?.spd
   $('sp-state').textContent=!f?'بانتظار الموقع':mv?'يتحرك':'ثابت';$('sp-state').className='sp-pill'+(mv?' on':'');
   $('sp-head').textContent=heading!=null?Math.round(heading)%360+'°':'—';$('sp-crs').textContent=mv&&f.crs!=null?Math.round(f.crs)+'°':'--';$('sp-card').textContent=cr.v!=null?dirName(cr.v):'—';
   const a=here?.alt;$('sp-altm').textContent=a!=null?a.toFixed(1):'غير متاح';$('sp-altf').textContent=a!=null?Math.round(a*3.28084):'—';
-  $('sp-lat').textContent=here?here.c[0].toFixed(6)+'°':'—';$('sp-lon').textContent=here?here.c[1].toFixed(6)+'°':'—';$('sp-acc').textContent=here?`الدقة ±${Math.round(here.acc)} م`:''}
+  $('sp-fmt').value=cfg.fmt;$('sp-coord').textContent=here?formats(here.c)[cfg.fmt][1]:'—';$('sp-acc').textContent=here?`الدقة ±${Math.round(here.acc)} م`:''}
 setInterval(()=>{if(!$('v-speed').hidden)renderSpeed()},500);
-$('sp-copy').onclick=()=>here&&copy(formats(here.c)[0][1],$('sp-copy'));
+$('sp-copy').onclick=()=>here&&copy(formats(here.c)[cfg.fmt][1],$('sp-copy'));
+$('sp-fmt').onchange=e=>{cfg.fmt=+e.target.value;store.set('fmt',cfg.fmt);$('st-fmt').value=$('fmt').value=cfg.fmt;renderSpeed()};
 
 /* ---------- Kuwaiti hand score sheet: rounds per player, running totals, lowest (or highest) total leads ---------- */
 let hand=store.get('hand',{p:['لاعب 1','لاعب 2','لاعب 3','لاعب 4'],r:[],win:'low'});const handSave=()=>store.set('hand',hand);
