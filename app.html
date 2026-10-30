@@ -26,18 +26,26 @@
   --mono:ui-monospace,"SF Mono",Menlo,monospace;
   color-scheme:light dark;
 }
-@media (prefers-color-scheme:dark){:root{
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
   --bg:#141512;--group:#1e201b;--elev:#262822;--fg:#efe7d6;--muted:#a59e8c;--line:rgba(239,231,214,.12);
   --tint:#b5c77a;--accent:#8fa04a;--accent-fg:#141512;--tint-soft:rgba(181,199,122,.14);--seg:rgba(160,150,130,.22);
   --sand:#d8995a;--good:#9cc46a;--qibla:#9cc46a;--danger:#ff8a7a;--danger-soft:rgba(255,138,122,.14);
   --hero:#0e0f0c;--hero-fg:#efe7d6;--dune2:#3a3326;--me:#ff6b5b;--me-halo:rgba(255,107,91,.2);
   --shadow:0 1px 2px rgba(0,0,0,.45),0 6px 18px rgba(0,0,0,.4)}}
+:root[data-theme=dark]{
+  --bg:#141512;--group:#1e201b;--elev:#262822;--fg:#efe7d6;--muted:#a59e8c;--line:rgba(239,231,214,.12);
+  --tint:#b5c77a;--accent:#8fa04a;--accent-fg:#141512;--tint-soft:rgba(181,199,122,.14);--seg:rgba(160,150,130,.22);
+  --sand:#d8995a;--good:#9cc46a;--qibla:#9cc46a;--danger:#ff8a7a;--danger-soft:rgba(255,138,122,.14);
+  --hero:#0e0f0c;--hero-fg:#efe7d6;--dune2:#3a3326;--me:#ff6b5b;--me-halo:rgba(255,107,91,.2);
+  --shadow:0 1px 2px rgba(0,0,0,.45),0 6px 18px rgba(0,0,0,.4)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
 /* Dynamic Type: WebKit maps -apple-system-body to the user's text size; other browsers keep 16px */
 html{font-size:16px;font:-apple-system-body}
 html{height:100%}body{min-height:100%;box-sizing:border-box}
 ::selection{background:color-mix(in srgb,var(--accent) 35%,transparent)}
 input,textarea{caret-color:var(--tint)}
 [hidden]{display:none!important}
+html{touch-action:manipulation;-webkit-text-size-adjust:100%}input,select,textarea{font-size:max(16px,1em)}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:1rem;line-height:1.6;direction:rtl;-webkit-tap-highlight-color:transparent;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   padding-top:max(12px,env(safe-area-inset-top,0px));padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
@@ -131,11 +139,34 @@ html{scroll-padding-bottom:100px}
 .fl-minis div{display:flex;flex-direction:column}.fl-minis b{font-size:1rem}
 .fl-bird{gap:6px}
 .diff{font-weight:600;font-size:.875rem}.diff.up{color:#2e7d32}.diff.down{color:#b3261e}
-@media (prefers-color-scheme:dark){.diff.up{color:#8fd18f}.diff.down{color:#ff8a7a}}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .diff.up{color:#8fd18f}:root:not([data-theme=light]) .diff.down{color:#ff8a7a}}:root[data-theme=dark] .diff.up{color:#8fd18f}:root[data-theme=dark] .diff.down{color:#ff8a7a}
 .fl-ent{border-top:.5px solid var(--line);padding-top:8px;display:flex;flex-direction:column;gap:2px}
 .fl-ent .row button{min-height:36px;padding:4px 12px;font-size:.85rem}
 .fl-chart{width:100%;height:auto}
 .ok-msg{margin:0;color:var(--good);font-weight:600}
+/* عداد السرعة، الهند، القراء */
+.sp-main{align-items:center;gap:6px;padding:22px 16px}
+.sp-big{display:flex;align-items:baseline;gap:10px;direction:ltr}.sp-big b{font-size:88px;line-height:1;font-weight:700;font-family:var(--body)}.sp-big span{font-size:24px;color:var(--muted)}
+.sp-pill{background:var(--seg);border-radius:999px;padding:4px 14px;font-weight:600}.sp-pill::before{content:"● ";color:var(--muted)}.sp-pill.on::before{color:var(--good)}
+.sp-h{display:flex;gap:8px;align-items:center;color:var(--muted)}
+.sp-row{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;text-align:center}.sp-row>div{display:flex;flex-direction:column;align-items:center;gap:4px}.sp-row>div+div{border-inline-start:1px solid var(--line)}
+.sp-row b{font-size:1.6rem;font-family:var(--body)}.sp-row .emo{font-size:26px}
+.hd-table{display:grid;gap:6px 8px;text-align:center;align-items:center}.hd-table b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hd-lead{color:var(--good);background:var(--tint-soft);border-radius:8px}
+.hd-in{display:flex;flex-direction:column;gap:6px;padding:8px 0;border-bottom:.5px solid var(--line)}.hd-in .chip{min-height:36px;padding:4px 12px}
+#hd-names .row{margin-bottom:6px}
+.hd-table .num,.hd-q,.hd-in input{direction:ltr;unicode-bidi:isolate}
+.rq-wrap{position:relative}
+.rq-list{list-style:none;margin:0;padding:0 0 0 26px;display:flex;flex-direction:column;gap:10px}
+.rq-list li{display:flex;gap:12px;align-items:center;background:var(--elev);border-radius:18px;padding:12px;box-shadow:0 1px 2px rgba(0,0,0,.05);cursor:pointer;scroll-margin-top:12px}
+.rq-list .grow{display:flex;flex-direction:column;min-width:0}.rq-list b{font-size:1.1rem}
+.rq-av{flex:none;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--c,var(--accent));color:#fff;font-size:24px;font-weight:700;box-shadow:0 0 0 3px var(--elev),0 0 0 5px var(--c,var(--accent))}
+.rq-fav{flex:none;width:44px;height:44px;padding:0;border-radius:14px;background:var(--seg);color:var(--muted);font-size:20px}.rq-fav.on{color:#e0245e;background:rgba(224,36,94,.12)}
+.rq-letters{display:flex;flex-direction:column;position:fixed;left:2px;top:50%;transform:translateY(-50%);z-index:3;max-height:70vh;overflow:auto;scrollbar-width:none}
+.rq-letters button{background:none;color:var(--tint);min-height:0;padding:1px 6px;font-size:13px;border-radius:6px}
+#v-tilawa:not(:has(#rq-pick:not([hidden]))) .rq-letters{display:none}
+.sg-sites{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sg-site{display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--elev);border-radius:16px;padding:10px 4px;text-decoration:none;color:var(--fg);font-weight:600;font-size:.85rem;box-shadow:0 1px 2px rgba(0,0,0,.05)}.sg-site .emo{font-size:26px}
+#artist-links{flex-direction:column;align-items:stretch}
 /* الطقس */
 .wx-hours{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding-inline:16px}
 .wx-hours::-webkit-scrollbar{display:none}
@@ -147,7 +178,7 @@ html{scroll-padding-bottom:100px}
 /* المصحف */
 @font-face{font-family:"Amiri Quran";src:url(lib/amiri-quran.woff2) format("woff2");font-display:swap}
 #q-read{position:fixed;inset:0;z-index:60;background:#fdf8ec;color:#1d1f1b;overflow-y:auto;overscroll-behavior:contain;padding:calc(8px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px}
-@media (prefers-color-scheme:dark){#q-read{background:#1a1813;color:#efe7d6}}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #q-read{background:#1a1813;color:#efe7d6}}:root[data-theme=dark] #q-read{background:#1a1813;color:#efe7d6}
 body.reading{overflow:hidden}body.reading nav.tabs{display:none}
 .q-top,.q-bot{display:flex;gap:8px;align-items:center;position:sticky;background:inherit;z-index:1}
 .q-top{top:calc(-8px - env(safe-area-inset-top,0px));padding-block:6px}.q-bot{bottom:calc(-12px - env(safe-area-inset-bottom,0px));padding-block:8px;justify-content:space-between}
@@ -269,6 +300,7 @@ li.trip .row button{flex:1;min-height:40px;padding:6px 10px;font-size:.88em}
 #goto.warn-on #g-stop{background:#fff;color:var(--danger)}.nomap{font-size:12px!important;padding:6px 10px!important}
 figure.photo{margin:8px 0;display:flex;flex-direction:column;gap:6px}
 figure.photo img{width:100%;max-height:300px;object-fit:cover;border-radius:14px;background:var(--seg)}
+img.rimg{width:calc(100% + 32px);margin:-16px -16px 4px;height:190px;object-fit:cover;border-radius:16px 16px 0 0;background:var(--seg)}
 figure.photo figcaption{display:flex;justify-content:space-between;gap:8px;font-size:.8rem}
 /* «المزيد» hub */
 .tiles{display:flex;flex-direction:column;background:var(--group);border-radius:16px;overflow:hidden}
@@ -493,7 +525,7 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
 </section>
 
 <section id="v-media" hidden>
-  <h1>الصوتيات والفيديو</h1>
+  <h1>الأغاني والصوتيات</h1>
   <div class="seg" id="cats"></div>
   <div class="card">
     <div class="pills" id="artists" hidden></div>
@@ -605,6 +637,49 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
   </form>
   <div id="fl-prof" class="fl-p" hidden></div>
 </section>
+<section id="v-speed" hidden>
+  <h1>عداد السرعة</h1>
+  <div class="card sp-main"><div class="sp-big"><b id="sp-kmh" class="num">—</b><span>كم/س</span></div><span id="sp-ms" class="muted num"></span><span id="sp-state" class="sp-pill"></span></div>
+  <div class="card"><h2 class="sp-h"><span class="emo">➤</span> الاتجاه</h2>
+    <div class="sp-row"><div><span class="emo">🧭</span><b id="sp-head" class="num">—</b><span class="muted">البوصلة</span></div><div><span class="emo">⬆️</span><b id="sp-crs" class="num">--</b><span class="muted">المسار</span></div><div><span class="emo">📍</span><b id="sp-card">—</b><span class="muted">الجهة</span></div></div></div>
+  <div class="card"><h2 class="sp-h"><span class="emo">⛰️</span> الارتفاع</h2>
+    <div class="sp-row"><div><b id="sp-altm" class="num">—</b><span class="muted">متر</span></div><div><b id="sp-altf" class="num">—</b><span class="muted">قدم</span></div></div></div>
+  <div class="card"><h2 class="sp-h"><span class="emo">🌐</span> الإحداثيات</h2>
+    <div class="sp-row"><div><b id="sp-lat" class="num">—</b><span class="muted">خط العرض</span></div><div><b id="sp-lon" class="num">—</b><span class="muted">خط الطول</span></div></div>
+    <div class="row" style="justify-content:space-between"><span class="muted" id="sp-acc"></span><button id="sp-copy">نسخ</button></div></div>
+</section>
+<section id="v-hand" hidden>
+  <h1>حاسبة الهند</h1>
+  <div class="card" id="hd-setup">
+    <h2>اللاعبين</h2>
+    <div id="hd-names"></div>
+    <div class="row"><button id="hd-addp">+ لاعب</button><label class="row" style="flex:1;justify-content:flex-end">الفايز<select id="hd-win"><option value="low">الأقل نقاط</option><option value="high">الأكثر نقاط</option></select></label></div>
+  </div>
+  <div class="card"><div class="hd-table" id="hd-table"></div></div>
+  <div class="card" id="hd-round">
+    <h2 id="hd-rt">الجولة 1</h2>
+    <div id="hd-inputs"></div>
+    <span class="muted">اكتب نقاط كل لاعب في الجولة (أوراقه اللي بقت بيده)، أو اضغط الأزرار. الأرقام تقدر تعدّلها قبل الحفظ.</span>
+    <div class="row"><button class="primary big-btn" id="hd-save">حفظ الجولة</button><button id="hd-undo">تراجع عن آخر جولة</button></div>
+  </div>
+  <button class="danger" id="hd-new">لعبة جديدة</button>
+</section>
+<section id="v-tilawa" hidden>
+  <h1>تلاوة القرآن</h1>
+  <div id="rq-pick">
+    <div class="seg" id="rq-tabs"><button class="chip" data-t="all">الكل</button><button class="chip" data-t="fav">المفضلة</button></div>
+    <input type="search" id="rq-q" placeholder="ابحث عن قارئ">
+    <span class="muted" id="rq-status"></span>
+    <div class="rq-wrap"><ul class="rq-list" id="rq-list"></ul><nav class="rq-letters" id="rq-letters" aria-label="الحروف"></nav></div>
+  </div>
+  <div id="rq-one" hidden>
+    <button class="back" id="rq-back"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>القراء</button>
+    <div class="card"><div class="row" style="gap:12px;flex-wrap:nowrap"><span class="rq-av" id="rq-av"></span><div class="grow"><h2 id="rq-name"></h2><span class="muted" id="rq-riwaya"></span></div><button class="rq-fav" id="rq-fav" aria-label="المفضلة">♥</button></div>
+      <div class="row"><button class="primary" id="rq-all">نزّل الكل</button><span class="muted" id="rq-dl">يشتغل بالنت، وإذا نزّلت السورة تشتغل بدون نت.</span></div></div>
+    <div class="card" id="rq-player" hidden><b id="rq-now"></b><div id="rq-audio"></div></div>
+    <ul class="list" id="rq-surahs"></ul>
+  </div>
+</section>
 <section id="v-weather" hidden>
   <h1>الطقس</h1>
   <div class="card" id="wx-now" hidden>
@@ -628,7 +703,7 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
 
 <section id="v-more" hidden>
   <div id="hub-top">
-    <div class="hchips"><button id="hub-find" class="hchip find" aria-label="بحث"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button><div id="hub-chips" class="hchips-in"></div></div>
+    <div class="hchips"><button id="hub-theme" class="hchip" aria-label="المظهر"></button><button id="hub-find" class="hchip find" aria-label="بحث"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button><div id="hub-chips" class="hchips-in"></div></div>
     <input type="search" id="hub-q" placeholder="ابحث: قبلة، نجوم، طبخ…" hidden>
   </div>
   <div id="hub-list"></div>
@@ -678,7 +753,7 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
 <nav class="tabs" id="tabs"></nav>
 
 <script>
-const APP_VER='33'; // keep in step with V in sw.js
+const APP_VER='34'; // keep in step with V in sw.js
 // CORE-START (pure functions, tested in check.js)
 const R=Math.PI/180,KAABA=[21.4225,39.8262];
 const sin=d=>Math.sin(d*R),cos=d=>Math.cos(d*R),tan=d=>Math.tan(d*R),asin=x=>Math.asin(x)/R,acos=x=>Math.acos(Math.max(-1,Math.min(1,x)))/R,atan2=(y,x)=>Math.atan2(y,x)/R;
@@ -813,22 +888,22 @@ const ICONS={
   nav:'<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z" fill="currentColor" fill-opacity=".18"/><path d="M9 4v14M15 6v14"/>',
   more:'<path d="M2 20l6.5-11 4 6 3-4.5L22 20z" fill="currentColor" fill-opacity=".18"/><path d="M8.5 9l1.8 3M15.5 10.5l1.4 2.2"/>',
   prayer:'<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" fill="currentColor" fill-opacity=".18"/>'};
-const BAR=[['nav','الخريطة'],['more','الساحة'],['prayer','الصلاة']],HUBV=['compass','media','fun','stories','info','food','quran','weather','falcon'];
-const TILE={map:['🗺️','الخريطة','nav'],compass:['🧭','البوصلة','compass'],qibla:['🕋','القبلة','compass'],speed:['🏎️','عداد السرعة','nav'],
+const BAR=[['nav','الخريطة'],['more','الساحة'],['prayer','الصلاة']],HUBV=['compass','media','fun','stories','info','food','quran','weather','falcon','speed','hand','tilawa'];
+const TILE={map:['🗺️','الخريطة','nav'],compass:['🧭','البوصلة','compass'],qibla:['🕋','القبلة','compass'],speed:['🏎️','عداد السرعة','speed'],hand:['🃏','حاسبة الهند','hand'],tilawa:['🎧','تلاوة القرآن','tilawa'],
   save:['📍','حفظ نقطة','nav','#a-save'],points:['📌','نقاطي','nav','#a-points'],rec:['🔴','تسجيل رحلة','nav','#a-rec'],back:['↩️','العودة على الدرب','nav','#a-back'],offline:['⬇️','خرائط بدون نت','nav','#a-menu'],
-  prayer:['🌙','مواقيت الصلاة','prayer'],mushaf:['📗','المصحف','quran'],weather:['🌤️','الطقس','weather'],falcons:['🦅','طيوري','falcon','#fl-tabs [data-p=home]'],fweight:['⚖️','تسجيل الوزن','falcon','#fl-tabs [data-p=train]'],frace:['🏁','السباقات','falcon','#fl-tabs [data-p=race]'],fhealth:['🩺','صحة الطير','falcon','#fl-tabs [data-p=health]'],wird:['📿','الورد اليومي','quran','#q-wird-go'],quran:['🎧','تلاوة القرآن','media','#cats [data-c=quran]'],songs:['🎵','أغاني وشيلات','media','#cats [data-c=songs]'],astories:['🎙️','قصص صوتية','media','#cats [data-c=stories]'],video:['🎬','فيديو','media','#cats [data-c=video]'],
+  prayer:['🌙','مواقيت الصلاة','prayer'],mushaf:['📗','المصحف','quran'],weather:['🌤️','الطقس','weather'],falcons:['🦅','طيوري','falcon','#fl-tabs [data-p=home]'],fweight:['⚖️','تسجيل الوزن','falcon','#fl-tabs [data-p=train]'],frace:['🏁','السباقات','falcon','#fl-tabs [data-p=race]'],fhealth:['🩺','صحة الطير','falcon','#fl-tabs [data-p=health]'],wird:['📿','الورد اليومي','quran','#q-wird-go'],songs:['🎵','أغاني وشيلات','media','#cats [data-c=songs]'],astories:['🎙️','قصص صوتية','media','#cats [data-c=stories]'],video:['🎬','فيديو','media','#cats [data-c=video]'],
   charades:['🎭','بدون كلام','fun','#games [data-g=charades]'],sj:['❓','سين جيم','fun','#games [data-g=sj]'],riddle:['🧩','ألغاز','fun','#games [data-g=riddle]'],
   stories:['📜','قصص البر','stories'],plants:['🌵','نباتات البر','info','#in-cats [data-i="نباتات"]'],stars:['✨','النجوم','info','#in-cats [data-i="نجوم"]'],insects:['🦂','الحشرات','info','#in-cats [data-i="حشرات"]'],
   recipes:['🍲','طبخات البر','food','#fd-cats [data-h="طبخات البر"]'],healthy:['🥗','أكلات صحية','food','#fd-cats [data-h="أكلات صحية"]'],workout:['🏃','تمارين','food','#fd-cats [data-h="تمارين"]'],shop:['🛒','المقاضي','food','#fd-cats [data-h="المقاضي"]']};
 const HUB=[['nav','التنقل','🧭',['map','compass','speed','save','points','rec','back','offline']],['wx','الطقس','🌤️',['weather']],['falcon','الصقور','🦅',['falcons','fweight','frace','fhealth']],
-  ['din','عبادة','🕌',['mushaf','wird','prayer','qibla','quran']],['media','صوتيات','🎧',['songs','astories','video']],['games','ألعاب','🎮',['charades','sj','riddle']],
+  ['din','عبادة','🕌',['mushaf','wird','tilawa','prayer','qibla']],['media','صوتيات','🎧',['songs','astories','video']],['games','ألعاب','🎮',['hand','charades','sj','riddle']],
   ['know','قصص ومعلومات','📚',['stories','plants','stars','insects']],['life','صحة وطبخ','🌿',['recipes','healthy','workout','shop']]];
 const ico=(k,w=26)=>`<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
 // the map screen ends where the floating bar starts; the bar grows with the iPhone's text size
 const tabH=()=>document.documentElement.style.setProperty('--tabh',Math.max(0,innerHeight-$('tabs').getBoundingClientRect().top)+'px');
 function show(t){['nav','more','prayer',...HUBV].forEach(k=>$('v-'+k).hidden=k!==t);
   const sel=HUBV.includes(t)?'more':t;BAR.forEach(([k])=>$('t-'+k).setAttribute('aria-selected',k===sel));
-  store.set('tab',t);scrollTo(0,0);tabH();document.body.classList.toggle('mapmode',t==='nav');if(t==='nav'){initMap();map?.invalidateSize()}if(t==='falcon'&&$('fl-home').hidden&&$('fl-train').hidden&&$('fl-race').hidden&&$('fl-health').hidden&&$('fl-prof').hidden)flShow('home');if(t==='weather'){renderWx();if(!wx||Date.now()-wx.at>1800000)wxFetch()}if(t==='quran'){qHome();if(!$('q-index').children.length)qIndex('sura')}keepAwake()}
+  store.set('tab',t);scrollTo(0,0);tabH();document.body.classList.toggle('mapmode',t==='nav');if(t==='nav'){initMap();map?.invalidateSize()}if(t==='falcon'&&$('fl-home').hidden&&$('fl-train').hidden&&$('fl-race').hidden&&$('fl-health').hidden&&$('fl-prof').hidden)flShow('home');if(t==='speed')renderSpeed();if(t==='hand')renderHand();if(t==='tilawa'&&!$('rq-list').children.length)renderRq();if(t==='weather'){renderWx();if(!wx||Date.now()-wx.at>1800000)wxFetch()}if(t==='quran'){qHome();if(!$('q-index').children.length)qIndex('sura')}keepAwake()}
 $('tabs').innerHTML=BAR.map(([k,l])=>`<button id="t-${k}" role="tab">${ico(k)}<span>${l}</span></button>`).join('');
 BAR.forEach(([k])=>$('t-'+k).onclick=()=>show(k));
 $('hub-chips').innerHTML=HUB.map(([id,n,e])=>`<button class="hchip" data-s="${id}"><span class="emo">${e}</span>${n}</button>`).join('');
@@ -1251,7 +1326,7 @@ function regionSource(r){
 async function loadOffline(){if(!map)return;offLayers.forEach(l=>map.removeLayer(l));offLayers=[];
   offRegions=(await dbAll()).filter(r=>r.cat==='_map');
   if(window.protomapsL)for(const r of offRegions){const[w,s,e,n]=r.bbox;
-    const l=protomapsL.leafletLayer({url:regionSource(r),flavor:matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light',lang:'ar',maxDataZoom:r.maxz,bounds:[[s,w],[n,e]],attribution:OFF_ATTR,zIndex:0});
+    const l=protomapsL.leafletLayer({url:regionSource(r),flavor:isDark()?'dark':'light',lang:'ar',maxDataZoom:r.maxz,bounds:[[s,w],[n,e]],attribution:OFF_ATTR,zIndex:0});
     l.addTo(map);l.bringToBack();offLayers.push(l)}
   checkNoMap()}
 function offEstimate(){if(!map||$('menup').hidden)return;const b=map.getBounds(),n=tilesIn([b.getWest(),b.getSouth(),b.getEast(),b.getNorth()],0,+$('off-z').value).length;
@@ -1304,13 +1379,18 @@ const dbPut=v=>tx('readwrite',s=>s.put(v)).catch(e=>{$('m-status').textContent='
 const dbGet=k=>tx('readonly',s=>s.get(k)).catch(()=>null);
 const dbAll=()=>tx('readonly',s=>s.getAll()).catch(()=>[]);
 const dbDel=k=>tx('readwrite',s=>s.delete(k));
-const CATS=[['quran','قرآن'],['songs','أغاني وشيلات'],['stories','قصص صوتية'],['video','فيديو']];
-let cat=store.get('cat','quran');
+const CATS=[['songs','أغاني وشيلات'],['stories','قصص صوتية'],['video','فيديو'],['quran','ملفات قرآن']];
+let cat=store.get('cat','songs');if(cat==='quran'&&!store.get('catq'))cat='songs';
 $('cats').innerHTML=CATS.map(([k,l])=>`<button class="chip" data-c="${k}">${l}</button>`).join('');
 $('cats').onclick=e=>{const c=e.target.dataset.c;if(c){cat=c;store.set('cat',c);renderMedia()}};
-const ARTISTS=['محمد عبده','عبادي الجوهر','عبدالمجيد عبدالله','عبدالله الطواري','غيرهم'];let artist=store.get('artist',ARTISTS[0]);
-$('artists').onclick=e=>{const a=e.target.dataset.a;if(a){artist=a;store.set('artist',a);renderMedia()}};
-async function addBlob(name,blob){const c=blob.type.startsWith('video')?'video':cat;await dbPut({id:Date.now()+Math.random().toString(36).slice(2),cat:c,name,type:blob.type,blob,added:Date.now(),artist:c==='songs'?artist:undefined})}
+const SONG_SITES=[['▶️','يوتيوب',q=>q?'https://www.youtube.com/results?search_query='+q:'https://www.youtube.com/'],['🎵','يوتيوب ميوزك',q=>q?'https://music.youtube.com/search?q='+q:'https://music.youtube.com/'],
+  ['🟣','أنغامي',q=>q?'https://play.anghami.com/search/'+q:'https://play.anghami.com/'],['🟢','سبوتيفاي',q=>q?'https://open.spotify.com/search/'+q:'https://open.spotify.com/'],
+  ['🍎','آبل ميوزك',q=>q?'https://music.apple.com/search?term='+q:'https://music.apple.com/'],['☁️','ساوندكلاود',q=>q?'https://soundcloud.com/search?q='+q:'https://soundcloud.com/']];
+function renderSongLinks(){const q=encodeURIComponent($('sg-q')?.value.trim()||'');$('artist-links').innerHTML=`<input type="search" id="sg-q" placeholder="اسم الفنان أو الأغنية أو الشيلة" value="${decodeURIComponent(q).replace(/"/g,'&quot;')}">`+
+  `<div class="sg-sites">${SONG_SITES.map(([e,n,u])=>`<a class="sg-site" target="_blank" rel="noopener" href="${u(q)}"><span class="emo">${e}</span>${n}</a>`).join('')}</div>`+
+  '<span class="muted">للاستماع بدون نت: نزّلها من التطبيق نفسه (أنغامي وسبوتيفاي ويوتيوب ميوزك فيها تنزيل بالاشتراك)، أو إذا عندك ملف الأغنية أضفه تحت ويشتغل هني بدون نت.</span>';
+  $('sg-q').oninput=()=>{const v=encodeURIComponent($('sg-q').value.trim());$('artist-links').querySelectorAll('.sg-site').forEach((a,i)=>a.href=SONG_SITES[i][2](v))}}
+async function addBlob(name,blob){const c=blob.type.startsWith('video')?'video':cat;await dbPut({id:Date.now()+Math.random().toString(36).slice(2),cat:c,name,type:blob.type,blob,added:Date.now()})}
 $('m-files').onchange=async e=>{const fs=[...e.target.files];$('m-status').textContent='جاري الحفظ…';for(const f of fs)await addBlob(f.name.replace(/\.[^.]+$/,''),f);$('m-status').textContent=`انحفظ ${fs.length} ملف.`;e.target.value='';renderMedia()};
 $('m-dl').onclick=async()=>{const u=$('m-url').value.trim();if(!u)return;$('m-status').textContent='جاري التحميل…';
   try{const r=await fetch(u);if(!r.ok)throw 0;const b=await r.blob();await addBlob(decodeURIComponent(u.split('/').pop().split('?')[0]).replace(/\.[^.]+$/,'')||'ملف',b);$('m-status').textContent='تم التحميل.';$('m-url').value='';renderMedia()}
@@ -1339,13 +1419,11 @@ $('gmd-all').onclick=async()=>{const b=$('gmd-all');if(b.dataset.busy){b.dataset
   const todo=gmdItems().filter(it=>!gmdHave.has(it.id));let done=0,fail=0;
   for(const it of todo){if(b.dataset.stop)break;$('gmd-status').textContent=`جاري التنزيل: ${it.name} (${done+1} من ${todo.length})`;if(await gmdFetch(it))done++;else fail++}
   delete b.dataset.busy;b.textContent='نزّل الكل';$('gmd-status').textContent=`انتهى: نزلت ${done} سورة${fail?`، وفشلت ${fail} (جرب مرة ثانية)`:''}.`;renderMushaf()};
-async function renderMedia(){renderMushaf();document.querySelectorAll('#cats .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.c===cat));
-  const songs=cat==='songs';$('artists').hidden=!songs;
-  if(songs)$('artists').innerHTML=ARTISTS.map(a=>`<button class="chip" data-a="${a}" aria-pressed="${a===artist}">${a}</button>`).join('');
-  $('artist-links').hidden=!songs||artist==='غيرهم';if(songs&&artist!=='غيرهم'){const q=encodeURIComponent(artist);
-    $('artist-links').innerHTML=`<span class="muted">اسمع ${artist} من:</span><a class="btn" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query=${q}">يوتيوب</a><a class="btn" target="_blank" rel="noopener" href="https://play.anghami.com/search/${q}">أنغامي</a><a class="btn" target="_blank" rel="noopener" href="https://open.spotify.com/search/${q}">سبوتيفاي</a>`}
-  const items=(await dbAll()).filter(i=>i.cat===cat&&(!songs||(i.artist||'غيرهم')===artist)).sort((a,b)=>a.added-b.added);
-  $('m-list').innerHTML=items.length?'':`<li class="muted">${songs?'ما فيه شي لـ'+artist+'. اختر الفنان فوق وبعدين أضف ملفاته.':'القسم فاضي. أضف ملفات من زر الإضافة.'}</li>`;
+async function renderMedia(){$('mushaf').hidden=true;document.querySelectorAll('#cats .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.c===cat));
+  const songs=cat==='songs';$('artists').hidden=true;$('artist-links').hidden=!songs;if(songs&&!$('sg-q'))renderSongLinks();
+  const items=(await dbAll()).filter(i=>i.cat===cat).sort((a,b)=>a.added-b.added);
+  $('cats').querySelector('[data-c=quran]').hidden=cat!=='quran'&&!items.length&&!(await dbAll()).some(i=>i.cat==='quran');
+  $('m-list').innerHTML=items.length?'':`<li class="muted">${songs?'ما فيه ملفات محفوظة. أضف ملفات أغانيك من الزر فوق وتشتغل بدون نت.':'القسم فاضي. أضف ملفات من زر الإضافة.'}</li>`;
   items.forEach((it,i)=>{const li=document.createElement('li');li.innerHTML=`<span class="grow"></span><button class="primary mbtn" aria-label="تشغيل">${ICO_PLAY}تشغيل</button><button class="danger mbtn" aria-label="حذف">${ICO_DEL}حذف</button>`;li.firstChild.textContent=it.name;
     const[p,d]=li.querySelectorAll('button');p.onclick=()=>play(items,i);delBtn(d,it.id);$('m-list').append(li)})}
 const ICO_PLAY='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
@@ -1422,6 +1500,87 @@ function flProfile(b,msg){const t=FL.t.filter(x=>x.bird===b),r=FL.r.filter(x=>x.
   document.querySelectorAll('.fl-ed').forEach(x=>x.onclick=()=>{flForm(FL.t.find(e=>e.id===+x.dataset.id));flShow('train')});
   document.querySelectorAll('.fl-del').forEach(x=>x.onclick=()=>{if(!x.dataset.sure){x.dataset.sure=1;x.textContent='متأكد؟';setTimeout(()=>{delete x.dataset.sure;x.textContent='🗑️ حذف'},4000);return}
     FL[x.dataset.k]=FL[x.dataset.k].filter(e=>e.id!==+x.dataset.id);flSave();flNames().includes(b)?flProfile(b):flShow('home')})}
+
+/* ---------- speedometer ---------- */
+function renderSpeed(){const f=here&&Date.now()-here.t<10000?here:null,sp=f?.spd,mv=sp!=null&&sp>1,cr=course();
+  $('sp-kmh').textContent=sp!=null?Math.round(sp*3.6):'—';$('sp-ms').textContent=sp!=null?sp.toFixed(1)+' م/ث':'ما فيه قراءة سرعة';
+  $('sp-state').textContent=!f?'بانتظار الموقع':mv?'يتحرك':'ثابت';$('sp-state').className='sp-pill'+(mv?' on':'');
+  $('sp-head').textContent=heading!=null?Math.round(heading)%360+'°':'—';$('sp-crs').textContent=mv&&f.crs!=null?Math.round(f.crs)+'°':'--';$('sp-card').textContent=cr.v!=null?dirName(cr.v):'—';
+  const a=here?.alt;$('sp-altm').textContent=a!=null?a.toFixed(1)+' م':'غير متاح';$('sp-altf').textContent=a!=null?Math.round(a*3.28084)+' قدم':'—';
+  $('sp-lat').textContent=here?here.c[0].toFixed(6)+'°':'—';$('sp-lon').textContent=here?here.c[1].toFixed(6)+'°':'—';$('sp-acc').textContent=here?`الدقة ±${Math.round(here.acc)} م`:''}
+setInterval(()=>{if(!$('v-speed').hidden)renderSpeed()},500);
+$('sp-copy').onclick=()=>here&&copy(formats(here.c)[0][1],$('sp-copy'));
+
+/* ---------- Kuwaiti hand score sheet: rounds per player, running totals, lowest (or highest) total leads ---------- */
+let hand=store.get('hand',{p:['لاعب 1','لاعب 2','لاعب 3','لاعب 4'],r:[],win:'low'});const handSave=()=>store.set('hand',hand);
+const HQ=[['نزل',-30],['هند',-60],['+50',50],['+100',100]];
+function renderHand(){const P=hand.p,R=hand.r,tot=P.map((_,i)=>R.reduce((a,r)=>a+(+r[i]||0),0)),best=R.length?(hand.win==='low'?Math.min:Math.max)(...tot):null;
+  $('hd-win').value=hand.win;
+  $('hd-names').innerHTML=P.map((n,i)=>`<div class="row"><input type="text" value="${esc(n)}" data-i="${i}" class="hd-n">${P.length>2?`<button class="danger hd-rm" data-i="${i}" aria-label="حذف اللاعب">✕</button>`:''}</div>`).join('');
+  $('hd-table').style.gridTemplateColumns=`auto repeat(${P.length},1fr)`;
+  $('hd-table').innerHTML=`<b></b>${P.map(n=>`<b>${esc(n)}</b>`).join('')}`+R.map((r,k)=>`<span class="muted">${k+1}</span>${r.map(v=>`<span class="num">${v}</span>`).join('')}`).join('')+
+    `<b>المجموع</b>${tot.map(t=>`<b class="num${t===best?' hd-lead':''}">${t}</b>`).join('')}`;
+  $('hd-rt').textContent='الجولة '+(R.length+1);
+  $('hd-inputs').innerHTML=P.map((n,i)=>`<div class="hd-in"><b>${esc(n)}</b><input type="number" inputmode="numeric" data-i="${i}" placeholder="0"><div class="row">${HQ.map(([l,v])=>`<button type="button" class="chip hd-q" data-i="${i}" data-v="${v}">${l}</button>`).join('')}</div></div>`).join('');
+  $('hd-undo').disabled=!R.length}
+$('hd-names').oninput=e=>{const i=e.target.dataset.i;if(i!=null){hand.p[i]=e.target.value;handSave();const T=$('hd-table').querySelectorAll('b');T[+i+1].textContent=e.target.value;$('hd-inputs').querySelectorAll('.hd-in>b')[i].textContent=e.target.value}};
+$('hd-names').onclick=e=>{const b=e.target.closest('.hd-rm');if(!b)return;const i=+b.dataset.i;hand.p.splice(i,1);hand.r.forEach(r=>r.splice(i,1));handSave();renderHand()};
+$('hd-addp').onclick=()=>{if(hand.p.length>=6)return;hand.p.push('لاعب '+(hand.p.length+1));hand.r.forEach(r=>r.push(0));handSave();renderHand()};
+$('hd-win').onchange=e=>{hand.win=e.target.value;handSave();renderHand()};
+$('hd-inputs').onclick=e=>{const b=e.target.closest('.hd-q');if(b)$('hd-inputs').querySelector(`input[data-i="${b.dataset.i}"]`).value=b.dataset.v};
+$('hd-save').onclick=()=>{const v=[...$('hd-inputs').querySelectorAll('input')].map(x=>+x.value||0);hand.r.push(v);handSave();renderHand()};
+$('hd-undo').onclick=()=>{hand.r.pop();handSave();renderHand()};
+$('hd-new').onclick=()=>{const b=$('hd-new');if(!b.dataset.sure){b.dataset.sure=1;b.textContent='متأكد؟ اضغط مرة ثانية';setTimeout(()=>{delete b.dataset.sure;b.textContent='لعبة جديدة'},4000);return}
+  delete b.dataset.sure;b.textContent='لعبة جديدة';hand.r=[];handSave();renderHand()};
+
+/* ---------- تلاوة القرآن: reciters from mp3quran.net (list bundled in lib/reciters.json), stream or keep surahs on the phone ---------- */
+let RQ=null,rqTab='all',rqCur=null,rqHave=new Set();const rqFav=new Set(store.get('rqfav',[]));
+async function rqLoad(){if(RQ)return RQ;let L=null;for(const u of['lib/reciters.json','https://mp3quran.net/api/v3/reciters?language=ar']){try{const r=await fetch(u);if(r.ok){const j=await r.json();L=j.reciters||j;break}}catch{}}
+  if(!L){const c=await dbGet('reciters');if(c)L=c.L}else dbPut({id:'reciters',cat:'_',L});if(!L)throw 0;
+  RQ=L.flatMap(x=>x.moshaf.map(m=>({mid:m.id,name:x.name.trim(),letter:x.letter||x.name.trim()[0],riwaya:m.name,server:m.server,list:m.surah_list.split(',').map(Number),n:m.surah_total})))
+    .sort((a,b)=>a.name.localeCompare(b.name,'ar')||a.riwaya.localeCompare(b.riwaya,'ar'));return RQ}
+const rqColor=s=>`hsl(${[...s].reduce((a,c)=>a+c.charCodeAt(0),0)%360} 35% 42%)`;
+const rqInit=n=>n.replace(/^(الشيخ|الشيخة|د\.|محمد بن)\s+/,'')[0];
+async function renderRq(){document.querySelectorAll('#rq-tabs .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===rqTab));
+  try{await rqLoad()}catch{$('rq-status').textContent='قائمة القراء ما تحمّلت. افتح الصفحة مرة وانت متصل بالنت.';return}
+  const q=$('rq-q').value.trim(),L=RQ.filter(r=>(rqTab==='all'||rqFav.has(r.mid))&&(!q||r.name.includes(q)));
+  $('rq-status').textContent=rqTab==='fav'&&!L.length?'ما فيه مفضلة. اضغط ♥ جنب أي قارئ.':`${L.length} تلاوة`;
+  $('rq-list').innerHTML=L.slice(0,400).map(r=>`<li data-m="${r.mid}" data-l="${esc(r.letter)}"><span class="rq-av" style="--c:${rqColor(r.name)}">${esc(rqInit(r.name))}</span><span class="grow"><b>${esc(r.name)}</b><span class="muted">📖 ${esc(r.riwaya)}</span><span class="muted">🔊 ${r.n} سورة</span></span><button class="rq-fav${rqFav.has(r.mid)?' on':''}" data-f="${r.mid}" aria-label="المفضلة">♥</button></li>`).join('');
+  $('rq-letters').innerHTML=[...new Set(L.map(r=>r.letter))].map(l=>`<button data-l="${esc(l)}">${esc(l)}</button>`).join('')}
+$('rq-tabs').onclick=e=>{const b=e.target.closest('.chip');if(b){rqTab=b.dataset.t;renderRq()}};
+$('rq-q').oninput=renderRq;
+$('rq-letters').onclick=e=>{const b=e.target.closest('button');if(b)$('rq-list').querySelector(`li[data-l="${b.dataset.l}"]`)?.scrollIntoView({block:'start',behavior:'smooth'})};
+$('rq-list').onclick=e=>{const f=e.target.closest('[data-f]');if(f){const m=+f.dataset.f;rqFav.has(m)?rqFav.delete(m):rqFav.add(m);store.set('rqfav',[...rqFav]);f.classList.toggle('on');return}
+  const li=e.target.closest('li[data-m]');if(li)rqOpen(+li.dataset.m)};
+const rqId=(r,n)=>r.server.includes('/s_gmd/')?'gmd-'+n:`rq-${r.mid}-${n}`; // keeps the Ghamdi surahs downloaded by older versions
+const rqUrl=(r,n)=>r.server+String(n).padStart(3,'0')+'.mp3';
+async function rqOpen(mid){rqCur=RQ.find(r=>r.mid===mid);const r=rqCur;$('rq-pick').hidden=true;$('rq-one').hidden=false;scrollTo(0,0);
+  $('rq-av').textContent=rqInit(r.name);$('rq-av').style.setProperty('--c',rqColor(r.name));$('rq-name').textContent=r.name;$('rq-riwaya').textContent=`${r.riwaya} · ${r.n} سورة`;
+  $('rq-fav').classList.toggle('on',rqFav.has(mid));await rqSurahs()}
+$('rq-fav').onclick=()=>{const m=rqCur.mid;rqFav.has(m)?rqFav.delete(m):rqFav.add(m);store.set('rqfav',[...rqFav]);$('rq-fav').classList.toggle('on')};
+$('rq-back').onclick=()=>{$('rq-one').hidden=true;$('rq-pick').hidden=false;renderRq()};
+async function rqSurahs(){const r=rqCur;rqHave=new Set((await dbAll()).filter(x=>x.cat==='rq'||x.cat==='gmd').map(x=>x.id));
+  $('rq-surahs').innerHTML=r.list.map(n=>{const has=rqHave.has(rqId(r,n));return`<li><span class="grow"><span class="num muted">${n}</span> <b>سورة ${SURAHS[n-1].replace(/_/g,' ')}</b>${has?' <span class="muted">· محفوظة</span>':''}</span><button class="primary" data-p="${n}">استماع</button><button data-d="${n}">${has?'حذف':'تحميل'}</button></li>`}).join('')}
+async function rqFetch(r,n){try{const x=await fetch(rqUrl(r,n));if(!x.ok)return false;await dbPut({id:rqId(r,n),cat:'rq',name:`سورة ${SURAHS[n-1]} · ${r.name}`,type:'audio/mpeg',blob:await x.blob(),added:Date.now()});rqHave.add(rqId(r,n));return true}catch{return false}}
+$('rq-surahs').onclick=async e=>{const p=e.target.dataset.p,d=e.target.dataset.d;if(p)return rqPlay(+p);if(!d)return;const r=rqCur,n=+d,b=e.target;
+  if(rqHave.has(rqId(r,n))){await dbDel(rqId(r,n));return rqSurahs()}b.disabled=true;b.textContent='جاري…';if(!await rqFetch(r,n)){b.textContent='فشل';b.disabled=false;return}rqSurahs()};
+let rqObj=null;
+async function rqPlay(n){const r=rqCur,rec=rqHave.has(rqId(r,n))?await dbGet(rqId(r,n)):null;if(rqObj)URL.revokeObjectURL(rqObj);rqObj=null;
+  const el=document.createElement('audio');el.controls=true;el.autoplay=true;if(rec){rqObj=URL.createObjectURL(rec.blob);el.src=rqObj}else{el.src=rqUrl(r,n);el.onerror=()=>{$('rq-now').textContent='ما قدرت أشغل السورة. تأكد من النت.'}}
+  const i=r.list.indexOf(n);el.onended=()=>{if(r.list[i+1])rqPlay(r.list[i+1])};$('rq-audio').replaceChildren(el);$('rq-now').textContent=`سورة ${SURAHS[n-1].replace(/_/g,' ')} · ${r.name}`;$('rq-player').hidden=false}
+$('rq-all').onclick=async()=>{const b=$('rq-all'),r=rqCur;if(b.dataset.busy){b.dataset.stop=1;return}b.dataset.busy=1;b.textContent='إيقاف';delete b.dataset.stop;
+  const todo=r.list.filter(n=>!rqHave.has(rqId(r,n)));let done=0,fail=0;
+  for(const n of todo){if(b.dataset.stop||rqCur!==r)break;$('rq-dl').textContent=`جاري التحميل: سورة ${SURAHS[n-1].replace(/_/g,' ')} (${done+1} من ${todo.length})`;if(await rqFetch(r,n))done++;else fail++}
+  delete b.dataset.busy;b.textContent='نزّل الكل';$('rq-dl').textContent=`انتهى: نزلت ${done} سورة${fail?`، وفشلت ${fail} (جرب مرة ثانية)`:''}.`;if(rqCur===r)rqSurahs()};
+
+/* ---------- appearance: follow the phone, or always light / always dark ---------- */
+const THEMES={auto:['📱','حسب الجوال'],light:['☀️','فاتح'],dark:['🌙','داكن']};
+let theme=store.get('theme','auto');
+function isDark(){return theme==='dark'||(theme==='auto'&&matchMedia('(prefers-color-scheme:dark)').matches)}
+function applyTheme(){const r=document.documentElement;if(theme==='auto')delete r.dataset.theme;else r.dataset.theme=theme;
+  document.querySelectorAll('meta[name=theme-color]').forEach(m=>m.content=isDark()?'#141512':'#fbf8f1');
+  $('hub-theme').innerHTML=`<span class="emo">${THEMES[theme][0]}</span>${THEMES[theme][1]}`;if(map)loadOffline()}
+$('hub-theme').onclick=()=>{theme={auto:'light',light:'dark',dark:'auto'}[theme];store.set('theme',theme);applyTheme()};
 
 /* ---------- weather: Open-Meteo (free, no key) + its dust forecast; the last result stays on the phone for use without internet ---------- */
 const WMO={0:['☀️','صحو'],1:['🌤️','غائم جزئياً'],2:['⛅','غائم جزئياً'],3:['☁️','غائم'],45:['🌫️','ضباب'],48:['🌫️','ضباب'],51:['🌦️','رذاذ خفيف'],53:['🌦️','رذاذ'],55:['🌦️','رذاذ كثيف'],
@@ -1633,56 +1792,77 @@ const imgLink=n=>`<a class="btn" target="_blank" rel="noopener" href="https://ww
 // photo per item = lead image of its English Wikipedia article (Commons, free licence), fetched on first open and cached by sw.js
 const WIKI={'الفقع (الكمأ)':'Desert truffle','الجراد':'Desert locust','أبو جعل (الجُعَل)':'Dung beetle','الخنفساء السودا':'Darkling beetle','النمل':'Ant','القراد':'Tick','البعوض والذباب':'Mosquito',
   'الجدي (نجم القطب)':'Polaris','بنات نعش':'Big Dipper','الكف الخضيب':'Cassiopeia (constellation)','سهيل':'Canopus','الثريا':'Pleiades','الجوزاء':'Orion (constellation)','المرزم':'Sirius','الدبران':'Aldebaran','العقرب':'Scorpius','الزهرة':'Venus'};
-const wikiImg=store.get('wikiimg',{});
-async function loadPhoto(fig){const t=fig.dataset.w;let u=wikiImg[t];
-  try{if(!u){const j=await(await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/'+encodeURIComponent(t.replace(/ /g,'_')))).json();
-      u=j.thumbnail&&j.thumbnail.source.replace(/\/\d+px-/,'/640px-');if(!u)throw 0;wikiImg[t]=u;store.set('wikiimg',wikiImg)}
-    const img=fig.querySelector('img');img.onerror=()=>{if(img.src!==j0(u))img.src=j0(u);else fail()};img.src=u;img.hidden=false;fig.querySelector('.ph-wait').hidden=true}
-  catch{fail()}
-  function fail(){fig.querySelector('.ph-wait').textContent='ما قدرت أجيب الصورة. تحتاج نت أول مرة، وبعدها تنحفظ.';fig.nextElementSibling?.removeAttribute('hidden')}}
-const j0=u=>u.replace(/\/thumb(\/.+?)\/\d+px-[^/]+$/,'$1'); // full-size file if the 640px thumb is missing
+// photos ship with the app in img/ (lead images of the English Wikipedia articles, Wikimedia Commons; sources in img/credits.json)
+const imgKey=t=>t.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 function renderInfo(){$('in-cats').innerHTML=['نباتات','نجوم','حشرات'].map(c=>`<button class="chip" data-i="${c}" aria-pressed="${c===infoCat}">${c}</button>`).join('');
-  $('in-note').textContent='الصور حقيقية من ويكيبيديا. تحتاج نت أول مرة تفتح العنصر، وبعدها تشتغل بدون نت.';
+  $('in-note').textContent='الصور من ويكيبيديا (ويكيميديا كومنز)، محفوظة داخل التطبيق وتطلع بدون نت.';
   const st=infoCat==='نجوم',L=infoCat==='نباتات'?PLANTS:infoCat==='حشرات'?BUGS:STARS;
   $('info').innerHTML=L.map(x=>{const w=WIKI[x[0]]||x[1];return `<details class="riddle"><summary>${x[0]} <span class="muted">· ${x[1]}</span></summary>
-    <figure class="photo" data-w="${w}"><img alt="صورة ${x[0]}" hidden><figcaption><span class="ph-wait muted">جاري تحميل الصورة…</span> <a class="muted" target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/${encodeURIComponent(w.replace(/ /g,'_'))}">المصدر: ويكيبيديا</a></figcaption></figure>
-    ${st?`<div hidden>${skySvg({...x[3],n:x[0]})}</div>`:''}<p class="sp">${st?x[2]:x[3]}</p>${imgLink(st?x[0]+' نجم '+x[1]:x[0]+' '+x[1])}</details>`}).join('');
-  $('info').querySelectorAll('details').forEach(d=>d.addEventListener('toggle',()=>{const f=d.querySelector('figure');if(d.open&&!f.dataset.done){f.dataset.done=1;loadPhoto(f)}}))}
+    <figure class="photo"><img alt="صورة ${x[0]}" loading="lazy" src="img/${imgKey(w)}.jpg" onerror="this.parentNode.hidden=true;this.parentNode.nextElementSibling?.removeAttribute('hidden')"><figcaption><a class="muted" target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/${encodeURIComponent(w.replace(/ /g,'_'))}">المصدر: ويكيبيديا</a></figcaption></figure>
+    ${st?`<div hidden>${skySvg({...x[3],n:x[0]})}</div>`:''}<p class="sp">${st?x[2]:x[3]}</p>${imgLink(st?x[0]+' نجم '+x[1]:x[0]+' '+x[1])}</details>`}).join('')}
 $('in-cats').onclick=e=>{if(e.target.dataset.i){infoCat=e.target.dataset.i;store.set('info',infoCat);renderInfo()}};renderInfo();
 
 /* ---------- recipes ---------- */
 const RECIPES=[
- {n:'القهوة العربية',i:'☕',t:'20 دقيقة',g:['ماي: 1 لتر','قهوة شقراء محمصة مطحونة: 4 ملاعق كبيرة','هيل مطحون: 1 ملعقة كبيرة','زعفران: رشة','قرنفل: 3 حبات (اختياري)'],
+ {n:'القهوة العربية',img:'arabic-coffee',i:'☕',t:'20 دقيقة',g:['ماي: 1 لتر','قهوة شقراء محمصة مطحونة: 4 ملاعق كبيرة','هيل مطحون: 1 ملعقة كبيرة','زعفران: رشة','قرنفل: 3 حبات (اختياري)'],
   s:['اغلي الماي في الدلة على الجمر.','أضف القهوة وخلها تفور، نزّلها عن النار شوي وارجعها، كررها مرتين.','خلها على نار هادية 10 دقايق.','حط الهيل والزعفران والقرنفل في المزلة وصب عليها القهوة.','خلها ترتاح 3 دقايق وصب.']},
- {n:'كرك على الجمر',i:'🫖',t:'15 دقيقة',g:['ماي: 3 أكواب','شاي أحمر ناعم: 3 ملاعق كبيرة','حليب مبخر: علبة 170 مل','سكر: 4 ملاعق كبيرة','هيل مدقوق: 4 حبات','زعفران: رشة'],
+ {n:'كرك على الجمر',img:'masala-chai',i:'🫖',t:'15 دقيقة',g:['ماي: 3 أكواب','شاي أحمر ناعم: 3 ملاعق كبيرة','حليب مبخر: علبة 170 مل','سكر: 4 ملاعق كبيرة','هيل مدقوق: 4 حبات','زعفران: رشة'],
   s:['اغلي الماي مع الهيل.','أضف الشاي والسكر وخله يغلي 4 دقايق.','أضف الحليب والزعفران وخله يفور مرتين.','صفيه وقدمه حار.']},
- {n:'خبز الملّة (خبز الجمر)',i:'🫓',t:'50 دقيقة',g:['طحين: 3 أكواب','ملح: 1 ملعقة صغيرة','خميرة فورية: 1 ملعقة صغيرة','ماي دافي: كوب وربع'],
+ {n:'خبز الملّة (خبز الجمر)',img:'flatbread',i:'🫓',t:'50 دقيقة',g:['طحين: 3 أكواب','ملح: 1 ملعقة صغيرة','خميرة فورية: 1 ملعقة صغيرة','ماي دافي: كوب وربع'],
   s:['اخلط الطحين والملح والخميرة، وأضف الماي شوي شوي واعجن 5 دقايق.','غطّ العجينة وخلها 30 دقيقة.','افردها قرص سماكته 2 سم.','أبعد الجمر، حط القرص على الرمل الحار، وغطه برمل حار وجمر.','بعد 10 دقايق اقلبه وخله 10 دقايق ثانية.','طلعه وانفضه واضربه بعود عشان يطيح الرمل.']},
- {n:'شكشوكة على الصاج',i:'🍳',t:'15 دقيقة',g:['بيض: 6 حبات','طماط: 3 حبات مقطعة','بصل: حبة','فلفل أخضر: حبة','زيت: 3 ملاعق كبيرة','ملح وكمون: نص ملعقة صغيرة لكل واحد'],
+ {n:'شكشوكة على الصاج',img:'shakshouka',i:'🍳',t:'15 دقيقة',g:['بيض: 6 حبات','طماط: 3 حبات مقطعة','بصل: حبة','فلفل أخضر: حبة','زيت: 3 ملاعق كبيرة','ملح وكمون: نص ملعقة صغيرة لكل واحد'],
   s:['حمّس البصل بالزيت لين يذبل.','أضف الفلفل والطماط والبهارات وخلها 5 دقايق.','اكسر البيض فوقها وغطها لين يستوي.']},
- {n:'كبدة غنم على الصاج',i:'🥘',t:'15 دقيقة',g:['كبدة غنم: 500 غرام مقطعة مكعبات','بصل: حبة شرائح','فلفل حار: حبتين','ثوم: 3 فصوص','زيت: 3 ملاعق كبيرة','ملح، فلفل أسود، كمون: نص ملعقة صغيرة لكل واحد','ليمون: حبة'],
+ {n:'كبدة غنم على الصاج',img:'liver-food',i:'🥘',t:'15 دقيقة',g:['كبدة غنم: 500 غرام مقطعة مكعبات','بصل: حبة شرائح','فلفل حار: حبتين','ثوم: 3 فصوص','زيت: 3 ملاعق كبيرة','ملح، فلفل أسود، كمون: نص ملعقة صغيرة لكل واحد','ليمون: حبة'],
   s:['سخّن الصاج زين وحط الزيت.','حمّس البصل والثوم والفلفل دقيقتين.','أضف الكبدة وقلبها على نار قوية 5 دقايق.','أضف البهارات آخر شي، وعصّر عليها ليمون.']},
- {n:'رز ودجاج بالقدر على الجمر',i:'🍗',t:'60 دقيقة',g:['دجاجة مقطعة: 1.2 كيلو','رز بسمتي: 3 أكواب منقوع نص ساعة','بصل: حبتين','بهارات مندي أو كبسة: 2 ملعقة كبيرة','ماي: 4 أكواب ونص','ملح: 1 ملعقة كبيرة','زيت: 4 ملاعق كبيرة'],
+ {n:'رز ودجاج بالقدر على الجمر',img:'kabsa',i:'🍗',t:'60 دقيقة',g:['دجاجة مقطعة: 1.2 كيلو','رز بسمتي: 3 أكواب منقوع نص ساعة','بصل: حبتين','بهارات مندي أو كبسة: 2 ملعقة كبيرة','ماي: 4 أكواب ونص','ملح: 1 ملعقة كبيرة','زيت: 4 ملاعق كبيرة'],
   s:['حمّس البصل بالزيت في القدر.','أضف الدجاج والبهارات وقلبه 5 دقايق.','أضف الماي والملح وخله يغلي 25 دقيقة.','أضف الرز، وأول ما ينشف الماي غط القدر.','حط القدر على جمر هادي (بعيد عن اللهب) 20 دقيقة.']},
- {n:'بطاطس وبصل بالقصدير',i:'🥔',t:'40 دقيقة',g:['بطاطس: 4 حبات','بصل: حبتين','زبدة: 4 ملاعق كبيرة','ملح وفلفل أسود: حسب الرغبة','ورق قصدير'],
-  s:['قطّع البطاطس والبصل حلقات.','حط كل حصة على ورقة قصدير مع زبدة وملح وفلفل.','لفها زين طبقتين.','ادفنها في الجمر 30 إلى 40 دقيقة، وقلبها مرة بالنص.']}];
+ {n:'بطاطس وبصل بالقصدير',img:'baked-potato',i:'🥔',t:'40 دقيقة',g:['بطاطس: 4 حبات','بصل: حبتين','زبدة: 4 ملاعق كبيرة','ملح وفلفل أسود: حسب الرغبة','ورق قصدير'],
+  s:['قطّع البطاطس والبصل حلقات.','حط كل حصة على ورقة قصدير مع زبدة وملح وفلفل.','لفها زين طبقتين.','ادفنها في الجمر 30 إلى 40 دقيقة، وقلبها مرة بالنص.']},
+ {n:'مندي بالحفرة',img:'mandi-food',i:'🍖',t:'3 ساعات',g:['لحم غنم أو دجاج كامل: 2 كيلو','رز بسمتي: 4 أكواب منقوع ساعة','بهارات مندي: 3 ملاعق كبيرة','ملح: حسب الرغبة','بصل: حبتين','ماي: 6 أكواب','فحم أو حطب سمر، وقدر وشبك'],
+  s:['احفر حفرة عمقها نص متر تقريباً، وولّع فيها الحطب لين يصير جمر.','تبّل اللحم بالبهارات والملح.','حط القدر فيه الماي والبصل والرز تحت، واللحم فوق على شبك.','نزّل القدر في الحفرة وغطها بالقصدير وسكّر الحفرة بالتراب.','خلها ساعتين ونص إلى 3 ساعات، وطلعها وانت لابس قفازات.']},
+ {n:'كبسة لحم بالقدر',img:'kabsa-lamb',i:'🍛',t:'ساعتين',g:['لحم غنم: 1.5 كيلو','رز بسمتي: 4 أكواب','بصل: 2 حبة','طماط: 3 حبات','معجون طماط: ملعقة كبيرة','بهارات كبسة: 2 ملعقة كبيرة','لومي: حبتين','ماي: 8 أكواب','ملح وسمن'],
+  s:['حمّس البصل بالسمن لين يذبل.','أضف اللحم وقلّبه، وبعدين الطماط والمعجون والبهارات واللومي.','أضف الماي والملح وخله يطبخ ساعة ونص لين يستوي اللحم.','طلّع اللحم وأضف الرز للمرق، وغطه لين ينشف.','قدّم الرز واللحم فوقه.']},
+ {n:'هريس',img:'harees',i:'🥣',t:'4 ساعات',g:['حب هريس (قمح مقشور): 2 كوب منقوع من الليل','لحم غنم أو دجاج: 1 كيلو','ماي: 10 أكواب','ملح: حسب الرغبة','سمن وقرفة للتقديم'],
+  s:['حط الحب واللحم والماي في القدر على الجمر.','خله يطبخ على نار هادية 3 إلى 4 ساعات، وزد ماي إذا نشف.','شيل العظم واضرب الخليط بالمضرب الخشب لين يصير ناعم.','قدّمه وفوقه سمن حار ورشة قرفة.']},
+ {n:'جريش',img:'jareesh',i:'🍲',t:'ساعتين',g:['جريش: 2 كوب منقوع ساعتين','لحم أو دجاج: نص كيلو','لبن: 2 كوب','بصل: حبتين','ثوم: 3 فصوص','كمون وفلفل أسود: ملعقة صغيرة','ماي: 7 أكواب','سمن وملح'],
+  s:['اطبخ الجريش مع اللحم والماي ساعة ونص على نار هادية.','أضف اللبن والملح والبهارات وحرّك لين يثقل.','حمّس البصل والثوم بالسمن لين يحمر.','قدّم الجريش وفوقه البصل المحمّس.']},
+ {n:'مرقوق',img:'marqooq',i:'🥘',t:'ساعة ونص',g:['لحم غنم: 1 كيلو','طحين: 2 كوب وماي للعجين','كوسة: 2 حبة','قرع وجزر: حبة من كل وحدة','بطاطس: 2 حبة','طماط: 3 حبات','بصل: حبة','بهارات مشكلة ولومي وملح'],
+  s:['اطبخ اللحم مع البصل والطماط والبهارات والماي ساعة.','أضف الخضار مقطعة قطع كبيرة.','اعجن الطحين بالماي والملح، وافرده رقيق جداً وقطعه مربعات.','نزّل العجين في المرق قطعة قطعة وحرّك.','خله 15 دقيقة لين يستوي العجين.']},
+ {n:'لقيمات',img:'luqaimat',i:'🍯',t:'ساعة',g:['طحين: 2 كوب','نشا: ملعقتين كبيرة','خميرة: ملعقة كبيرة','سكر: ملعقة كبيرة','هيل وزعفران: رشة','ماي دافي: كوب ونص','زيت للقلي','دبس تمر أو شيرة'],
+  s:['اخلط كل المكونات لين تصير عجينة سايلة شوي.','غطها وخلها تختمر 45 دقيقة.','سخّن الزيت زين، وانزل العجين كور صغيرة بالملعقة.','قلّبها لين تحمر من كل الجهات.','صفّها وصب عليها الدبس.']},
+ {n:'بلاليط',img:'balaleet',i:'🍝',t:'25 دقيقة',g:['شعيرية: 2 كوب','سكر: نص كوب','هيل وزعفران وماي ورد: رشة','زبدة: ملعقتين','بيض: 3 حبات','ملح: رشة'],
+  s:['اسلق الشعيرية دقيقتين وصفّها.','حمّسها بالزبدة مع السكر والهيل والزعفران.','اخفق البيض بالملح واقليه أومليت رقيق.','قدّم الشعيرية والبيض فوقها. فطور أهل الخليج.']},
+ {n:'مطبق لحم',img:'murtabak',i:'🫓',t:'45 دقيقة',g:['عجينة: 2 كوب طحين وماي وملح','لحم مفروم: نص كيلو','بصل: حبتين مفروم','كراث أو بصل أخضر: حزمة','بيض: 2 حبة','بهارات وملح','سمن'],
+  s:['اعجن الطحين بالماي والملح عجينة لينة، وخلها نص ساعة.','حمّس اللحم والبصل والبهارات لين يستوي، وخله يبرد ويخلط مع البيض والكراث.','افرد العجينة رقيقة جداً، حط الحشوة بالنص واطوها مربع.','اقليها على الصاج بالسمن لين تحمر من الجهتين.']},];
 const HEALTHY=[
- {n:'سلطة تونة وحمص',i:'🥗',t:'10 دقايق',g:['تونة بالماي: علبتين مصفاة','حمص مسلوق: علبة مصفاة','خيار: 2 حبة','طماط: 2 حبة','بصل أحمر: نص حبة','زيت زيتون: 2 ملعقة كبيرة','ليمون: حبة','ملح وكمون: رشة'],
+ {n:'سلطة تونة وحمص',img:'tuna-salad',i:'🥗',t:'10 دقايق',g:['تونة بالماي: علبتين مصفاة','حمص مسلوق: علبة مصفاة','خيار: 2 حبة','طماط: 2 حبة','بصل أحمر: نص حبة','زيت زيتون: 2 ملعقة كبيرة','ليمون: حبة','ملح وكمون: رشة'],
   s:['قطّع الخضار مكعبات صغيرة.','اخلط التونة والحمص مع الخضار.','أضف زيت الزيتون والليمون والملح والكمون وقلّب.','بروتين عالي ويشبع بدون طبخ، وما يحتاج غير ثلاجة صغيرة.']},
- {n:'دجاج مشوي على الفحم بالليمون',i:'🍗',t:'40 دقيقة + تتبيلة',g:['صدور دجاج: 1 كيلو','زبادي قليل الدسم: كوب','ثوم: 4 فصوص مهروسة','ليمون: 2 حبة','بابريكا وكمون وفلفل أسود: ملعقة صغيرة من كل وحدة','ملح: ملعقة صغيرة'],
+ {n:'دجاج مشوي على الفحم بالليمون',img:'grilled-chicken',i:'🍗',t:'40 دقيقة + تتبيلة',g:['صدور دجاج: 1 كيلو','زبادي قليل الدسم: كوب','ثوم: 4 فصوص مهروسة','ليمون: 2 حبة','بابريكا وكمون وفلفل أسود: ملعقة صغيرة من كل وحدة','ملح: ملعقة صغيرة'],
   s:['اخلط الزبادي مع الثوم والليمون والبهارات.','تبّل الدجاج فيه من الليل وحطه في الثلاجة.','اشويه على جمر متوسط (مو لهب) 8 دقايق لكل جهة.','قدّمه مع خيار وطماط بدال الرز.']},
- {n:'شوربة عدس',i:'🥣',t:'30 دقيقة',g:['عدس أحمر: كوب ونص مغسول','بصل: حبة','جزر: 2 حبة مقطعة','ثوم: 2 فص','كمون وكركم: ملعقة صغيرة من كل وحدة','ماي: 6 أكواب','ملح وليمون'],
+ {n:'شوربة عدس',img:'lentil-soup',i:'🥣',t:'30 دقيقة',g:['عدس أحمر: كوب ونص مغسول','بصل: حبة','جزر: 2 حبة مقطعة','ثوم: 2 فص','كمون وكركم: ملعقة صغيرة من كل وحدة','ماي: 6 أكواب','ملح وليمون'],
   s:['حمّس البصل والثوم بملعقة زيت وحدة بس.','أضف الجزر والعدس والبهارات والماي.','خله يغلي على نار هادية 20 دقيقة لين يذوب العدس.','اهرسه بالملعقة، وعصّر ليمون عند التقديم. تدفي في ليالي الشتاء وتشبع.']},
- {n:'بيض بالخضار على الصاج',i:'🍳',t:'15 دقيقة',g:['بيض: 6 حبات','فلفل رومي: حبة','طماط: 2 حبة','بصل: حبة صغيرة','سبانخ أو بقدونس: حفنة','زيت زيتون: ملعقة كبيرة','ملح وفلفل'],
+ {n:'بيض بالخضار على الصاج',img:'omelette',i:'🍳',t:'15 دقيقة',g:['بيض: 6 حبات','فلفل رومي: حبة','طماط: 2 حبة','بصل: حبة صغيرة','سبانخ أو بقدونس: حفنة','زيت زيتون: ملعقة كبيرة','ملح وفلفل'],
   s:['حمّس البصل والفلفل بزيت الزيتون.','أضف الطماط لين يذبل.','اكسر البيض فوق الخضار وغطه 5 دقايق.','رش السبانخ أو البقدونس آخر شي. فطور بروتين قبل طلعة المشي.']},
- {n:'سمك بالقصدير على الجمر',i:'🐟',t:'30 دقيقة',g:['سمك هامور أو شعري: 4 قطع فيليه','ليمون: 2 حبة شرائح','ثوم: 3 فصوص','طماط وبصل: شرائح','زيت زيتون: 2 ملعقة كبيرة','ملح وكمون وفلفل','ورق قصدير'],
+ {n:'سمك بالقصدير على الجمر',img:'grilled-fish',i:'🐟',t:'30 دقيقة',g:['سمك هامور أو شعري: 4 قطع فيليه','ليمون: 2 حبة شرائح','ثوم: 3 فصوص','طماط وبصل: شرائح','زيت زيتون: 2 ملعقة كبيرة','ملح وكمون وفلفل','ورق قصدير'],
   s:['حط كل قطعة على قصدير مع شرائح الطماط والبصل والليمون.','رش الثوم والبهارات وشوية زيت زيتون.','لفها زين طبقتين.','حطها على الجمر 15 إلى 20 دقيقة. صحي وخفيف وما يحتاج قدر.']},
- {n:'شوفان بالتمر والحليب',i:'🥛',t:'10 دقايق',g:['شوفان: كوب','حليب قليل الدسم: كوبين','تمر: 5 حبات مقطعة','قرفة: رشة','مكسرات نيّة: حفنة صغيرة'],
+ {n:'شوفان بالتمر والحليب',img:'oatmeal',i:'🥛',t:'10 دقايق',g:['شوفان: كوب','حليب قليل الدسم: كوبين','تمر: 5 حبات مقطعة','قرفة: رشة','مكسرات نيّة: حفنة صغيرة'],
   s:['اغلي الحليب على نار هادية.','أضف الشوفان وحرّك 5 دقايق.','أضف التمر والقرفة، والتمر يغنيك عن السكر.','رش المكسرات فوقه. طاقة تدوم لطلعة الصبح.']},
- {n:'خضار مشوية على السيخ',i:'🍢',t:'25 دقيقة',g:['كوسة: 2 حبة','فلفل ملون: 2 حبة','بصل: حبتين','فطر: علبة','طماط كرزي: كوب','زيت زيتون: 2 ملعقة كبيرة','زعتر وملح'],
+ {n:'خضار مشوية على السيخ',img:'shish-kebab',i:'🍢',t:'25 دقيقة',g:['كوسة: 2 حبة','فلفل ملون: 2 حبة','بصل: حبتين','فطر: علبة','طماط كرزي: كوب','زيت زيتون: 2 ملعقة كبيرة','زعتر وملح'],
   s:['قطّع الخضار قطع كبيرة.','اخلطها بزيت الزيتون والزعتر والملح.','دخّلها في الأسياخ.','اشويها على الجمر 10 إلى 12 دقيقة وقلّبها. تنفع مع الدجاج أو اللحم بدال الخبز.']},
- {n:'وجبة خفيفة للطريق',i:'🥜',t:'5 دقايق',g:['لوز وكاجو نيّ: كوب','تمر: 10 حبات','زبيب: نص كوب','بذور يقطين أو دوار الشمس: ربع كوب'],
-  s:['اخلطها كلها.','قسّمها في أكياس صغيرة.','حفنة وحدة تكفي، لأن السعرات فيها عالية.','ما تخرب في الحر، وتنفع بين التمارين أو في الطلعات الطويلة.']}];
+ {n:'وجبة خفيفة للطريق',img:'trail-mix',i:'🥜',t:'5 دقايق',g:['لوز وكاجو نيّ: كوب','تمر: 10 حبات','زبيب: نص كوب','بذور يقطين أو دوار الشمس: ربع كوب'],
+  s:['اخلطها كلها.','قسّمها في أكياس صغيرة.','حفنة وحدة تكفي، لأن السعرات فيها عالية.','ما تخرب في الحر، وتنفع بين التمارين أو في الطلعات الطويلة.']},
+ {n:'تبولة',img:'tabbouleh',i:'🥗',t:'20 دقيقة',g:['بقدونس: 3 حزم مفرومة ناعم','نعناع: حزمة صغيرة','برغل ناعم: ربع كوب منقوع','طماط: 3 حبات مكعبات صغيرة','بصل أخضر: 3 أعواد','ليمون: 2 حبة','زيت زيتون: 3 ملاعق كبيرة','ملح'],
+  s:['انقع البرغل 10 دقايق وعصره.','اخلط البقدونس والنعناع والطماط والبصل.','أضف البرغل والليمون وزيت الزيتون والملح.','غنية بالألياف وفيتامين C وخفيفة على المعدة.']},
+ {n:'فتوش',img:'fattoush',i:'🥬',t:'15 دقيقة',g:['خس: نص رأس','خيار: 2 حبة','طماط: 2 حبة','فجل: 4 حبات','بصل أخضر ونعناع','خبز بر محمص: رغيف','دبس رمان وليمون: ملعقة من كل وحدة','زيت زيتون: ملعقتين','سماق وملح'],
+  s:['قطّع الخضار قطع وسط.','حمّص الخبز على الصاج بدون زيت لين يقرمش، وكسّره.','اخلط الدبس والليمون والزيت والسماق والملح.','صبها على السلطة وقلّب، وحط الخبز آخر شي.']},
+ {n:'حمص بالطحينة',img:'hummus',i:'🫘',t:'10 دقايق',g:['حمص مسلوق: علبتين مصفاة','طحينة: ربع كوب','ليمون: حبة','ثوم: فص','ماي بارد: 4 ملاعق','زيت زيتون وكمون'],
+  s:['اهرس الحمص بالشوكة أو الخلاط اليدوي.','أضف الطحينة والليمون والثوم والماي وحرّك لين ينعم.','رش زيت زيتون وكمون فوقه.','بروتين نباتي يشبع، مع الخضار بدال الخبز.']},
+ {n:'شوربة خضار',img:'vegetable-soup',i:'🍵',t:'35 دقيقة',g:['جزر: 2 حبة','كوسة: 2 حبة','بطاطس: حبة','بصل: حبة','طماط: 2 حبة','مرقة دجاج أو ماي: 6 أكواب','زعتر وفلفل أسود وملح','زيت زيتون: ملعقة'],
+  s:['حمّس البصل بملعقة زيت.','أضف الخضار مكعبات والطماط.','أضف المرقة والبهارات وخلها تغلي 25 دقيقة.','دافية في ليالي الشتا وخفيفة السعرات.']},
+ {n:'خيار بالزبادي',img:'cacik',i:'🥒',t:'5 دقايق',g:['زبادي قليل الدسم: 2 كوب','خيار: 2 حبة مبشورة أو مكعبات','ثوم: فص مهروس','نعناع يابس: ملعقة صغيرة','ملح'],
+  s:['اخلط الزبادي مع الخيار والثوم.','أضف النعناع والملح.','بارد ويرطّب في الحر، وينفع مع المشويات.']},
+ {n:'فول بالكمون',img:'ful-medames',i:'🫘',t:'15 دقيقة',g:['فول مدمس: علبتين','ثوم: 2 فص','ليمون: حبة','كمون: ملعقة صغيرة','طماط وبقدونس مفروم','زيت زيتون: ملعقة'],
+  s:['سخّن الفول بمايه على الصاج.','اهرسه شوي وأضف الثوم والليمون والكمون.','رش الطماط والبقدونس وزيت الزيتون.','فطور يشبع لساعات قبل الطلعة.']}];
 const EX=[['🦵','قرفصاء (سكوات)','قف ورجولك بعرض كتوفك، انزل كأنك تقعد على كرسي لين تصير فخوذك موازية للأرض، وارجع. ظهرك مستقيم وركبك ما تتعدى أصابعك.'],
  ['💪','ضغط','يدينك على الأرض بعرض الكتوف، جسمك خط واحد من الراس للكعب. انزل لين صدرك يقرب من الأرض واطلع. إذا صعب، حط ركبك على الأرض.'],
  ['🚶','طعنات (لانجز)','خطوة كبيرة لقدام، وانزل لين ركبة الرجل اللي ورا تقرب من الأرض، وارجع. بدّل الرجول.'],
@@ -1693,7 +1873,7 @@ const EX=[['🦵','قرفصاء (سكوات)','قف ورجولك بعرض كتو
  ['🏖️','صعود الطعس','اطلع الكثيب الرملي بخطوات قصيرة وانزل مشي. من أقوى تمارين الرجول والنفس.']];
 const PLAN=[['السبت','دائرة تمارين (اضغط ابدأ تحت)'],['الأحد','مشي سريع على الرمل 30 إلى 40 دقيقة'],['الاثنين','دائرة تمارين'],['الثلاثاء','راحة أو مشي خفيف'],['الأربعاء','دائرة تمارين + صعود الطعس 5 مرات'],['الخميس','مشي طويل مع الشباب 45 دقيقة'],['الجمعة','راحة']];
 let healthCat=store.get('health','طبخات البر');
-const recipeCards=L=>L.map(r=>`<article class="card recipe"><div class="row" style="justify-content:space-between;align-items:baseline"><h3>${r.n}</h3><span class="muted">${r.t}</span></div>
+const recipeCards=L=>L.map(r=>`<article class="card recipe">${r.img?`<img class="rimg" alt="${r.n}" loading="lazy" src="img/${r.img}.jpg" onerror="this.remove()">`:''}<div class="row" style="justify-content:space-between;align-items:baseline"><h3>${r.n}</h3><span class="muted">${r.t}</span></div>
   <b>المقادير</b><ul>${r.g.map(x=>`<li>${x}</li>`).join('')}</ul><b>الطريقة</b><ol>${r.s.map(x=>`<li>${x}</li>`).join('')}</ol></article>`).join('');
 function renderHealth(){$('fd-cats').innerHTML=['طبخات البر','أكلات صحية','تمارين','المقاضي'].map(c=>`<button class="chip" data-h="${c}" aria-pressed="${c===healthCat}">${c}</button>`).join('');
   const ex=healthCat==='تمارين',sh=healthCat==='المقاضي';$('workout').hidden=!ex;$('shop').hidden=!sh;$('recipes').hidden=ex||sh;$('fd-note').hidden=sh;if(sh)return renderShop();
@@ -1735,7 +1915,7 @@ $('wk-go').onclick=()=>{if(wk.on)return wkStop('وقفت.');const work=+$('wk-wo
 renderHealth();
 
 /* ---------- boot ---------- */
-addEventListener('resize',tabH);
+addEventListener('resize',tabH);applyTheme();
 show('nav'); // the map is the home screen
 if(!pos)pos=store.get('last',null);
 refresh();showAdhanName();renderMedia();startGPS();

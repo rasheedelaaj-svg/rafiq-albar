@@ -1,6 +1,6 @@
 // app files: network first (bypassing the HTTP cache) so updates show right away, cache as offline fallback.
 // map tiles and libraries: cache first, in their own cache that survives app updates.
-const V='barr-33',T='barr-tiles',FILES=['./','index.html','manifest.webmanifest','icon.svg','lib/leaflet-rotate.js','lib/pmtiles.js','lib/protomaps-leaflet.js','lib/quran.json','lib/amiri-quran.woff2'];
+const V='barr-34',T='barr-tiles',FILES=['./','index.html','manifest.webmanifest','icon.svg','lib/leaflet-rotate.js','lib/pmtiles.js','lib/protomaps-leaflet.js','lib/quran.json','lib/amiri-quran.woff2'];
 self.addEventListener('install',e=>e.waitUntil(Promise.all([caches.open(V).then(c=>c.addAll(FILES)),
   caches.open(T).then(c=>c.addAll(['https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js','https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'])).catch(()=>{})]).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V&&k!==T).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));

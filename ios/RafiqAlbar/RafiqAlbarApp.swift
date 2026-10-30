@@ -35,6 +35,10 @@ struct WebView: UIViewRepresentable {
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.uiDelegate = context.coordinator
         webView.scrollView.contentInsetAdjustmentBehavior = .never
+        // no page zoom on double tap or pinch; the map does its own pinch zoom in JavaScript
+        webView.scrollView.pinchGestureRecognizer?.isEnabled = false
+        webView.scrollView.maximumZoomScale = 1
+        webView.scrollView.minimumZoomScale = 1
         context.coordinator.startHeading(for: webView)
         webView.load(URLRequest(url: appURL, cachePolicy: .reloadIgnoringLocalCacheData))
         return webView
