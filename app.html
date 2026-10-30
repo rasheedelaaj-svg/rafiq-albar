@@ -154,7 +154,8 @@ html{scroll-padding-bottom:100px}
 .hd-table{display:grid;gap:6px 8px;text-align:center;align-items:center}.hd-table b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hd-lead{color:var(--good);background:var(--tint-soft);border-radius:8px}
 .hd-in{display:flex;flex-direction:column;gap:6px;padding:8px 0;border-bottom:.5px solid var(--line)}.hd-in .chip{min-height:36px;padding:4px 12px}
 #hd-names .row{margin-bottom:6px}
-.hd-table .num,.hd-q,.hd-in input{direction:ltr;unicode-bidi:isolate}
+.hd-table .num,.hd-in input{direction:ltr;unicode-bidi:isolate}
+.hd-num{flex-wrap:nowrap;direction:ltr}.hd-num input{flex:1;font-size:22px;text-align:center}.hd-pm{flex:none;width:56px;font-size:26px;font-weight:700;padding:0}.hd-num.neg .hd-pm{background:var(--danger,#c0392b);color:#fff}.hd-num.neg input{color:var(--danger,#c0392b)}
 .rq-wrap{position:relative}
 .rq-list{list-style:none;margin:0;padding:0 0 0 26px;display:flex;flex-direction:column;gap:10px}
 .rq-list li{display:flex;gap:12px;align-items:center;background:var(--elev);border-radius:18px;padding:12px;box-shadow:0 1px 2px rgba(0,0,0,.05);cursor:pointer;scroll-margin-top:12px}
@@ -659,7 +660,7 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
   <div class="card" id="hd-round">
     <h2 id="hd-rt">الجولة 1</h2>
     <div id="hd-inputs"></div>
-    <span class="muted">اكتب نقاط كل لاعب في الجولة (أوراقه اللي بقت بيده)، أو اضغط الأزرار. الأرقام تقدر تعدّلها قبل الحفظ.</span>
+    <span class="muted">اكتب رقم كل لاعب بالجولة. للسالب اضغط زر − قبل أو بعد ما تكتب الرقم.</span>
     <div class="row"><button class="primary big-btn" id="hd-save">حفظ الجولة</button><button id="hd-undo">تراجع عن آخر جولة</button></div>
   </div>
   <button class="danger" id="hd-new">لعبة جديدة</button>
@@ -753,7 +754,7 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
 <nav class="tabs" id="tabs"></nav>
 
 <script>
-const APP_VER='34'; // keep in step with V in sw.js
+const APP_VER='35'; // keep in step with V in sw.js
 // CORE-START (pure functions, tested in check.js)
 const R=Math.PI/180,KAABA=[21.4225,39.8262];
 const sin=d=>Math.sin(d*R),cos=d=>Math.cos(d*R),tan=d=>Math.tan(d*R),asin=x=>Math.asin(x)/R,acos=x=>Math.acos(Math.max(-1,Math.min(1,x)))/R,atan2=(y,x)=>Math.atan2(y,x)/R;
@@ -1513,7 +1514,6 @@ $('sp-copy').onclick=()=>here&&copy(formats(here.c)[0][1],$('sp-copy'));
 
 /* ---------- Kuwaiti hand score sheet: rounds per player, running totals, lowest (or highest) total leads ---------- */
 let hand=store.get('hand',{p:['لاعب 1','لاعب 2','لاعب 3','لاعب 4'],r:[],win:'low'});const handSave=()=>store.set('hand',hand);
-const HQ=[['نزل',-30],['هند',-60],['+50',50],['+100',100]];
 function renderHand(){const P=hand.p,R=hand.r,tot=P.map((_,i)=>R.reduce((a,r)=>a+(+r[i]||0),0)),best=R.length?(hand.win==='low'?Math.min:Math.max)(...tot):null;
   $('hd-win').value=hand.win;
   $('hd-names').innerHTML=P.map((n,i)=>`<div class="row"><input type="text" value="${esc(n)}" data-i="${i}" class="hd-n">${P.length>2?`<button class="danger hd-rm" data-i="${i}" aria-label="حذف اللاعب">✕</button>`:''}</div>`).join('');
@@ -1521,13 +1521,15 @@ function renderHand(){const P=hand.p,R=hand.r,tot=P.map((_,i)=>R.reduce((a,r)=>a
   $('hd-table').innerHTML=`<b></b>${P.map(n=>`<b>${esc(n)}</b>`).join('')}`+R.map((r,k)=>`<span class="muted">${k+1}</span>${r.map(v=>`<span class="num">${v}</span>`).join('')}`).join('')+
     `<b>المجموع</b>${tot.map(t=>`<b class="num${t===best?' hd-lead':''}">${t}</b>`).join('')}`;
   $('hd-rt').textContent='الجولة '+(R.length+1);
-  $('hd-inputs').innerHTML=P.map((n,i)=>`<div class="hd-in"><b>${esc(n)}</b><input type="number" inputmode="numeric" data-i="${i}" placeholder="0"><div class="row">${HQ.map(([l,v])=>`<button type="button" class="chip hd-q" data-i="${i}" data-v="${v}">${l}</button>`).join('')}</div></div>`).join('');
+  $('hd-inputs').innerHTML=P.map((n,i)=>`<div class="hd-in"><b>${esc(n)}</b><div class="row hd-num"><button type="button" class="hd-pm" data-i="${i}" aria-label="سالب أو موجب">−</button><input type="text" inputmode="numeric" data-i="${i}" placeholder="0"></div></div>`).join('');
   $('hd-undo').disabled=!R.length}
 $('hd-names').oninput=e=>{const i=e.target.dataset.i;if(i!=null){hand.p[i]=e.target.value;handSave();const T=$('hd-table').querySelectorAll('b');T[+i+1].textContent=e.target.value;$('hd-inputs').querySelectorAll('.hd-in>b')[i].textContent=e.target.value}};
 $('hd-names').onclick=e=>{const b=e.target.closest('.hd-rm');if(!b)return;const i=+b.dataset.i;hand.p.splice(i,1);hand.r.forEach(r=>r.splice(i,1));handSave();renderHand()};
 $('hd-addp').onclick=()=>{if(hand.p.length>=6)return;hand.p.push('لاعب '+(hand.p.length+1));hand.r.forEach(r=>r.push(0));handSave();renderHand()};
 $('hd-win').onchange=e=>{hand.win=e.target.value;handSave();renderHand()};
-$('hd-inputs').onclick=e=>{const b=e.target.closest('.hd-q');if(b)$('hd-inputs').querySelector(`input[data-i="${b.dataset.i}"]`).value=b.dataset.v};
+$('hd-inputs').onclick=e=>{const b=e.target.closest('.hd-pm');if(!b)return;const x=$('hd-inputs').querySelector(`input[data-i="${b.dataset.i}"]`);x.value=x.value.startsWith('-')?x.value.slice(1):'-'+x.value;hdSign(x);x.focus()};
+$('hd-inputs').oninput=e=>{const x=e.target;if(x.tagName==='INPUT'){x.value=x.value.replace(/[٠-٩]/g,d=>d.charCodeAt(0)-1632).replace(/(?!^-)[^0-9]/g,'');hdSign(x)}};
+const hdSign=x=>x.closest('.hd-num').classList.toggle('neg',x.value.startsWith('-'));
 $('hd-save').onclick=()=>{const v=[...$('hd-inputs').querySelectorAll('input')].map(x=>+x.value||0);hand.r.push(v);handSave();renderHand()};
 $('hd-undo').onclick=()=>{hand.r.pop();handSave();renderHand()};
 $('hd-new').onclick=()=>{const b=$('hd-new');if(!b.dataset.sure){b.dataset.sure=1;b.textContent='متأكد؟ اضغط مرة ثانية';setTimeout(()=>{delete b.dataset.sure;b.textContent='لعبة جديدة'},4000);return}
