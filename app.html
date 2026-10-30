@@ -34,7 +34,7 @@
   --shadow:0 1px 2px rgba(0,0,0,.45),0 6px 18px rgba(0,0,0,.4)}}
 /* Dynamic Type: WebKit maps -apple-system-body to the user's text size; other browsers keep 16px */
 html{font-size:16px;font:-apple-system-body}
-html,body{height:100%}
+html{height:100%}body{min-height:100%;box-sizing:border-box}
 ::selection{background:color-mix(in srgb,var(--accent) 35%,transparent)}
 input,textarea{caret-color:var(--tint)}
 [hidden]{display:none!important}
@@ -125,6 +125,29 @@ video{max-height:45vh;background:#000}
 .mbtn{min-height:44px}
 .mbtn svg{width:20px;height:20px;flex:none}
 .warn{color:var(--danger);font-size:.875rem}
+html{scroll-padding-bottom:100px}
+/* «الساحة»: emoji tiles on soft white cards, pill chips on top, floating tab bar */
+.emo{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;line-height:1}
+#v-more{gap:6px}
+#hub-top{position:sticky;top:0;z-index:4;margin-inline:-16px;padding:calc(6px + env(safe-area-inset-top,0px)) 16px 8px;margin-top:calc(-1 * max(12px,env(safe-area-inset-top,0px)));background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);display:flex;flex-direction:column;gap:8px}
+.hchips{display:flex;gap:8px;align-items:center}
+.hchips-in{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;flex:1;padding:2px}
+.hchips-in::-webkit-scrollbar{display:none}
+.hchip{flex:none;border-radius:999px;background:var(--elev);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.08);min-height:44px;padding:6px 16px;font-size:16px;white-space:nowrap;gap:8px}
+.hchip .emo{font-size:20px}
+.hchip.find{width:44px;padding:0;background:var(--group);box-shadow:none}
+.hchip[aria-pressed=true]{background:var(--accent);color:var(--accent-fg)}
+.hsec h2{display:flex;align-items:center;gap:8px;font-size:24px;margin:14px 2px 10px}
+.hsec h2 .emo{font-size:26px}
+.hgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.htile{flex-direction:column;justify-content:flex-start;gap:8px;background:var(--elev);color:var(--fg);border-radius:22px;padding:14px 4px 10px;min-height:118px;font-weight:500;font-size:13px;line-height:1.25;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 16px rgba(60,50,30,.07)}
+.htile .emo{font-size:46px;margin-top:2px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.12))}
+.htile:active{transform:scale(.95)}
+@media (max-width:350px){.hgrid{grid-template-columns:repeat(3,1fr)}}
+nav.tabs{position:fixed;left:50%;transform:translateX(-50%);right:auto;bottom:calc(10px + env(safe-area-inset-bottom,0px));width:min(calc(100% - 48px),380px);display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:6px;
+  border-radius:30px;border:0;background:color-mix(in srgb,var(--elev) 92%,transparent);box-shadow:0 2px 6px rgba(0,0,0,.06),0 10px 30px rgba(60,50,30,.14);z-index:5}
+nav.tabs button{border-radius:24px;min-height:54px;font-size:13px;padding:4px 0;color:var(--fg)}
+nav.tabs button[aria-selected=true]{background:var(--group);color:var(--tint)}
 /* map screen: HUD on top, the map in the middle, the command bar at the bottom; nothing scrolls, sheets slide over the map */
 body.mapmode{padding-bottom:0;overflow:hidden}
 #mapwrap{position:fixed;top:0;left:0;right:0;bottom:var(--tabh,50px);display:flex;flex-direction:column;font-size:15px;line-height:1.35;z-index:1}
@@ -489,8 +512,11 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
 </section>
 
 <section id="v-more" hidden>
-  <h1>المزيد</h1>
-  <div class="tiles" id="more-tiles"></div>
+  <div id="hub-top">
+    <div class="hchips"><button id="hub-find" class="hchip find" aria-label="بحث"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button><div id="hub-chips" class="hchips-in"></div></div>
+    <input type="search" id="hub-q" placeholder="ابحث: قبلة، نجوم، طبخ…" hidden>
+  </div>
+  <div id="hub-list"></div>
 </section>
 
 <section id="v-stories" hidden>
@@ -537,7 +563,7 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
 <nav class="tabs" id="tabs"></nav>
 
 <script>
-const APP_VER='29'; // keep in step with V in sw.js
+const APP_VER='30'; // keep in step with V in sw.js
 // CORE-START (pure functions, tested in check.js)
 const R=Math.PI/180,KAABA=[21.4225,39.8262];
 const sin=d=>Math.sin(d*R),cos=d=>Math.cos(d*R),tan=d=>Math.tan(d*R),asin=x=>Math.asin(x)/R,acos=x=>Math.acos(Math.max(-1,Math.min(1,x)))/R,atan2=(y,x)=>Math.atan2(y,x)/R;
@@ -660,32 +686,42 @@ const store={get(k,d){try{const v=localStorage.getItem('barr.'+k);return v==null
 const fmtDist=m=>m<1000?`${Math.round(m)} م`:`${(m/1000).toFixed(m<10000?2:1)} كم`;
 const copy=(t,btn)=>{const done=()=>{btn.textContent='تم';setTimeout(()=>btn.textContent='نسخ',1200)};try{navigator.clipboard.writeText(t).then(done,()=>{})}catch{}};
 
-/* ---------- tabs ---------- */
+/* ---------- tabs and «الساحة» hub ----------
+   Three tabs in a floating bar; everything else is a tile on the hub. Tile icons are the phone's own emoji (3D on iOS).
+   A tile opens a view and, when it points at one part of it, presses that part's button. */
 const ICONS={
-  prayer:'<path d="M12 3c-3 2-5 4-5 7v9h10v-9c0-3-2-5-5-7zM5 21h14M12 3V1"/>',
-  nav:'<path d="M12 2l7 19-7-4-7 4z"/>',
-  compass:'<circle cx="12" cy="12" r="9"/><path d="M15 9l-2 5-4 1 2-5z"/>',
-  media:'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>',
-  fun:'<path d="M9 9a3 3 0 1 1 4 2.8c-.7.3-1 1-1 1.7V15M12 19h.01"/>',
-  stories:'<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 7h7M8 11h7"/>',
-  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/>',
-  more:'<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>',
-  food:'<path d="M4 11h16a8 8 0 0 1-16 0zM8 7c0-1 1-1 1-2M12 7c0-1 1-1 1-2M16 7c0-1 1-1 1-2"/>'};
-const TABS=[['prayer','الصلاة'],['nav','الخريطة'],['compass','البوصلة'],['media','الصوتيات'],['fun','الألعاب'],['stories','القصص'],['info','معلومات'],['food','الصحة']];
-// five tabs in the bar (iOS limit); the rest live on the «المزيد» hub
-const BAR=['nav','compass','prayer','media','more'],MORE=[['fun','ألعاب البر','بدون كلام، سين جيم، ألغاز','#e8833a'],['stories','قصص البر','بادية، حكم، طرائف، بطولات','#b07a3c'],
-  ['info','معلومات البر','نباتات، نجوم، حشرات','#2f9e6a'],['food','طبخ وصحة','طبخات، أكلات صحية، تمارين، مقاضي','#d9534f']];
-const ico=(k,w=24)=>`<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
-// the map screen fills what the tab bar leaves; the bar grows with the iPhone's text size
-const tabH=()=>document.documentElement.style.setProperty('--tabh',$('tabs').offsetHeight+'px');
-function show(t){[...BAR,...TABS.map(x=>x[0])].forEach(k=>{const v=$('v-'+k);if(v)v.hidden=k!==t});
-  const sel=MORE.some(m=>m[0]===t)?'more':t;BAR.forEach(k=>$('t-'+k).setAttribute('aria-selected',k===sel));
+  nav:'<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z" fill="currentColor" fill-opacity=".18"/><path d="M9 4v14M15 6v14"/>',
+  more:'<path d="M2 20l6.5-11 4 6 3-4.5L22 20z" fill="currentColor" fill-opacity=".18"/><path d="M8.5 9l1.8 3M15.5 10.5l1.4 2.2"/>',
+  prayer:'<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" fill="currentColor" fill-opacity=".18"/>'};
+const BAR=[['nav','الخريطة'],['more','الساحة'],['prayer','الصلاة']],HUBV=['compass','media','fun','stories','info','food'];
+const TILE={map:['🗺️','الخريطة','nav'],compass:['🧭','البوصلة','compass'],qibla:['🕋','القبلة','compass'],speed:['🏎️','عداد السرعة','nav'],
+  save:['📍','حفظ نقطة','nav','#a-save'],points:['📌','نقاطي','nav','#a-points'],rec:['🔴','تسجيل رحلة','nav','#a-rec'],back:['↩️','العودة على الدرب','nav','#a-back'],offline:['⬇️','خرائط بدون نت','nav','#a-menu'],
+  prayer:['🌙','مواقيت الصلاة','prayer'],quran:['📖','القرآن الكريم','media','#cats [data-c=quran]'],songs:['🎵','أغاني وشيلات','media','#cats [data-c=songs]'],astories:['🎙️','قصص صوتية','media','#cats [data-c=stories]'],video:['🎬','فيديو','media','#cats [data-c=video]'],
+  charades:['🎭','بدون كلام','fun','#games [data-g=charades]'],sj:['❓','سين جيم','fun','#games [data-g=sj]'],riddle:['🧩','ألغاز','fun','#games [data-g=riddle]'],
+  stories:['📜','قصص البر','stories'],plants:['🌵','نباتات البر','info','#in-cats [data-i="نباتات"]'],stars:['✨','النجوم','info','#in-cats [data-i="نجوم"]'],insects:['🦂','الحشرات','info','#in-cats [data-i="حشرات"]'],
+  recipes:['🍲','طبخات البر','food','#fd-cats [data-h="طبخات البر"]'],healthy:['🥗','أكلات صحية','food','#fd-cats [data-h="أكلات صحية"]'],workout:['🏃','تمارين','food','#fd-cats [data-h="تمارين"]'],shop:['🛒','المقاضي','food','#fd-cats [data-h="المقاضي"]']};
+const HUB=[['feat','مميزة','⭐',['map','prayer','qibla','compass','quran','rec','back','offline']],['nav','التنقل','🧭',['map','compass','qibla','speed','save','points','rec','back','offline']],
+  ['din','عبادة','🕌',['prayer','qibla','quran']],['media','صوتيات','🎧',['quran','songs','astories','video']],['games','ألعاب','🎮',['charades','sj','riddle']],
+  ['know','قصص ومعلومات','📚',['stories','plants','stars','insects']],['life','صحة وطبخ','🌿',['recipes','healthy','workout','shop']]];
+const ico=(k,w=26)=>`<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
+// the map screen ends where the floating bar starts; the bar grows with the iPhone's text size
+const tabH=()=>document.documentElement.style.setProperty('--tabh',Math.max(0,innerHeight-$('tabs').getBoundingClientRect().top)+'px');
+function show(t){['nav','more','prayer',...HUBV].forEach(k=>$('v-'+k).hidden=k!==t);
+  const sel=HUBV.includes(t)?'more':t;BAR.forEach(([k])=>$('t-'+k).setAttribute('aria-selected',k===sel));
   store.set('tab',t);scrollTo(0,0);tabH();document.body.classList.toggle('mapmode',t==='nav');if(t==='nav'){initMap();map?.invalidateSize()}keepAwake()}
-$('tabs').innerHTML=BAR.map(k=>`<button id="t-${k}" role="tab">${ico(k)}${k==='more'?'المزيد':TABS.find(x=>x[0]===k)[1]}</button>`).join('');
-BAR.forEach(k=>$('t-'+k).onclick=()=>show(k));
-$('more-tiles').innerHTML=MORE.map(([k,t,d,c])=>`<button class="tile" data-k="${k}" style="--c:${c}"><span class="tile-i">${ico(k,20)}</span><span class="tile-t"><b>${t}</b><span class="muted">${d}</span></span><svg class="chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>`).join('');
-$('more-tiles').onclick=e=>{const b=e.target.closest('.tile');if(b)show(b.dataset.k)};
-MORE.forEach(([k])=>{const h=$('v-'+k).querySelector('h1');const b=document.createElement('button');b.className='back';b.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>المزيد';b.onclick=()=>show('more');h.before(b)});
+$('tabs').innerHTML=BAR.map(([k,l])=>`<button id="t-${k}" role="tab">${ico(k)}<span>${l}</span></button>`).join('');
+BAR.forEach(([k])=>$('t-'+k).onclick=()=>show(k));
+$('hub-chips').innerHTML=HUB.map(([id,n,e])=>`<button class="hchip" data-s="${id}"><span class="emo">${e}</span>${n}</button>`).join('');
+$('hub-list').innerHTML=HUB.map(([id,n,e,ts])=>`<div class="hsec" id="hs-${id}"><h2><span class="emo">${e}</span>${n}</h2><div class="hgrid">${ts.map(k=>`<button class="htile" data-t="${k}"><span class="emo">${TILE[k][0]}</span><span>${TILE[k][1]}</span></button>`).join('')}</div></div>`).join('');
+const paintChip=id=>document.querySelectorAll('.hchip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.s===id));paintChip('feat');
+$('hub-chips').onclick=e=>{const b=e.target.closest('.hchip');if(!b)return;paintChip(b.dataset.s);$('hub-q').value='';hubFilter();
+  const s=$('hs-'+b.dataset.s);scrollTo({top:b.dataset.s==='feat'?0:s.getBoundingClientRect().top+scrollY-$('hub-top').offsetHeight-8,behavior:'smooth'})};
+$('hub-list').onclick=e=>{const b=e.target.closest('.htile');if(!b)return;const[,,v,sel]=TILE[b.dataset.t];show(v);if(sel)document.querySelector(sel)?.click()};
+$('hub-find').onclick=()=>{const q=$('hub-q');q.hidden=!q.hidden;if(!q.hidden)q.focus();else{q.value='';hubFilter()}};
+function hubFilter(){const q=$('hub-q').value.trim();document.querySelectorAll('.hsec').forEach(s=>{let any=false;
+  s.querySelectorAll('.htile').forEach(t=>{const ok=!q||TILE[t.dataset.t][1].includes(q);t.hidden=!ok;any||=ok});s.hidden=!any||(!!q&&s.id==='hs-feat')})}
+$('hub-q').oninput=hubFilter;
+HUBV.forEach(k=>{const h=$('v-'+k).querySelector('h1');const b=document.createElement('button');b.className='back';b.innerHTML='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>الساحة';b.onclick=()=>show('more');h.before(b)});
 
 /* ---------- location ----------
    here = last real reading {c,acc,alt,vacc,spd,crs,t}. In the iPhone app it comes from CoreLocation (window.nativeFix),
