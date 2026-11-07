@@ -30,4 +30,5 @@ targets:
         UIBackgroundModes: [audio]
         NSLocationWhenInUseUsageDescription: يحتاج التطبيق موقعك لحساب مواقيت الصلاة والقبلة والملاحة.
         NSMotionUsageDescription: يحتاج التطبيق حساس الحركة لتشغيل البوصلة.
+        ITSAppUsesNonExemptEncryption: false
         WKAppBoundDomains: [rasheedelaaj-svg.github.io]
