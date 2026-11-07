@@ -131,6 +131,12 @@ details.riddle p.verse{margin:8px 0 14px;padding:10px 0;text-align:center;font-f
 video,audio{width:100%;border-radius:12px}
 video{max-height:45vh;background:#000}
 .mbtn{min-height:44px}
+.list li.bk-item{display:flex;gap:12px;align-items:flex-start;padding:10px 4px}
+.bk-cover{flex:none;width:58px;height:78px;border-radius:8px;background:var(--seg);display:grid;place-items:center;font-size:28px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.15)}.bk-cover img{width:100%;height:100%;object-fit:cover}
+#m-list .bk-cover{width:48px;height:48px;border-radius:12px;font-size:24px}
+.bk-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.bk-info b{font-size:16px;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}.bk-info .muted{font-size:13px}.bk-info input{font-size:16px}
+.bk-acts{display:flex;gap:6px;margin-top:4px}.bk-acts .mbtn{min-height:34px;padding:4px 12px;font-size:14px;gap:4px}.bk-acts .mbtn svg{width:16px;height:16px}
 .mbtn svg{width:20px;height:20px;flex:none}
 .warn{color:var(--danger);font-size:.875rem}
 html{scroll-padding-bottom:100px}
@@ -779,7 +785,7 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
 <nav class="tabs" id="tabs"></nav>
 
 <script>
-const APP_VER='41'; // keep in step with V in sw.js
+const APP_VER='42'; // keep in step with V in sw.js
 // CORE-START (pure functions, tested in check.js)
 const R=Math.PI/180,KAABA=[21.4225,39.8262];
 const sin=d=>Math.sin(d*R),cos=d=>Math.cos(d*R),tan=d=>Math.tan(d*R),asin=x=>Math.asin(x)/R,acos=x=>Math.acos(Math.max(-1,Math.min(1,x)))/R,atan2=(y,x)=>Math.atan2(y,x)/R;
@@ -1450,7 +1456,7 @@ async function renderMedia(){$('mushaf').hidden=true;document.querySelectorAll('
   const items=(await dbAll()).filter(i=>i.cat===cat).sort((a,b)=>a.added-b.added);
   $('cats').querySelector('[data-c=quran]').hidden=cat!=='quran'&&!items.length&&!(await dbAll()).some(i=>i.cat==='quran');
   $('m-list').innerHTML=items.length?'':`<li class="muted">${songs?'ما فيه ملفات محفوظة. أضف ملفات أغانيك من الزر فوق وتشتغل بدون نت.':'القسم فاضي. أضف ملفات من زر الإضافة.'}</li>`;
-  items.forEach((it,i)=>{const li=document.createElement('li');li.innerHTML=`<span class="grow"></span><button class="primary mbtn" aria-label="تشغيل">${ICO_PLAY}تشغيل</button><button class="danger mbtn" aria-label="حذف">${ICO_DEL}حذف</button>`;li.firstChild.textContent=it.name;
+  items.forEach((it,i)=>{const li=document.createElement('li');li.className='bk-item';li.innerHTML=`<span class="bk-cover">${it.type.startsWith('video')?'🎬':cat==='stories'?'📖':cat==='quran'?'📗':'🎵'}</span><span class="bk-info"><b></b><span class="bk-acts"><button class="primary mbtn" aria-label="تشغيل">${ICO_PLAY}تشغيل</button><button class="danger mbtn" aria-label="حذف">${ICO_DEL}حذف</button></span></span>`;li.querySelector('b').textContent=it.name;
     const[p,d]=li.querySelectorAll('button');p.onclick=()=>play(items,i);delBtn(d,it.id);$('m-list').append(li)})}
 const ICO_PLAY='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
   ICO_DEL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
@@ -1630,10 +1636,22 @@ const bkProg=it=>{const p=bkPos[it.id];if(!p)return'ما بديت';return it.kin
 async function renderBooks(){document.querySelectorAll('#bk-kind .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===bkKind));
   const items=(await dbAll()).filter(i=>i.cat==='book'&&(bkKind==='all'||i.kind===bkKind)).sort((a,b)=>(bkPos[b.id]?.at||b.added)-(bkPos[a.id]?.at||a.added));
   $('bk-list').innerHTML=items.length?'':'<li class="muted">المكتبة فاضية. أضف كتاب PDF أو كتاب صوتي من الزر فوق.</li>';
-  for(const it of items){const li=document.createElement('li');li.innerHTML=`<span class="emo">${it.kind==='pdf'?'📄':'🎧'}</span><span class="grow"><b></b><br><span class="muted">${bkProg(it)}</span></span><button class="primary mbtn">${it.kind==='pdf'?'اقرأ':'استمع'}</button><button class="danger mbtn" aria-label="حذف">${ICO_DEL}حذف</button>`;
-    li.querySelector('b').textContent=it.name;const[o,d]=li.querySelectorAll('button');o.onclick=()=>it.kind==='pdf'?bkRead(it):bkListen(it);
+  for(const it of items){const li=document.createElement('li');li.className='bk-item';
+    li.innerHTML=`<span class="bk-cover">${it.cover?'<img alt="">':it.kind==='pdf'?'📄':'🎧'}</span><span class="bk-info"><b></b><span class="muted">${bkProg(it)}</span><span class="bk-acts"><button class="primary mbtn">${it.kind==='pdf'?'📖 اقرأ':ICO_PLAY+'استمع'}</button><button class="mbtn bk-ren" aria-label="تغيير الاسم">✏️</button><button class="danger mbtn" aria-label="حذف">${ICO_DEL}حذف</button></span></span>`;
+    if(it.cover){const u=URL.createObjectURL(it.cover),im=li.querySelector('img');im.onload=()=>URL.revokeObjectURL(u);im.src=u}
+    li.querySelector('b').textContent=it.name;const[o,rn,d]=li.querySelectorAll('button');o.onclick=()=>it.kind==='pdf'?bkRead(it):bkListen(it);
+    rn.onclick=()=>{const b=li.querySelector('b'),x=document.createElement('input');x.type='text';x.value=it.name;b.replaceWith(x);x.focus();x.select();
+      const done=async()=>{const n=x.value.trim();if(n&&n!==it.name){it.name=n;await dbPut(it)}renderBooks()};x.onblur=done;x.onkeydown=e=>{if(e.key==='Enter')x.blur()}};
     d.onclick=async()=>{if(!d.dataset.sure){d.dataset.sure=1;d.innerHTML=ICO_DEL+'متأكد؟';setTimeout(()=>{delete d.dataset.sure;d.innerHTML=ICO_DEL+'حذف'},4000);return}
-      if(bkCur?.id===it.id){$('bk-audio').replaceChildren();$('bk-player').hidden=true;bkCur=null}await dbDel(it.id);delete bkPos[it.id];bkSavePos();renderBooks()};$('bk-list').append(li)}}
+      if(bkCur?.id===it.id){$('bk-audio').replaceChildren();$('bk-player').hidden=true;bkCur=null}await dbDel(it.id);delete bkPos[it.id];bkSavePos();renderBooks()};$('bk-list').append(li)}
+  bkCovers(items.filter(i=>i.kind==='pdf'&&!i.cover))}
+// first page as the cover; files from the iPhone often arrive with a random id as name, so the PDF's own title replaces it
+let bkCovering=false;
+async function bkCovers(todo){if(bkCovering||!todo.length)return;bkCovering=true;try{const L=await pdfLib();
+  for(const it of todo){let d;try{d=await L.getDocument({data:new Uint8Array(await it.blob.arrayBuffer())}).promise;const pg=await d.getPage(1),v0=pg.getViewport({scale:1}),v=pg.getViewport({scale:180/v0.width}),c=document.createElement('canvas');
+    c.width=v.width;c.height=v.height;await pg.render({canvasContext:c.getContext('2d'),viewport:v}).promise;it.cover=await new Promise(ok=>c.toBlob(ok,'image/jpeg',.8));
+    const t=(await d.getMetadata().catch(()=>null))?.info?.Title?.trim();if(t&&/^[0-9a-f]{8}-[0-9a-f]{4}-|^[\w-]{20,}$/i.test(it.name))it.name=t}catch{it.cover=new Blob()}finally{d?.destroy()}await dbPut(it)}}
+  catch{}bkCovering=false;if(!$('v-books').hidden)renderBooks()}
 
 // audiobooks: resume where you stopped, speed, 30 s jumps
 const RATES=[1,1.25,1.5,2,0.75];let bkRate=+store.get('bkrate',1)||1;
