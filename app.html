@@ -179,8 +179,9 @@ html{scroll-padding-bottom:100px}
 #wx-det .stat b{font-size:1.05rem;font-family:var(--body);direction:rtl;text-align:start}
 /* المصحف */
 @font-face{font-family:"Amiri Quran";src:url(lib/amiri-quran.woff2) format("woff2");font-display:swap}
-#q-read{position:fixed;inset:0;z-index:60;background:#fdf8ec;color:#1d1f1b;overflow-y:auto;overscroll-behavior:contain;padding:calc(8px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #q-read{background:#1a1813;color:#efe7d6}}:root[data-theme=dark] #q-read{background:#1a1813;color:#efe7d6}
+#q-read,#bk-read{position:fixed;inset:0;z-index:60;background:#fdf8ec;color:#1d1f1b;overflow-y:auto;overscroll-behavior:contain;padding:calc(8px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) :is(#q-read,#bk-read){background:#1a1813;color:#efe7d6}}:root[data-theme=dark] :is(#q-read,#bk-read){background:#1a1813;color:#efe7d6}
+#bk-read{padding-inline:6px;overflow-x:auto}#bk-pages{display:flex;flex-direction:column;gap:8px;align-items:flex-start;min-width:100%}.bk-pg{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-inline:auto;max-width:none}.bk-pg canvas{width:100%;height:100%;display:block}.bk-ctl{justify-content:center}.bk-ctl button{flex:1}
 body.reading{overflow:hidden}body.reading nav.tabs{display:none}
 .q-top,.q-bot{display:flex;gap:8px;align-items:center;position:sticky;background:inherit;z-index:1}
 .q-top{top:calc(-8px - env(safe-area-inset-top,0px));padding-block:6px}.q-bot{bottom:calc(-12px - env(safe-area-inset-bottom,0px));padding-block:8px;justify-content:space-between}
@@ -685,6 +686,25 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
     <ul class="list" id="rq-surahs"></ul>
   </div>
 </section>
+<section id="v-books" hidden>
+  <h1>المكتبة</h1>
+  <div class="seg" id="bk-kind"><button class="chip" data-k="all">الكل</button><button class="chip" data-k="pdf">📄 كتب PDF</button><button class="chip" data-k="audio">🎧 كتب صوتية</button></div>
+  <div class="card">
+    <label class="btn" style="background:var(--accent);color:var(--accent-fg)">أضف كتاب من الجوال (PDF أو صوتي)<input type="file" id="bk-files" accept="application/pdf,.pdf,audio/*,.m4b,.mp3,.m4a" multiple hidden></label>
+    <div class="row"><input type="text" id="bk-url" placeholder="أو الصق رابط ملف PDF أو صوتي"><button id="bk-dl">نزّل</button></div>
+    <span class="muted" id="bk-status">الكتب تنحفظ داخل التطبيق وتشتغل بدون نت، ويتذكر وين وقفت.</span>
+  </div>
+  <div class="card" id="bk-player" hidden>
+    <b id="bk-now"></b><div id="bk-audio"></div>
+    <div class="row bk-ctl"><button id="bk-back30">⏪ ٣٠ث</button><button id="bk-rate" aria-label="سرعة التشغيل">1×</button><button id="bk-fwd30">٣٠ث ⏩</button></div>
+  </div>
+  <ul class="list" id="bk-list"></ul>
+</section>
+<div id="bk-read" hidden>
+  <div class="q-top"><button id="bk-close" class="x" aria-label="إغلاق">✕</button><b id="bk-title" class="grow"></b><button id="bk-small" aria-label="تصغير">−</button><button id="bk-big" aria-label="تكبير">+</button></div>
+  <div id="bk-pages"></div>
+  <div class="q-bot"><span class="muted" id="bk-pno"></span><label class="row">روح لصفحة<input type="number" id="bk-go" inputmode="numeric" min="1" style="width:5em"></label></div>
+</div>
 <section id="v-weather" hidden>
   <h1>الطقس</h1>
   <div class="card" id="wx-now" hidden>
@@ -759,7 +779,7 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
 <nav class="tabs" id="tabs"></nav>
 
 <script>
-const APP_VER='39'; // keep in step with V in sw.js
+const APP_VER='40'; // keep in step with V in sw.js
 // CORE-START (pure functions, tested in check.js)
 const R=Math.PI/180,KAABA=[21.4225,39.8262];
 const sin=d=>Math.sin(d*R),cos=d=>Math.cos(d*R),tan=d=>Math.tan(d*R),asin=x=>Math.asin(x)/R,acos=x=>Math.acos(Math.max(-1,Math.min(1,x)))/R,atan2=(y,x)=>Math.atan2(y,x)/R;
@@ -894,8 +914,8 @@ const ICONS={
   nav:'<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z" fill="currentColor" fill-opacity=".18"/><path d="M9 4v14M15 6v14"/>',
   more:'<path d="M2 20l6.5-11 4 6 3-4.5L22 20z" fill="currentColor" fill-opacity=".18"/><path d="M8.5 9l1.8 3M15.5 10.5l1.4 2.2"/>',
   prayer:'<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" fill="currentColor" fill-opacity=".18"/>'};
-const BAR=[['nav','الخريطة'],['more','الساحة'],['prayer','الصلاة']],HUBV=['compass','media','fun','stories','info','food','quran','weather','falcon','speed','hand','tilawa'];
-const TILE={map:['🗺️','الخريطة','nav'],compass:['🧭','البوصلة','compass'],qibla:['🕋','القبلة','compass'],speed:['🏎️','عداد السرعة','speed'],hand:['🃏','حاسبة الهند','hand'],tilawa:['🎧','تلاوة القرآن','tilawa'],
+const BAR=[['nav','الخريطة'],['more','الساحة'],['prayer','الصلاة']],HUBV=['compass','media','fun','stories','info','food','quran','weather','falcon','speed','hand','tilawa','books'];
+const TILE={map:['🗺️','الخريطة','nav'],compass:['🧭','البوصلة','compass'],qibla:['🕋','القبلة','compass'],speed:['🏎️','عداد السرعة','speed'],hand:['🃏','حاسبة الهند','hand'],tilawa:['🎧','تلاوة القرآن','tilawa'],books:['📚','المكتبة','books'],abooks:['🎧','كتب صوتية','books','#bk-kind [data-k=audio]'],pbooks:['📄','كتب PDF','books','#bk-kind [data-k=pdf]'],
   save:['📍','حفظ نقطة','nav','#a-save'],points:['📌','نقاطي','nav','#a-points'],rec:['🔴','تسجيل رحلة','nav','#a-rec'],back:['↩️','العودة على الدرب','nav','#a-back'],offline:['⬇️','خرائط بدون نت','nav','#a-menu'],
   prayer:['🌙','مواقيت الصلاة','prayer'],mushaf:['📗','المصحف','quran'],weather:['🌤️','الطقس','weather'],falcons:['🦅','طيوري','falcon','#fl-tabs [data-p=home]'],fweight:['⚖️','تسجيل الوزن','falcon','#fl-tabs [data-p=train]'],frace:['🏁','السباقات','falcon','#fl-tabs [data-p=race]'],fhealth:['🩺','صحة الطير','falcon','#fl-tabs [data-p=health]'],wird:['📿','الورد اليومي','quran','#q-wird-go'],songs:['🎵','أغاني وشيلات','media','#cats [data-c=songs]'],astories:['🎙️','قصص صوتية','media','#cats [data-c=stories]'],video:['🎬','فيديو','media','#cats [data-c=video]'],
   charades:['🎭','بدون كلام','fun','#games [data-g=charades]'],sj:['❓','سين جيم','fun','#games [data-g=sj]'],riddle:['🧩','ألغاز','fun','#games [data-g=riddle]'],
@@ -903,13 +923,13 @@ const TILE={map:['🗺️','الخريطة','nav'],compass:['🧭','البوصل
   recipes:['🍲','طبخات البر','food','#fd-cats [data-h="طبخات البر"]'],healthy:['🥗','أكلات صحية','food','#fd-cats [data-h="أكلات صحية"]'],workout:['🏃','تمارين','food','#fd-cats [data-h="تمارين"]'],shop:['🛒','المقاضي','food','#fd-cats [data-h="المقاضي"]']};
 const HUB=[['nav','التنقل','🧭',['map','compass','speed','save','points','rec','back','offline']],['wx','الطقس','🌤️',['weather']],['falcon','الصقور','🦅',['falcons','fweight','frace','fhealth']],
   ['din','عبادة','🕌',['mushaf','wird','tilawa','prayer','qibla']],['media','صوتيات','🎧',['songs','astories','video']],['games','ألعاب','🎮',['hand','charades','sj','riddle']],
-  ['know','قصص ومعلومات','📚',['stories','plants','stars','insects']],['life','صحة وطبخ','🌿',['recipes','healthy','workout','shop']]];
+  ['books','المكتبة','📚',['books','pbooks','abooks']],['know','قصص ومعلومات','💡',['stories','plants','stars','insects']],['life','صحة وطبخ','🌿',['recipes','healthy','workout','shop']]];
 const ico=(k,w=26)=>`<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
 // the map screen ends where the floating bar starts; the bar grows with the iPhone's text size
 const tabH=()=>document.documentElement.style.setProperty('--tabh',Math.max(0,innerHeight-$('tabs').getBoundingClientRect().top)+'px');
 function show(t){['nav','more','prayer',...HUBV].forEach(k=>$('v-'+k).hidden=k!==t);
   const sel=HUBV.includes(t)?'more':t;BAR.forEach(([k])=>$('t-'+k).setAttribute('aria-selected',k===sel));
-  store.set('tab',t);scrollTo(0,0);tabH();document.body.classList.toggle('mapmode',t==='nav');if(t==='nav'){initMap();map?.invalidateSize()}if(t==='falcon'&&$('fl-home').hidden&&$('fl-train').hidden&&$('fl-race').hidden&&$('fl-health').hidden&&$('fl-prof').hidden)flShow('home');if(t==='speed')renderSpeed();if(t==='hand')renderHand();if(t==='tilawa'&&!$('rq-list').children.length)renderRq();if(t==='weather'){renderWx();if(!wx||Date.now()-wx.at>1800000)wxFetch()}if(t==='quran'){qHome();if(!$('q-index').children.length)qIndex('sura')}keepAwake()}
+  store.set('tab',t);scrollTo(0,0);tabH();document.body.classList.toggle('mapmode',t==='nav');if(t==='nav'){initMap();map?.invalidateSize()}if(t==='falcon'&&$('fl-home').hidden&&$('fl-train').hidden&&$('fl-race').hidden&&$('fl-health').hidden&&$('fl-prof').hidden)flShow('home');if(t==='speed')renderSpeed();if(t==='books')renderBooks();if(t==='hand')renderHand();if(t==='tilawa'&&!$('rq-list').children.length)renderRq();if(t==='weather'){renderWx();if(!wx||Date.now()-wx.at>1800000)wxFetch()}if(t==='quran'){qHome();if(!$('q-index').children.length)qIndex('sura')}keepAwake()}
 $('tabs').innerHTML=BAR.map(([k,l])=>`<button id="t-${k}" role="tab">${ico(k)}<span>${l}</span></button>`).join('');
 BAR.forEach(([k])=>$('t-'+k).onclick=()=>show(k));
 $('hub-chips').innerHTML=HUB.map(([id,n,e])=>`<button class="hchip" data-s="${id}"><span class="emo">${e}</span>${n}</button>`).join('');
@@ -1596,6 +1616,61 @@ function applyTheme(){const r=document.documentElement;if(theme==='auto')delete 
   document.querySelectorAll('meta[name=theme-color]').forEach(m=>m.content=isDark()?'#141512':'#fbf8f1');
   $('hub-theme').innerHTML=`<span class="emo">${THEMES[theme][0]}</span>${THEMES[theme][1]}`;if(map)loadOffline()}
 $('hub-theme').onclick=()=>{theme={auto:'light',light:'dark',dark:'auto'}[theme];store.set('theme',theme);applyTheme()};
+
+/* ---------- المكتبة: the user's own PDF books and audiobooks, kept on the phone; remembers the page / the minute ---------- */
+let bkKind=store.get('bkkind','all'),bkCur=null,bkObj=null;const bkPos=store.get('bkpos',{}),bkSavePos=()=>store.set('bkpos',bkPos);
+const bkIsPdf=f=>/pdf/.test(f.type)||/\.pdf$/i.test(f.name||'');
+async function bkAdd(name,blob){const pdf=bkIsPdf({type:blob.type,name});await dbPut({id:'bk'+Date.now()+Math.random().toString(36).slice(2),cat:'book',kind:pdf?'pdf':'audio',name:name.replace(/\.[^.]+$/,''),type:blob.type||(pdf?'application/pdf':'audio/mpeg'),blob,added:Date.now()})}
+$('bk-files').onchange=async e=>{const fs=[...e.target.files];$('bk-status').textContent='جاري الحفظ…';for(const f of fs)await bkAdd(f.name,f);$('bk-status').textContent=`انحفظ ${fs.length} كتاب.`;e.target.value='';renderBooks()};
+$('bk-dl').onclick=async()=>{const u=$('bk-url').value.trim();if(!u)return;$('bk-status').textContent='جاري التحميل…';
+  try{const r=await fetch(u);if(!r.ok)throw 0;await bkAdd(decodeURIComponent(u.split('/').pop().split('?')[0])||'كتاب',await r.blob());$('bk-url').value='';$('bk-status').textContent='تم التحميل.';renderBooks()}
+  catch{$('bk-status').textContent='ما قدرت أنزّله. بعض المواقع تمنع التحميل من برا، نزّله بالمتصفح وبعدين أضفه من الجوال.'}};
+$('bk-kind').onclick=e=>{const b=e.target.closest('.chip');if(b){bkKind=b.dataset.k;store.set('bkkind',bkKind);renderBooks()}};
+const bkProg=it=>{const p=bkPos[it.id];if(!p)return'ما بديت';return it.kind==='pdf'?`وقفت عند صفحة ${p.p} من ${p.n}`:`وقفت عند ${dur(p.t)}${p.d?' من '+dur(p.d):''}`};
+async function renderBooks(){document.querySelectorAll('#bk-kind .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===bkKind));
+  const items=(await dbAll()).filter(i=>i.cat==='book'&&(bkKind==='all'||i.kind===bkKind)).sort((a,b)=>(bkPos[b.id]?.at||b.added)-(bkPos[a.id]?.at||a.added));
+  $('bk-list').innerHTML=items.length?'':'<li class="muted">المكتبة فاضية. أضف كتاب PDF أو كتاب صوتي من الزر فوق.</li>';
+  for(const it of items){const li=document.createElement('li');li.innerHTML=`<span class="emo">${it.kind==='pdf'?'📄':'🎧'}</span><span class="grow"><b></b><br><span class="muted">${bkProg(it)}</span></span><button class="primary mbtn">${it.kind==='pdf'?'اقرأ':'استمع'}</button><button class="danger mbtn" aria-label="حذف">${ICO_DEL}حذف</button>`;
+    li.querySelector('b').textContent=it.name;const[o,d]=li.querySelectorAll('button');o.onclick=()=>it.kind==='pdf'?bkRead(it):bkListen(it);
+    d.onclick=async()=>{if(!d.dataset.sure){d.dataset.sure=1;d.innerHTML=ICO_DEL+'متأكد؟';setTimeout(()=>{delete d.dataset.sure;d.innerHTML=ICO_DEL+'حذف'},4000);return}
+      if(bkCur?.id===it.id){$('bk-audio').replaceChildren();$('bk-player').hidden=true;bkCur=null}await dbDel(it.id);delete bkPos[it.id];bkSavePos();renderBooks()};$('bk-list').append(li)}}
+
+// audiobooks: resume where you stopped, speed, 30 s jumps
+const RATES=[1,1.25,1.5,2,0.75];let bkRate=+store.get('bkrate',1)||1;
+function bkListen(it){if(bkObj)URL.revokeObjectURL(bkObj);bkObj=URL.createObjectURL(it.blob);bkCur=it;
+  const el=document.createElement('audio');el.controls=true;el.src=bkObj;el.playbackRate=bkRate;let last=0;
+  el.onloadedmetadata=()=>{const p=bkPos[it.id];if(p?.t&&p.t<el.duration-5)el.currentTime=p.t;el.playbackRate=bkRate;el.play().catch(()=>{})};
+  const save=()=>{bkPos[it.id]={t:el.currentTime,d:el.duration||0,at:Date.now()};bkSavePos()};
+  el.ontimeupdate=()=>{if(Math.abs(el.currentTime-last)>5){last=el.currentTime;save()}};el.onpause=save;el.onended=save;
+  $('bk-audio').replaceChildren(el);$('bk-now').textContent=it.name;$('bk-rate').textContent=bkRate+'×';$('bk-player').hidden=false;scrollTo(0,0)}
+const bkEl=()=>$('bk-audio').querySelector('audio');
+$('bk-back30').onclick=()=>{const a=bkEl();if(a)a.currentTime=Math.max(0,a.currentTime-30)};$('bk-fwd30').onclick=()=>{const a=bkEl();if(a)a.currentTime+=30};
+$('bk-rate').onclick=()=>{bkRate=RATES[(RATES.indexOf(bkRate)+1)%RATES.length];store.set('bkrate',bkRate);$('bk-rate').textContent=bkRate+'×';const a=bkEl();if(a)a.playbackRate=bkRate};
+
+// PDF: pdf.js (lib/, loaded on first use) draws pages as you scroll; pages far off screen are dropped to save memory
+let PDFJS=null,bkDoc=null,bkZoom=+store.get('bkzoom',1)||1,bkObs=null,bkPageNow=1;
+async function pdfLib(){if(PDFJS)return PDFJS;await new Promise((ok,no)=>{const s=document.createElement('script');s.src='lib/pdf.min.js';s.onload=ok;s.onerror=no;document.head.append(s)});
+  PDFJS=window.pdfjsLib;PDFJS.GlobalWorkerOptions.workerSrc='lib/pdf.worker.min.js';return PDFJS}
+async function bkRead(it){$('bk-status').textContent='جاري فتح الكتاب…';
+  try{const L=await pdfLib();bkDoc?.destroy();bkDoc=await L.getDocument({data:new Uint8Array(await it.blob.arrayBuffer())}).promise}
+  catch{$('bk-status').textContent='ما قدرت أفتح الملف. تأكد إنه PDF سليم.';return}
+  $('bk-status').textContent='';bkCur=it;$('bk-title').textContent=it.name;$('bk-read').hidden=false;document.body.classList.add('reading');$('bk-go').max=bkDoc.numPages;
+  await bkLayout(bkPos[it.id]?.p||1)}
+async function bkLayout(goTo){const pg=await bkDoc.getPage(1),v=pg.getViewport({scale:1}),W=$('bk-pages').clientWidth*bkZoom;bkObs?.disconnect();
+  $('bk-pages').innerHTML=Array.from({length:bkDoc.numPages},(_,i)=>`<div class="bk-pg" data-n="${i+1}" style="width:${W}px;aspect-ratio:${v.width}/${v.height}"></div>`).join('');
+  bkObs=new IntersectionObserver(es=>es.forEach(e=>{const d=e.target;if(e.isIntersecting)bkDraw(d);else d.replaceChildren()}),{root:$('bk-read'),rootMargin:'150% 0px'});
+  $('bk-pages').querySelectorAll('.bk-pg').forEach(d=>bkObs.observe(d));$('bk-pages').children[goTo-1]?.scrollIntoView();bkMark()}
+async function bkDraw(d){if(d.firstChild)return;const n=+d.dataset.n,pg=await bkDoc.getPage(n),w=d.clientWidth,v0=pg.getViewport({scale:1}),dpr=Math.min(devicePixelRatio||1,2),
+  v=pg.getViewport({scale:w/v0.width*dpr}),c=document.createElement('canvas');c.width=v.width;c.height=v.height;d.replaceChildren(c);
+  // ponytail: whole-page canvas per page; very large zoom on a huge page can hit iOS canvas limits, tile it if that shows up
+  await pg.render({canvasContext:c.getContext('2d'),viewport:v}).promise.catch(()=>{})}
+function bkMark(){const r=$('bk-read'),mid=r.scrollTop+r.clientHeight/3,ps=$('bk-pages').children;let n=1;for(const d of ps){if(d.offsetTop>mid)break;n=+d.dataset.n}
+  if(n!==bkPageNow||!bkPos[bkCur.id]){bkPageNow=n;bkPos[bkCur.id]={p:n,n:bkDoc.numPages,at:Date.now()};bkSavePos()}$('bk-pno').textContent=`صفحة ${n} من ${bkDoc.numPages}`}
+let bkT=0;$('bk-read').addEventListener('scroll',()=>{clearTimeout(bkT);bkT=setTimeout(()=>{if(bkDoc&&!$('bk-read').hidden)bkMark()},150)},{passive:true});
+$('bk-close').onclick=()=>{bkObs?.disconnect();$('bk-pages').replaceChildren();$('bk-read').hidden=true;document.body.classList.remove('reading');bkDoc?.destroy();bkDoc=null;renderBooks()};
+const bkZ=z=>{bkZoom=Math.max(1,Math.min(3,z));store.set('bkzoom',bkZoom);bkLayout(bkPageNow)};
+$('bk-big').onclick=()=>bkZ(bkZoom+.5);$('bk-small').onclick=()=>bkZ(bkZoom-.5);
+$('bk-go').onchange=e=>{const n=Math.max(1,Math.min(bkDoc.numPages,+e.target.value||1));$('bk-pages').children[n-1].scrollIntoView();e.target.value=''};
 
 /* ---------- weather: Open-Meteo (free, no key) + its dust forecast; the last result stays on the phone for use without internet ---------- */
 const WMO={0:['☀️','صحو'],1:['🌤️','غائم جزئياً'],2:['⛅','غائم جزئياً'],3:['☁️','غائم'],45:['🌫️','ضباب'],48:['🌫️','ضباب'],51:['🌦️','رذاذ خفيف'],53:['🌦️','رذاذ'],55:['🌦️','رذاذ كثيف'],
