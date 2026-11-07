@@ -181,7 +181,7 @@ html{scroll-padding-bottom:100px}
 @font-face{font-family:"Amiri Quran";src:url(lib/amiri-quran.woff2) format("woff2");font-display:swap}
 #q-read,#bk-read{position:fixed;inset:0;z-index:60;background:#fdf8ec;color:#1d1f1b;overflow-y:auto;overscroll-behavior:contain;padding:calc(8px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) :is(#q-read,#bk-read){background:#1a1813;color:#efe7d6}}:root[data-theme=dark] :is(#q-read,#bk-read){background:#1a1813;color:#efe7d6}
-#bk-read{padding-inline:6px;overflow-x:auto}#bk-pages{display:flex;flex-direction:column;gap:8px;align-items:flex-start;min-width:100%}.bk-pg{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);margin-inline:auto;max-width:none}.bk-pg canvas{width:100%;height:100%;display:block}.bk-ctl{justify-content:center}.bk-ctl button{flex:1}
+#bk-read{padding-inline:6px;overflow-x:hidden}#bk-pages{display:flex;flex-direction:column;gap:8px;align-items:flex-start;direction:ltr;overflow-x:auto;flex:none;padding-bottom:4px}.bk-pg{flex:none;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);max-width:none}.bk-pg canvas{width:100%;height:100%;display:block}.bk-ctl{justify-content:center}.bk-ctl button{flex:1}
 body.reading{overflow:hidden}body.reading nav.tabs{display:none}
 .q-top,.q-bot{display:flex;gap:8px;align-items:center;position:sticky;background:inherit;z-index:1}
 .q-top{top:calc(-8px - env(safe-area-inset-top,0px));padding-block:6px}.q-bot{bottom:calc(-12px - env(safe-area-inset-bottom,0px));padding-block:8px;justify-content:space-between}
@@ -779,7 +779,7 @@ details.riddle[open]>:not(summary){animation:rise 220ms var(--ease-out)}
 <nav class="tabs" id="tabs"></nav>
 
 <script>
-const APP_VER='40'; // keep in step with V in sw.js
+const APP_VER='41'; // keep in step with V in sw.js
 // CORE-START (pure functions, tested in check.js)
 const R=Math.PI/180,KAABA=[21.4225,39.8262];
 const sin=d=>Math.sin(d*R),cos=d=>Math.cos(d*R),tan=d=>Math.tan(d*R),asin=x=>Math.asin(x)/R,acos=x=>Math.acos(Math.max(-1,Math.min(1,x)))/R,atan2=(y,x)=>Math.atan2(y,x)/R;
@@ -1660,9 +1660,9 @@ async function bkLayout(goTo){const pg=await bkDoc.getPage(1),v=pg.getViewport({
   $('bk-pages').innerHTML=Array.from({length:bkDoc.numPages},(_,i)=>`<div class="bk-pg" data-n="${i+1}" style="width:${W}px;aspect-ratio:${v.width}/${v.height}"></div>`).join('');
   bkObs=new IntersectionObserver(es=>es.forEach(e=>{const d=e.target;if(e.isIntersecting)bkDraw(d);else d.replaceChildren()}),{root:$('bk-read'),rootMargin:'150% 0px'});
   $('bk-pages').querySelectorAll('.bk-pg').forEach(d=>bkObs.observe(d));$('bk-pages').children[goTo-1]?.scrollIntoView();bkMark()}
-async function bkDraw(d){if(d.firstChild)return;const n=+d.dataset.n,pg=await bkDoc.getPage(n),w=d.clientWidth,v0=pg.getViewport({scale:1}),dpr=Math.min(devicePixelRatio||1,2),
-  v=pg.getViewport({scale:w/v0.width*dpr}),c=document.createElement('canvas');c.width=v.width;c.height=v.height;d.replaceChildren(c);
-  // ponytail: whole-page canvas per page; very large zoom on a huge page can hit iOS canvas limits, tile it if that shows up
+async function bkDraw(d){if(d.firstChild)return;const n=+d.dataset.n,pg=await bkDoc.getPage(n),w=d.clientWidth,v0=pg.getViewport({scale:1}),dpr=Math.max(devicePixelRatio||1,2)*1.25,
+  v=pg.getViewport({scale:Math.min(w/v0.width*dpr,Math.sqrt(16e6/(v0.width*v0.height)))}),c=document.createElement('canvas');c.width=v.width;c.height=v.height;d.replaceChildren(c);
+  // ponytail: one canvas per page, capped at 16 MP (iOS canvas limit); at 3× zoom that cap is what limits sharpness, tile pages if it shows
   await pg.render({canvasContext:c.getContext('2d'),viewport:v}).promise.catch(()=>{})}
 function bkMark(){const r=$('bk-read'),mid=r.scrollTop+r.clientHeight/3,ps=$('bk-pages').children;let n=1;for(const d of ps){if(d.offsetTop>mid)break;n=+d.dataset.n}
   if(n!==bkPageNow||!bkPos[bkCur.id]){bkPageNow=n;bkPos[bkCur.id]={p:n,n:bkDoc.numPages,at:Date.now()};bkSavePos()}$('bk-pno').textContent=`صفحة ${n} من ${bkDoc.numPages}`}
